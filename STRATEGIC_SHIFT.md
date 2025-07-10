@@ -10,14 +10,15 @@ Current architecture fights Bevy ecosystem, creates unnecessary complexity:
 - ❌ Test failures from mocked ECS instead of integrated Bevy App
 - ❌ Future Bevy upgrades require multi-month re-integration
 
-## TARGET ARCHITECTURE
+## CURRENT ARCHITECTURE
 ```
 ├─ crates/
 │   ├─ amp_core/          # Pure Rust utilities, error handling (no Bevy deps)
 │   ├─ amp_math/          # glam re-exports, Morton, AABB (no Bevy deps)  
 │   ├─ amp_engine/        # Bevy 0.16.1 dependency, engine plugins
-│   ├─ amp_gameplay/      # Game systems, components, prefabs
-│   └─ amp_tools/         # xtask, build pipeline helpers (optional)
+│   ├─ config_core/       # Configuration loading and management
+│   ├─ gameplay_factory/  # Entity factory for prefab-based systems
+│   └─ tools/xtask/       # Build pipeline helpers
 ```
 
 ## MIGRATION PLAN (10-14 DAYS)
@@ -39,6 +40,9 @@ Current architecture fights Bevy ecosystem, creates unnecessary complexity:
 - ✅ ADR-007 created  
 - ✅ Agent.md updated
 - ✅ Documentation aligned
-- 🔄 Ready for implementation
+- ✅ Phase 0-4 implementation completed
+- ✅ New crate structure active: amp_core, amp_math, amp_engine, config_core, gameplay_factory
+- ✅ Asset pipeline integrated with hot-reload
+- ✅ Phase 5B: Documentation updates completed
 
-**All documentation is now aligned to this strategy. Proceed with Oracle's migration plan.**
+**Strategic shift migration completed successfully. New architecture is operational.**

@@ -6,9 +6,13 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+# Phase 5A: CI updated to skip deprecated crates (amp_spatial, amp_gpu, amp_world)
+# These crates are excluded via Cargo.toml workspace.exclude
+
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: "-Dwarnings"
+  RUST_BACKTRACE: 1
 
 jobs:
   # Multi-OS build matrix with fail-fast disabled for complete coverage
@@ -19,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        toolchain: ["stable"]
+        toolchain: ["stable", "1.85.0"]  # Include MSRV testing
         include:
           # Test nightly only on Ubuntu to reduce CI time
           - os: ubuntu-latest
@@ -51,15 +55,110 @@ jobs:
       - name: Run tests
         run: cargo test --workspace --all-features
       
+      - name: Run coverage tests (Oracle Phase 5A)
+        run: cargo test --workspace --all-features --lib --test-threads=1
+      
       - name: Check documentation
         run: cargo doc --workspace --no-deps --all-features
       
       - name: Check rustdoc warnings
         run: RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --all-features
 
+  # Phase 1B: Feature flag testing matrix
+  feature-matrix:
+    name: Feature Matrix (${{ matrix.features }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        features:
+          - "--no-default-features"
+          - "--all-features"
+          - "--features bevy16"  # Test amp_engine's bevy16 feature
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+          override: true
+      
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: feature-matrix-${{ matrix.features }}
+          cache-targets: true
+          cache-all-crates: true
+      
+      - name: Build with ${{ matrix.features }}
+        run: cargo build --workspace ${{ matrix.features }}
+      
+      - name: Test with ${{ matrix.features }}
+        run: cargo test --workspace ${{ matrix.features }}
+      
+      - name: Clippy with ${{ matrix.features }}
+        run: cargo clippy --workspace --all-targets ${{ matrix.features }} -- -D warnings
+
+  # Phase 1B: amp_engine crate isolated testing
+  amp-engine-test:
+    name: amp_engine Crate Testing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+          override: true
+      
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: amp-engine-test
+          cache-targets: true
+          cache-all-crates: true
+      
+      - name: Test amp_engine default features
+        run: cargo test -p amp_engine
+      
+      - name: Test amp_engine with bevy16 feature
+        run: cargo test -p amp_engine --features bevy16
+      
+      - name: Build amp_engine with all features
+        run: cargo build -p amp_engine --all-features
+      
+      - name: Clippy amp_engine with all features
+        run: cargo clippy -p amp_engine --all-features -- -D warnings
+
+  # Phase 1B: Dependency checking with cargo-deny
+  deny:
+    name: Dependency Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@cargo-deny
+      
+      - name: Check licenses
+        run: cargo deny check licenses
+      
+      - name: Check advisories
+        run: cargo deny check advisories
+      
+      - name: Check bans
+        run: cargo deny check bans
+      
+      - name: Check sources
+        run: cargo deny check sources
+
   coverage:
     name: Coverage
-    needs: check
+    needs: [check, feature-matrix, amp-engine-test, deny]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -146,7 +245,7 @@ jobs:
   # Job summary report
   ci-summary:
     name: CI Summary
-    needs: [check, coverage, build-release]
+    needs: [check, feature-matrix, amp-engine-test, deny, coverage, build-release]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -157,10 +256,13 @@ jobs:
           echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Multi-OS Check | ${{ needs.check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Feature Matrix | ${{ needs.feature-matrix.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| amp_engine Test | ${{ needs.amp-engine-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Check | ${{ needs.deny.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Coverage | ${{ needs.coverage.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Release Build | ${{ needs.build-release.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ needs.check.result }}" != "success" ] || [ "${{ needs.coverage.result }}" != "success" ]; then
+          if [ "${{ needs.check.result }}" != "success" ] || [ "${{ needs.feature-matrix.result }}" != "success" ] || [ "${{ needs.amp-engine-test.result }}" != "success" ] || [ "${{ needs.deny.result }}" != "success" ] || [ "${{ needs.coverage.result }}" != "success" ]; then
             echo "❌ **CI Failed**: Please check the failed jobs above" >> $GITHUB_STEP_SUMMARY
             exit 1
           else

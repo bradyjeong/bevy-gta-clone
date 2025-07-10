@@ -4,7 +4,7 @@
 //! of spatial region data, enabling efficient loading and unloading of
 //! world content based on player position and LOD requirements.
 
-use crate::region::{Region, RegionId};
+use crate::spatial::region::{Region, RegionId};
 use amp_core::Error;
 use async_trait::async_trait;
 use glam::Vec2;
@@ -240,7 +240,7 @@ impl RegionProvider for FileRegionProvider {
     async fn prefetch_around(&self, center: Vec2, radius: f32, level: u8) -> RegionResult<()> {
         // Calculate which regions to prefetch
         let region_size = 1000.0; // TODO: Make configurable
-        let area = crate::region::RegionBounds::new(
+        let area = crate::spatial::region::RegionBounds::new(
             center - Vec2::splat(radius),
             center + Vec2::splat(radius),
         );
@@ -269,7 +269,7 @@ impl RegionProvider for FileRegionProvider {
     async fn update_streaming(&self, player_pos: Vec2, view_distance: f32) -> RegionResult<()> {
         // Determine which regions should be loaded based on player position
         let region_size = 1000.0; // TODO: Make configurable
-        let area = crate::region::RegionBounds::new(
+        let area = crate::spatial::region::RegionBounds::new(
             player_pos - Vec2::splat(view_distance),
             player_pos + Vec2::splat(view_distance),
         );

@@ -22,12 +22,17 @@ path = "minimal.rs"
 name = "gameplay_factory_example"
 path = "gameplay_factory_example.rs"
 
+[[bin]]
+name = "bevy_asset_pipeline"
+path = "bevy_asset_pipeline.rs"
+
 [dependencies]
 amp_core = { path = "../crates/amp_core" }
-amp_gpu = { path = "../crates/amp_gpu" }
+amp_engine = { path = "../crates/amp_engine", features = ["bevy16"] }
 config_core = { path = "../crates/config_core" }
 gameplay_factory = { path = "../crates/gameplay_factory", features = ["ron"] }
 bevy_ecs = "0.13"
+bevy.workspace = true
 winit.workspace = true
 pollster = "0.3"
 env_logger = "0.10"

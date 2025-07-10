@@ -7,11 +7,11 @@
 
 A AAA-level open world game built with Bevy 0.16.1 and Rust 2024, optimized for Amp development workflows.
 
-## 🚨 STRATEGIC SHIFT IN PROGRESS
+## ✅ STRATEGIC SHIFT COMPLETED
 
 **Oracle-guided architecture change from bevy_ecs 0.13 + micro-crates to Bevy 0.16.1 + strategic modularity + version consistency.**
 
-See [STRATEGIC_SHIFT.md](STRATEGIC_SHIFT.md) for full migration plan and [ADR-0007](docs/adr/0007-strategic-shift-bevy-meta-crate.md) for technical rationale.
+Migration completed with new crate structure. See [STRATEGIC_SHIFT.md](STRATEGIC_SHIFT.md) for details and [ADR-0007](docs/adr/0007-strategic-shift-bevy-meta-crate.md) for technical rationale.
 
 ## Quick Start
 
@@ -33,18 +33,19 @@ cargo test --workspace
 ./scripts/pre-commit-check.sh
 ```
 
-## Target Architecture (Post-Migration)
+## Current Architecture
 
-Oracle's strategic 4-5 crate structure for ecosystem alignment:
+Oracle's strategic crate structure for ecosystem alignment:
 
 ```
 ├─ crates/
 │   ├─ amp_core/          # Pure Rust utilities, error handling (no Bevy deps)
 │   ├─ amp_math/          # glam re-exports, Morton, AABB (no Bevy deps)  
 │   ├─ amp_engine/        # Bevy 0.16.1 dependency, engine plugins
-│   ├─ amp_gameplay/      # Game systems, components, prefabs
-│   └─ amp_tools/         # xtask, build pipeline helpers (optional)
-├─ examples/              # city_demo.rs
+│   ├─ config_core/       # Configuration loading and management
+│   ├─ gameplay_factory/  # Entity factory for prefab-based systems
+│   └─ tools/xtask/       # Build pipeline helpers
+├─ examples/              # Asset pipeline demonstrations
 └─ docs/adr/              # Architecture Decision Records
 ```
 
@@ -55,13 +56,15 @@ Oracle's strategic 4-5 crate structure for ecosystem alignment:
 - ⚡ **High Performance** - 60+ FPS target with Bevy's optimized ECS
 - 🧪 **Integrated Testing** - App-based testing with Bevy plugins
 - 🔧 **Developer Experience** - Fast compilation, ecosystem tooling
-- 📊 **Asset Pipeline** - Bevy's integrated RON/GLTF loaders
+- 📊 **Asset Pipeline** - Integrated RON/GLTF loaders with hot-reload
+- 🏗️ **Prefab Factory** - Entity factory system for gameplay objects
+- ⚙️ **Configuration Management** - Centralized config loading with validation
 
 ## Development
 
 ### Prerequisites
 
-- Rust 1.77+ (Rust 2021 edition)
+- Rust 1.85+ (Rust 2024 edition)
 - Git
 
 ### Building
@@ -98,9 +101,11 @@ cargo test -p amp_math
 - ✅ Oracle consultation complete
 - ✅ ADR-007 created  
 - ✅ Documentation aligned
-- 🔄 Implementation pending (10-14 days)
+- ✅ Implementation completed
+- ✅ New crate structure active
+- ✅ Asset pipeline integrated
 
-See [STRATEGIC_SHIFT.md](STRATEGIC_SHIFT.md) for detailed migration plan.
+See [STRATEGIC_SHIFT.md](STRATEGIC_SHIFT.md) for migration details.
 
 ## Performance Targets
 

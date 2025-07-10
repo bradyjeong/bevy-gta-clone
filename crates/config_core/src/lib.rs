@@ -13,7 +13,7 @@
 //! - **Hierarchical Search**: Searches current directory and XDG config paths
 
 use amp_core::{ConfigError, Error, Result};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use std::path::PathBuf;
 
 /// Factory configuration settings for entity and prefab management.
@@ -559,7 +559,9 @@ mod tests {
         .unwrap();
 
         // Set environment variable
-        std::env::set_var("AMP_CONFIG", config_path.to_str().unwrap());
+        unsafe {
+            std::env::set_var("AMP_CONFIG", config_path.to_str().unwrap());
+        }
 
         let loader = ConfigLoader {
             search_paths: vec![PathBuf::from("/nonexistent")],
@@ -571,12 +573,16 @@ mod tests {
         assert!(!config.factory.hot_reload);
 
         // Clean up
-        std::env::remove_var("AMP_CONFIG");
+        unsafe {
+            std::env::remove_var("AMP_CONFIG");
+        }
     }
 
     #[test]
     fn test_amp_config_env_override_nonexistent() {
-        std::env::set_var("AMP_CONFIG", "/nonexistent/config.ron");
+        unsafe {
+            std::env::set_var("AMP_CONFIG", "/nonexistent/config.ron");
+        }
 
         let loader = ConfigLoader {
             search_paths: vec![PathBuf::from("/nonexistent")],
@@ -594,7 +600,9 @@ mod tests {
         assert!(config.factory.hot_reload);
 
         // Clean up
-        std::env::remove_var("AMP_CONFIG");
+        unsafe {
+            std::env::remove_var("AMP_CONFIG");
+        }
     }
 
     #[test]

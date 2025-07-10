@@ -3,7 +3,7 @@
 //! This module provides constants and structures for hierarchical level-of-detail
 //! management using clipmaps, enabling efficient rendering of large-scale open worlds.
 
-use crate::region::RegionId;
+use crate::spatial::region::RegionId;
 use glam::Vec2;
 
 /// Maximum number of LOD levels supported by the clipmap
