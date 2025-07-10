@@ -26,6 +26,10 @@ path = "gameplay_factory_example.rs"
 name = "bevy_asset_pipeline"
 path = "bevy_asset_pipeline.rs"
 
+[[bin]]
+name = "city_demo_baseline"
+path = "city_demo_baseline.rs"
+
 [dependencies]
 amp_core = { path = "../crates/amp_core" }
 amp_engine = { path = "../crates/amp_engine", features = ["bevy16"] }

@@ -86,6 +86,10 @@ autoexamples = false
 name = "asset_pipeline_test"
 path = "examples/asset_pipeline_test.rs"
 
+[[example]]
+name = "city_demo_baseline"
+path = "examples/city_demo_baseline.rs"
+
 [features]
 default = []
 ron = ["gameplay_factory/ron"]

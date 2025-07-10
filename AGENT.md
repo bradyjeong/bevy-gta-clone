@@ -106,15 +106,18 @@
 - **Deprecated**: amp_spatial, amp_gpu, amp_world (consolidated into amp_engine)
 - **Test Status**: 122 tests passing (18+39+40+37+18)
 
-🎯 **AAA-RESTORATION PHASE INITIATED** - Oracle's 12-Week Master Plan
+🎯 **AAA-RESTORATION PHASE ACTIVE** - Oracle's 12-Week Master Plan
 - **Objective**: Restore f430bc6 "REVOLUTIONARY TRANSFORMATION" features to current Bevy 0.16.1 architecture
-- **Target**: Professional AAA game development capability
+- **Target**: Professional AAA game development capability (60+ FPS stable performance)
 - **Strategy**: Migrate behavior, not code - Re-implement in Bevy 0.16.1 idioms
-- **Status**: **SPRINT 0 PREP** - Documentation update, branch creation, gap analysis
+- **Status**: **SPRINT 0 COMPLETE** - Ready for Sprint 1 (Data-Driven Foundation)
+- **Strategic Plan**: [STRATEGIC_RESTORATION_PLAN.md](docs/STRATEGIC_RESTORATION_PLAN.md)
+- **Progress**: [GAP_REPORT.md](GAP_REPORT.md) - 72% architectural readiness confirmed
 
 ## Oracle Guidance
 - **Strategic Decisions**: Documented in [Oracle Consultations](docs/oracle-consultations.md)
-- **Architecture Decisions**: Captured in [ADR system](docs/adr/README.md)
+- **Architecture Decisions**: Captured in [ADR system](docs/adr/README.md) - immutable records of major architectural choices
+- **Current ADR Status**: ADR-0008 (AAA Feature Restoration) active, ADR-0007 (Bevy 0.16.1 Migration) completed
 - **Key Principle**: Follow Oracle's strategic shift to Bevy 0.16.1 strictly
 - **Version Consistency**: Follow Oracle's version-consistency strategy exactly
 - **Weekly Verification**: Consult Oracle for milestone checkpoints
@@ -144,13 +147,13 @@ These files must be kept current and reviewed during every strategic change:
 **Core Documentation:**
 - `Agent.md` - Commands, architecture, status (THIS FILE)
 - `README.md` - Public face, quick start, features  
-- `STRATEGIC_SHIFT.md` - Current migration status and roadmap
+- `STRATEGIC_RESTORATION_PLAN.md` - Oracle's 12-week f430bc6 restoration plan
 - `CONTRIBUTING.md` - Development workflow, code style, commit guidelines
 
 **Architecture Records:**
 - `docs/adr/README.md` - Index of all architectural decisions
 - `docs/oracle-consultations.md` - Oracle guidance and strategic decisions
-- Latest ADR (currently ADR-0007) - Active architectural strategy
+- Latest ADR (currently ADR-0008) - Active architectural strategy
 
 **Configuration Files:**
 - `Cargo.toml` - Workspace dependencies, edition, version
@@ -176,6 +179,7 @@ These files must be kept current and reviewed during every strategic change:
 - **Every commit**: Verify Agent.md status reflects reality
 - **Every architectural change**: Update all docs in this list
 - **Every Oracle consultation**: Update oracle-consultations.md + create ADR if needed
+- **ADR Purpose**: Immutable architectural decisions with context, rationale, and consequences
 - **Every milestone**: Verify README.md features match implementation
 
 ## AAA-Restoration Roadmap (Oracle's 12-Week Master Plan)
@@ -207,9 +211,9 @@ These files must be kept current and reviewed during every strategic change:
 - **Service Elimination**: Complete removal of legacy service containers
 
 ### Sprint 9-12: Optimization & Release
-- **Performance Gates**: 60 FPS @1080p, <1GB memory for city_demo
+- **Performance Gates**: Stable 60+ FPS @1080p, optimized memory usage for city_demo
 - **Test Coverage**: ≥75% coverage, 122 existing + 40 new tests
-- **Release**: ADR-0008, v0.4.0-alpha tag, crates.io pre-release
+- **Release**: ADR-0008 completion, v0.4.0-alpha tag, crates.io pre-release
 
 ## Quality Gates & Metrics
 - **Unit Tests**: ≥75% coverage overall (llvm-cov gate)

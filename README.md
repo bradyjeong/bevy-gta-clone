@@ -7,20 +7,24 @@
 
 A professional AAA-level open world game built with Bevy 0.16.1 and Rust 2024, featuring comprehensive game systems and optimized for Amp development workflows.
 
-## ✅ STRATEGIC SHIFT COMPLETED → 🎯 AAA-RESTORATION PHASE
+## ✅ ADR-0007 COMPLETE → 🎯 AAA-RESTORATION PHASE ACTIVE
 
-**Oracle-guided architecture change from bevy_ecs 0.13 + micro-crates to Bevy 0.16.1 + strategic modularity + version consistency.**
+**Oracle-guided architecture migration from bevy_ecs 0.13 + micro-crates to Bevy 0.16.1 + strategic modularity + version consistency.**
 
-Migration completed with new crate structure. Now entering **AAA-Restoration Phase** to restore professional game features from commit f430bc6:
+**Current Status**: 122 tests passing, Oracle version consistency guards active, foundation ready for feature restoration.
 
-### 🚀 Feature Restoration Roadmap
-- **12 RON Configuration System**: Data-driven game configuration
-- **Unified Entity Factory**: Single-source prefab system with bevy_reflect
-- **Advanced Vehicle Physics**: Realistic movement with supercar effects
-- **Professional Audio Graph**: Advanced audio system with bevy_kira_audio
-- **GPU-Ready Culling**: Compute shader optimization with 300%+ performance
-- **Distance-Based LOD**: Professional quality management system
-- **Batch Processing**: Modern parallel job system with Bevy RenderWorld
+**Now Active**: **12-Week AAA Restoration Plan** to restore f430bc6 "REVOLUTIONARY TRANSFORMATION" features to current Bevy 0.16.1 architecture.
+
+### 🚀 Target Feature Set (f430bc6 → Bevy 0.16.1)
+- **12 RON Configuration System**: Data-driven game tuning with hot-reload
+- **Advanced Vehicle Physics**: Realistic drivetrain, suspension, tire friction curves
+- **Professional LOD System**: Distance-based mesh and material swapping
+- **GPU Culling & Batch Processing**: Compute shader optimization with multi-draw-indirect
+- **Modern ECS Patterns**: SystemSets, QueryData, sparse storage optimization
+- **Audio Graph**: Advanced audio system with bevy_kira_audio integration
+- **Performance Claims**: 300%+ FPS improvement, 60% memory reduction
+
+**Strategy**: [STRATEGIC_RESTORATION_PLAN.md](docs/STRATEGIC_RESTORATION_PLAN.md) - Oracle's 12-week roadmap
 
 ## Quick Start
 
@@ -105,16 +109,21 @@ cargo llvm-cov --workspace --all-features
 cargo test -p amp_math
 ```
 
-## Migration Status
+## Current Status
 
+**ADR-0007 Migration Complete:**
 - ✅ Oracle consultation complete
-- ✅ ADR-007 created  
-- ✅ Documentation aligned
-- ✅ Implementation completed
-- ✅ New crate structure active
-- ✅ Asset pipeline integrated
+- ✅ Strategic 5-crate architecture implemented  
+- ✅ Bevy 0.16.1 ecosystem alignment
+- ✅ Version consistency guards active
+- ✅ 122 tests passing (18+39+40+37+18)
+- ✅ Foundation ready for feature restoration
 
-See [STRATEGIC_SHIFT.md](STRATEGIC_SHIFT.md) for migration details.
+**AAA Restoration Phase Active:**
+- 📋 Strategic plan documented: [STRATEGIC_RESTORATION_PLAN.md](docs/STRATEGIC_RESTORATION_PLAN.md)
+- 🎯 Week 0: Ready for branch creation and gap analysis
+- 🏗️ Target: Restore f430bc6 features to Bevy 0.16.1 architecture
+- ⏱️ Timeline: 12-week Oracle-guided roadmap
 
 ## Performance Targets
 

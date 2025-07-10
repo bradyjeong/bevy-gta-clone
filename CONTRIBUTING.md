@@ -1,10 +1,10 @@
 # Contributing to Amp Game Engine
 
-🚨 **STRATEGIC SHIFT IN PROGRESS**: Moving to Bevy 0.16.1 + strategic modularity. See [STRATEGIC_SHIFT.md](STRATEGIC_SHIFT.md).
+✅ **ADR-0007 COMPLETE**: Strategic migration to Bevy 0.16.1 + strategic modularity complete. Now in **AAA Restoration Phase** - see [STRATEGIC_RESTORATION_PLAN.md](docs/STRATEGIC_RESTORATION_PLAN.md).
 
 ## Development Setup
 
-1. **Install Rust**: Use rustup to install Rust 1.77+ (Rust 2021 edition)
+1. **Install Rust**: Use rustup to install Rust 1.85+ (Rust 2024 edition)
 2. **Clone Repository**: `git clone <repository-url>`
 3. **Build**: `cargo build --workspace`
 4. **Test**: `cargo test --workspace`
@@ -143,7 +143,8 @@ Longer description if needed, explaining the why behind the change.
 - `core`: amp_core crate
 - `math`: amp_math crate
 - `engine`: amp_engine crate
-- `gameplay`: amp_gameplay crate
+- `config`: config_core crate
+- `factory`: gameplay_factory crate
 - `ci`: CI/CD changes
 - `docs`: Documentation
 

@@ -92,20 +92,20 @@ Each consultation should include:
 - **Professional focus**: Target AAA-level game development capabilities with proper tooling
 - **Performance gates**: Maintain 60 FPS @1080p, <1GB memory, spawn_100k ≤3ms benchmarks
 
-**Target Features for Restoration**:
-1. **12 RON Configuration System**: Data-driven game settings as Bevy Assets
-2. **Unified Entity Factory**: Single-source prefab system with bevy_reflect
-3. **Advanced Vehicle Physics**: Realistic movement with supercar effects
-4. **Professional Audio Graph**: Advanced audio system with bevy_kira_audio
-5. **GPU-Ready Culling**: Compute shader optimization (300%+ performance)
-6. **Distance-Based LOD**: Professional quality management with bevy_pbr
-7. **Batch Processing**: Modern parallel job system with Bevy RenderWorld
+**Target Features for Restoration (f430bc6)**:
+1. **12 RON Configuration System**: Data-driven game tuning with hot-reload
+2. **Advanced Vehicle Physics**: Realistic drivetrain, suspension, tire friction curves
+3. **Professional LOD System**: Distance-based mesh and material swapping
+4. **GPU Culling & Batch Processing**: Compute shader optimization with multi-draw-indirect
+5. **Modern ECS Patterns**: SystemSets, QueryData, sparse storage optimization
+6. **Audio Graph**: Advanced audio system with bevy_kira_audio integration
+7. **Performance Claims**: 300%+ FPS improvement, 60% memory reduction
 
 **Actions Taken**:
-- Updated Agent.md with complete 12-week restoration roadmap
-- Updated README.md and STRATEGIC_SHIFT.md to reflect AAA development focus
-- Planned Sprint 0: branch creation, gap analysis, worktree setup
-- Established quality gates and metrics for professional development
+- Created comprehensive [STRATEGIC_RESTORATION_PLAN.md](STRATEGIC_RESTORATION_PLAN.md)
+- Updated Agent.md, README.md, IMPLEMENTATION_SUMMARY.md, CONTRIBUTING.md
+- Established Week 0 preparation phase for branch creation and gap analysis
+- Documented Oracle's 12-week timeline with weekly milestones and performance gates
 
 **ADR Reference**: Future ADR-0008 to document restoration completion
 
