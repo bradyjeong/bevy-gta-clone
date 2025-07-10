@@ -1,0 +1,52 @@
+name: Oracle Version Consistency Guard
+
+on:
+  push:
+    branches: [ main, feature/* ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  oracle-guard:
+    name: Oracle's Version Consistency Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: 1.85.0
+        
+    - name: Cache Cargo
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        
+    - name: 🛡️ Oracle's Version Consistency Guard
+      run: |
+        echo "🔍 Running Oracle's version consistency checks..."
+        ./scripts/pre-commit-check.sh
+        
+    - name: 📊 Test Coverage Report
+      run: |
+        cargo test --workspace
+        
+    - name: 🚨 Failure Analysis
+      if: failure()
+      run: |
+        echo ""
+        echo "❌ ORACLE'S VERSION CONSISTENCY VIOLATED"
+        echo ""
+        echo "This CI failure prevents the exact issue that occurred in ADR-0007."
+        echo "Fix version conflicts before merging."
+        echo ""
+        echo "Run locally: ./scripts/pre-commit-check.sh"
+        exit 1

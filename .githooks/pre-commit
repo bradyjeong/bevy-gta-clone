@@ -1,0 +1,21 @@
+#!/bin/sh
+# 
+# Oracle's Version Consistency Guard
+# This hook prevents commits that violate version consistency rules
+#
+
+echo "🔍 Oracle's Pre-Commit Guard: Running version consistency checks..."
+
+# Run the full pre-commit check script
+if ! ./scripts/pre-commit-check.sh; then
+    echo ""
+    echo "❌ COMMIT BLOCKED: Oracle's version consistency violated"
+    echo ""
+    echo "Fix the issues above before committing."
+    echo "This guard prevents the exact issue that just happened in ADR-0007."
+    echo ""
+    exit 1
+fi
+
+echo "✅ Oracle's version consistency verified - commit allowed"
+exit 0

@@ -14,6 +14,12 @@
 - **Auto-format**: `cargo fmt --all` (run frequently)
 - **Golden Rule**: Never commit without running pre-commit checks
 
+## Oracle's Version Consistency Guard
+- **Pre-commit Hook**: Automatically runs `./scripts/pre-commit-check.sh` before every commit
+- **CI Guard**: GitHub Actions runs Oracle's version consistency checks on every push
+- **Setup**: `git config core.hooksPath .githooks` (run once per clone)
+- **Purpose**: Prevents the ADR-0007 version consistency violation from happening again
+
 ## Project Vision
 **AAA-Level Open World Game** - GTA-style game built with Bevy 0.16.1 using Rust 2024 edition
 - **Target**: Professional game development with Amp-optimized workflow
