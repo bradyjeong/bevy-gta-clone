@@ -84,7 +84,6 @@ impl<'window> SurfaceManager<'window> {
                     load: LoadOp::Clear(clear_color),
                     store: StoreOp::Store,
                 },
-                depth_slice: None,
             })],
             depth_stencil_attachment: None,
             occlusion_query_set: None,

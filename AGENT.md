@@ -93,12 +93,18 @@
 - 2 unit tests for world creation
 
 ## Current Status
-✅ **STRATEGIC SHIFT COMPLETED** - Oracle-Guided Architecture Change
+✅ **ADR-0007 MIGRATION COMPLETE** - Oracle-Guided Architecture Change
 - **Migration**: Successfully moved from bevy_ecs 0.13 + micro-crates to Bevy 0.16.1 + strategic modularity
 - **Architecture**: 5-crate structure with full Bevy 0.16.1 ecosystem alignment
 - **Active Crates**: amp_core, amp_math, amp_engine, config_core, gameplay_factory
 - **Deprecated**: amp_spatial, amp_gpu, amp_world (consolidated into amp_engine)
-- **Status**: **ADR-0007 MIGRATION COMPLETE** - All phases completed, ready for production
+- **Test Status**: 122 tests passing (18+39+40+37+18)
+
+🎯 **AAA-RESTORATION PHASE INITIATED** - Oracle's 12-Week Master Plan
+- **Objective**: Restore f430bc6 "REVOLUTIONARY TRANSFORMATION" features to current Bevy 0.16.1 architecture
+- **Target**: Professional AAA game development capability
+- **Strategy**: Migrate behavior, not code - Re-implement in Bevy 0.16.1 idioms
+- **Status**: **SPRINT 0 PREP** - Documentation update, branch creation, gap analysis
 
 ## Oracle Guidance
 - **Strategic Decisions**: Documented in [Oracle Consultations](docs/oracle-consultations.md)
@@ -166,7 +172,42 @@ These files must be kept current and reviewed during every strategic change:
 - **Every Oracle consultation**: Update oracle-consultations.md + create ADR if needed
 - **Every milestone**: Verify README.md features match implementation
 
-## Next Steps (Migration Implementation)
-- Follow Oracle's 10-14 day migration plan in STRATEGIC_SHIFT.md
-- Update all maintenance files during each migration phase
-- Verify no dead weight accumulates during restructuring
+## AAA-Restoration Roadmap (Oracle's 12-Week Master Plan)
+
+### Sprint 0 (Immediate - CURRENT)
+- **Branch Creation**: `restore/f430bc6` for feature restoration
+- **Gap Analysis**: Create GAP_REPORT.md mapping f430bc6 features to current architecture
+- **Reference Setup**: Git worktree for f430bc6 commit access
+- **Documentation**: Update all docs to reflect AAA development focus
+
+### Sprint 1-2: Data-Driven Foundations
+- **Config System**: Re-create 12 RON configs as Bevy Assets in config_core
+- **Entity Factory**: Port legacy factory DSL into gameplay_factory with bevy_reflect
+- **Benchmarks**: Target ≤1.2× legacy spawn time for 100k entities
+
+### Sprint 3-4: Core Gameplay & Physics
+- **Vehicle Physics**: Port realistic vehicle physics to amp_gameplay crate
+- **Audio Systems**: Advanced audio graph with bevy_kira_audio integration
+- **Physics Integration**: Replace custom physics with bevy_rapier3d 0.26
+
+### Sprint 5-6: Rendering & Performance
+- **Batch Processing**: Bevy RenderWorld phases with 2.5× speed target
+- **GPU Culling**: Compute-shader instance culling behind "gpu" feature
+- **LOD System**: Distance-based quality management with bevy_pbr integration
+
+### Sprint 7-8: Professional Integration
+- **Plugin Architecture**: Wrap subsystems in Bevy Plugins + PluginGroup::AAAPlugins
+- **Tooling**: xtask subcommands for demos and benchmarks
+- **Service Elimination**: Complete removal of legacy service containers
+
+### Sprint 9-12: Optimization & Release
+- **Performance Gates**: 60 FPS @1080p, <1GB memory for city_demo
+- **Test Coverage**: ≥75% coverage, 122 existing + 40 new tests
+- **Release**: ADR-0008, v0.4.0-alpha tag, crates.io pre-release
+
+## Quality Gates & Metrics
+- **Unit Tests**: ≥75% coverage overall (llvm-cov gate)
+- **Integration Tests**: All existing 122 + ≥40 new passing
+- **Performance**: spawn_100k ≤3ms, frustum cull ≤0.3ms/frame
+- **Lint/Format**: Clippy -D warnings, rustfmt --check
+- **Documentation**: rustdoc -D warnings, examples compile

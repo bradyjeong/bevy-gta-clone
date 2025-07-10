@@ -82,6 +82,33 @@ Each consultation should include:
 
 **ADR Reference**: Documentation strategy captured in development workflows
 
+### 2025-01-10: AAA-Restoration Master Plan
+**Context**: ADR-0007 migration complete, need strategy for restoring professional game features from commit f430bc6 to current Bevy 0.16.1 architecture
+
+**Key Insights**:
+- **Migrate behavior, not code**: Re-implement features using Bevy 0.16.1 idioms, never drag legacy abstractions
+- **Green bar guarantee**: All 122 existing tests must stay passing throughout restoration
+- **Strategic 12-week roadmap**: Phased approach with clear deliverables and benchmarks
+- **Professional focus**: Target AAA-level game development capabilities with proper tooling
+- **Performance gates**: Maintain 60 FPS @1080p, <1GB memory, spawn_100k ≤3ms benchmarks
+
+**Target Features for Restoration**:
+1. **12 RON Configuration System**: Data-driven game settings as Bevy Assets
+2. **Unified Entity Factory**: Single-source prefab system with bevy_reflect
+3. **Advanced Vehicle Physics**: Realistic movement with supercar effects
+4. **Professional Audio Graph**: Advanced audio system with bevy_kira_audio
+5. **GPU-Ready Culling**: Compute shader optimization (300%+ performance)
+6. **Distance-Based LOD**: Professional quality management with bevy_pbr
+7. **Batch Processing**: Modern parallel job system with Bevy RenderWorld
+
+**Actions Taken**:
+- Updated Agent.md with complete 12-week restoration roadmap
+- Updated README.md and STRATEGIC_SHIFT.md to reflect AAA development focus
+- Planned Sprint 0: branch creation, gap analysis, worktree setup
+- Established quality gates and metrics for professional development
+
+**ADR Reference**: Future ADR-0008 to document restoration completion
+
 ---
 
 ## Usage Guidelines

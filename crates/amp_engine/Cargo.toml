@@ -16,7 +16,7 @@ bevy = { workspace = true, optional = true }
 amp_core = { path = "../amp_core" }
 amp_math = { path = "../amp_math" }
 async-trait = "0.1"
-glam = { version = "0.25", features = ["fast-math"] }
+glam = { workspace = true }
 tokio = { version = "1.0", features = ["full"] }
 
 # GPU dependencies (behind bevy16 feature flag)

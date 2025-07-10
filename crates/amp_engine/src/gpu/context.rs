@@ -37,7 +37,7 @@ impl GpuContext {
                 force_fallback_adapter: false,
             })
             .await
-            .map_err(|e| GpuError::AdapterCreation(e.to_string()))?;
+            .ok_or_else(|| GpuError::AdapterCreation("Failed to find suitable adapter".to_string()))?;
 
         // Get device and queue
         let (device, queue) = adapter
@@ -46,7 +46,7 @@ impl GpuContext {
                 required_features: Features::empty(),
                 required_limits: Limits::default(),
                 ..Default::default()
-            })
+            }, None)
             .await?;
 
         Ok(Self {
