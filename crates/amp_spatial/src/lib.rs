@@ -1,13 +1,6 @@
-//! Hierarchical spatial partitioning system for AAA-level open world games
+//! DEPRECATED: This crate has been moved to amp_engine::spatial
 //!
-//! This crate provides high-performance spatial data structures optimized for
-//! large-scale open world environments, including hierarchical LOD management
-//! and streaming support.
+//! All functionality has been migrated to amp_engine::spatial.
+//! Please update your imports to use amp_engine::spatial::* instead.
 
-pub mod clipmap;
-pub mod provider;
-pub mod region;
-
-pub use clipmap::*;
-pub use provider::*;
-pub use region::*;
+pub use amp_engine::spatial::*;

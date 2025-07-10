@@ -1,7 +1,7 @@
 //! Prefab definitions and component initialization
 
 use amp_core::Error;
-use bevy_ecs::{entity::Entity, system::Commands};
+use bevy::prelude::*;
 use std::any::Any;
 
 /// Trait for initializing components on spawned entities

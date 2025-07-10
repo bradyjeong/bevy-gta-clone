@@ -1,17 +1,29 @@
 //! RON (Rusty Object Notation) loader for prefab definitions
 
 use crate::{ComponentInit, Error, Prefab, PrefabSource};
-use bevy_ecs::{entity::Entity, system::Commands};
+use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 
 /// RON-based prefab loader
+///
+/// # Deprecation Notice
+///
+/// This loader is deprecated in favor of the new Bevy asset pipeline integration.
+/// Use `amp_engine::assets::AmpSceneLoader` instead.
+#[deprecated(
+    since = "0.1.0",
+    note = "Use amp_engine::assets::AmpSceneLoader with Bevy's asset pipeline instead"
+)]
+#[cfg(feature = "legacy_ron_loader")]
 #[derive(Debug)]
 pub struct RonLoader {
     /// RON string content
     content: String,
 }
 
+#[cfg(feature = "legacy_ron_loader")]
+#[allow(deprecated)]
 impl RonLoader {
     /// Create a new RON loader from string content
     pub fn new(content: String) -> Self {
@@ -33,6 +45,8 @@ impl RonLoader {
     }
 }
 
+#[cfg(feature = "legacy_ron_loader")]
+#[allow(deprecated)]
 impl PrefabSource for RonLoader {
     fn load(&self) -> Result<Prefab, Error> {
         let ron_prefab: RonPrefab = ron::from_str(&self.content)
@@ -92,6 +106,7 @@ impl ComponentInit for RonComponent {
 }
 
 #[cfg(test)]
+#[allow(deprecated)]
 mod tests {
     use super::*;
     use rstest::*;
@@ -249,9 +264,9 @@ mod tests {
             data: ron::Value::Number(ron::Number::new(42.0)),
         };
 
-        let world = bevy_ecs::world::World::new();
-        let mut queue = bevy_ecs::system::CommandQueue::default();
-        let mut cmd = bevy_ecs::system::Commands::new(&mut queue, &world);
+        let world = World::new();
+        let mut queue = CommandQueue::default();
+        let mut cmd = Commands::new(&mut queue, &world);
         let entity = cmd.spawn_empty().id();
 
         let result = component.init(&mut cmd, entity);

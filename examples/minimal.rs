@@ -1,9 +1,9 @@
 //! Minimal example demonstrating the Amp game engine
 //!
-//! This example opens a window, renders a purple screen using the amp_gpu crate,
+//! This example opens a window, renders a purple screen using the amp_engine::gpu module,
 //! and demonstrates the Factory pattern for entity spawning.
 
-use amp_gpu::{GpuContext, SurfaceManager};
+use amp_engine::gpu::{GpuContext, SurfaceManager};
 use config_core::{ConfigLoader, GameConfig};
 use gameplay_factory::{Factory, PrefabId};
 use std::sync::Arc;

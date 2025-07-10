@@ -5,6 +5,9 @@ members = [
 ]
 exclude = [
     "examples",  # Will re-enable during migration per Oracle's plan
+    "crates/amp_spatial",  # Deprecated: moved to amp_engine::spatial
+    "crates/amp_gpu",      # Deprecated: moved to amp_engine::gpu
+    "crates/amp_world",    # Deprecated: moved to amp_engine::world
 ]
 resolver = "2"
 
@@ -14,7 +17,7 @@ resolver = "2"
 [workspace.package]
 edition = "2024" 
 rust-version = "1.85"
-version = "0.1.0"
+version = "0.3.0-alpha"
 authors = ["Brady Jeong <bradyjeong@Mac.attlocal.net>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bradyjeong/bevy-gta-clone"
@@ -45,9 +48,7 @@ rstest = "^0.18"
 criterion = "^0.5"
 tempfile = "^3.0"
 
-# LEGACY: Will be removed in Phase 2
-bevy_ecs = "0.13"
-rapier3d = "0.18"
+# LEGACY DEPENDENCIES REMOVED: Oracle's migration cleanup complete
 
 # Ensure all crates use the exact wgpu/winit Bevy expects
 # Note: Patches removed temporarily for baseline capture
@@ -63,6 +64,11 @@ repository = "https://github.com/bradyjeong/bevy-gta-clone"
 # Disable automatic example discovery
 autoexamples = false
 
+# Examples for asset pipeline integration
+[[example]]
+name = "asset_pipeline_test"
+path = "examples/asset_pipeline_test.rs"
+
 [features]
 default = []
 ron = ["gameplay_factory/ron"]
@@ -70,6 +76,8 @@ ron = ["gameplay_factory/ron"]
 [dependencies]
 gameplay_factory = { path = "crates/gameplay_factory" }
 config_core = { path = "crates/config_core" }
+amp_engine = { path = "crates/amp_engine", features = ["bevy16"] }
+bevy.workspace = true
 env_logger = "0.11"
 
 [[bin]]

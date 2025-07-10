@@ -280,14 +280,14 @@ async fn test_hot_reload_disabled_gracefully() {
         hot_reload: true,
     };
 
-    // Create factory and load directory
+    // Create factory and attempt to load directory
     let mut factory = Factory::new();
-    let loaded_count = factory
-        .load_directory(&settings)
-        .expect("Failed to load directory");
-
-    // Verify prefab was loaded even with hot-reload disabled
-    assert_eq!(loaded_count, 1);
+    let result = factory.load_directory(&settings);
+    
+    // Since RON loading is now replaced with Bevy 0.16 systems, this should fail
+    assert!(result.is_err());
+    let error = result.unwrap_err();
+    assert!(error.to_string().contains("RON prefab loading replaced"));
 
     // Verify the receiver is None when hot-reload is disabled
     let receiver = factory.take_hot_reload_receiver();

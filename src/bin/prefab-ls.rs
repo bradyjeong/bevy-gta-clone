@@ -8,7 +8,7 @@ use std::env;
 use std::path::Path;
 
 use config_core::{ConfigLoader, FactorySettings, GameConfig};
-use gameplay_factory::{clear_all_prefab_ids, get_all_prefab_ids, Factory, PrefabId};
+use gameplay_factory::{Factory, PrefabId, clear_all_prefab_ids, get_all_prefab_ids};
 
 /// Information about a prefab ID
 #[derive(Debug, Clone)]

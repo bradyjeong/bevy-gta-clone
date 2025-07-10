@@ -9,13 +9,10 @@ repository.workspace = true
 description = "Hierarchical spatial partitioning and streaming for the AMP Game Engine"
 categories = ["algorithms", "data-structures", "game-engines"]
 keywords = ["spatial", "partitioning", "streaming", "clipmap", "game-engine"]
+publish = false
 
 [dependencies]
-amp_core = { path = "../amp_core" }
-amp_math = { path = "../amp_math" }
-async-trait = "0.1"
-glam = { version = "0.25", features = ["fast-math"] }
-tokio = { version = "1.0", features = ["full"] }
+amp_engine = { path = "../amp_engine" }
 
 [dev-dependencies]
 tokio-test = "0.4"

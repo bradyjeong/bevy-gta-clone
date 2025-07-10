@@ -3,7 +3,7 @@
 //! This crate provides a factory pattern for creating game entities from prefab definitions.
 //! It supports loading prefabs from various sources and spawning them into the ECS world.
 
-use bevy_ecs::system::Commands;
+use bevy::prelude::*;
 use dashmap::DashSet;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
@@ -21,10 +21,7 @@ mod component_registry;
 mod prefab;
 pub use prefab::*;
 
-#[cfg(feature = "ron")]
-mod ron_loader;
-#[cfg(feature = "ron")]
-pub use ron_loader::*;
+// Legacy RON loader removed: not needed in Bevy 0.16
 
 mod hot_reload;
 pub use hot_reload::*;
@@ -152,7 +149,7 @@ impl Factory {
         &self,
         cmd: &mut Commands,
         id: PrefabId,
-    ) -> Result<bevy_ecs::entity::Entity, Error> {
+    ) -> Result<Entity, Error> {
         let prefab = Prefab::new();
         self.registry.get(&id).ok_or_else(|| {
             Error::resource_load(format!("Prefab {id:?}"), "not found in registry")
@@ -301,15 +298,18 @@ impl Factory {
     /// Load a prefab from a RON file
     #[cfg(feature = "ron")]
     fn load_prefab_file(&self, path: &std::path::Path) -> Result<Prefab, Error> {
-        let content = std::fs::read_to_string(path).map_err(|e| {
+        let _content = std::fs::read_to_string(path).map_err(|e| {
             Error::resource_load(
                 format!("prefab file {}", path.display()),
                 format!("IO error: {e}"),
             )
         })?;
 
-        let loader = crate::RonLoader::new(content);
-        loader.load()
+        // Legacy RON loader removed: not needed in Bevy 0.16
+        Err(Error::resource_load(
+            format!("prefab file {}", path.display()),
+            "RON prefab loading replaced with Bevy 0.16 systems".to_string(),
+        ))
     }
 
     /// Set up file watcher for hot-reload functionality
@@ -504,7 +504,10 @@ mod tests {
 
         // Verify all registered IDs are in global registry
         for id in &registered_ids {
-            assert!(is_prefab_id_registered(*id));
+            assert!(
+                is_prefab_id_registered(*id),
+                "ID {id:?} should be registered in global registry"
+            );
         }
 
         // Verify counts match

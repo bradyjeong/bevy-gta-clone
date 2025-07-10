@@ -27,7 +27,7 @@ What becomes easier or more difficult to do because of this change?
 - [ADR-0001: Multi-Crate Architecture](0001-multi-crate-architecture.md)
 - [ADR-0002: Morton Encoding for Spatial Indexing](0002-morton-encoding-spatial.md)
 - [ADR-0003: wgpu for Graphics Abstraction](0003-wgpu-graphics-abstraction.md)
-- [ADR-0007: Strategic Shift to Bevy 0.16.1 Meta-Crate](0007-strategic-shift-bevy-meta-crate.md)
+- [ADR-0007: Strategic Shift to Bevy 0.16.1 Meta-Crate](0007-strategic-shift-bevy-meta-crate.md) ✅ **COMPLETED**
 
 ## Creating New ADRs
 

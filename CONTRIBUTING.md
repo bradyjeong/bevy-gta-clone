@@ -53,16 +53,45 @@ use crate::error::MyError;
 
 ## Testing
 
+### App-Based Testing Pattern (Oracle's Standard)
+For tests that need Bevy's ECS system, use the Oracle-approved App-based pattern:
+
+```rust
+use amp_engine::test_utils::test_app;
+
+#[test]
+fn test_bevy_integration() {
+    let mut app = test_app();
+    app.update(); // Run one frame
+    
+    // Access resources
+    let asset_server = app.world().resource::<AssetServer>();
+    
+    // Access world mutably
+    let mut world = app.world_mut();
+    // ... make changes
+}
+```
+
+**Key Patterns:**
+- Use `test_app()` for standard App with MinimalPlugins
+- Use `test_app_with_assets(dir)` for custom asset directories
+- Replace `World::default()` with `app.world_mut()`
+- Replace custom schedule runs with `app.update()` calls
+- Use `App::new()` with proper plugins for integration tests
+
 ### Unit Tests
 - Place tests in the same file as the code being tested
 - Use `#[cfg(test)]` module structure
 - Test both success and failure cases
 - Aim for 70%+ code coverage
+- Keep amp_core and amp_math tests Bevy-free (no App needed)
 
 ### Integration Tests
 - Place integration tests in `tests/` directory
 - Test public APIs and workflows
 - Include performance benchmarks where appropriate
+- Use App-based pattern for ECS interactions
 
 ### Property Testing
 - Use `proptest` for mathematical functions

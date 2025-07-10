@@ -320,9 +320,11 @@ mod tests {
         let main_err = Error::from(config_err);
         assert!(matches!(main_err, Error::Config(_)));
         assert!(main_err.to_string().contains("Config error"));
-        assert!(main_err
-            .to_string()
-            .contains("Failed to parse configuration"));
+        assert!(
+            main_err
+                .to_string()
+                .contains("Failed to parse configuration")
+        );
     }
 
     #[test]

@@ -3,6 +3,9 @@
 **/*.rs.bk
 *.pdb
 
+# cargo-deny cache
+.cargo/advisory-db/
+
 # OS files
 .DS_Store
 Thumbs.db

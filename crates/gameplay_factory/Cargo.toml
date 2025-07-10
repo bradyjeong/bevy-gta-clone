@@ -10,11 +10,7 @@ categories = ["game-development", "game-engines"]
 keywords = ["gamedev", "bevy", "entity", "factory", "prefab"]
 
 [dependencies]
-bevy_ecs = { version = "0.13", features = ["bevy_reflect"] }
-bevy_math = "0.13"
-bevy_transform = "0.13"
-bevy_core = "0.13"
-bevy_render = "0.13"
+bevy = { workspace = true }
 amp_core = { path = "../amp_core" }
 config_core = { path = "../config_core" }
 serde = { version = "1.0", features = ["derive"] }
@@ -32,8 +28,10 @@ tempfile = "3.8"
 crossbeam-utils = "0.8"
 tokio = { version = "1.0", features = ["rt", "sync", "time", "macros", "test-util"] }
 serial_test = "3.0"
+bevy = { workspace = true }
 
 [features]
 default = ["ron"]
 ron = ["dep:ron"]
 hot-reload = ["dep:notify", "dep:tokio"]
+# legacy_ron_loader removed: not needed in Bevy 0.16

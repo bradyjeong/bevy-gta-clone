@@ -6,9 +6,7 @@
 use std::path::{Path, PathBuf};
 
 use amp_core::Error;
-#[cfg(feature = "hot-reload")]
-use bevy_ecs::prelude::ResMut;
-use bevy_ecs::prelude::Resource;
+use bevy::prelude::*;
 
 /// Events that can trigger a hot-reload
 #[derive(Debug, Clone, PartialEq)]

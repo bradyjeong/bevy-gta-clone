@@ -1,0 +1,35 @@
+[package]
+name = "amp_engine"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+default = []
+bevy16 = ["bevy", "wgpu", "winit", "pollster", "thiserror", "anyhow", "ron", "serde"]
+
+[dependencies]
+bevy = { workspace = true, optional = true }
+# bevy_ecs removed: use bevy::prelude::* instead
+amp_core = { path = "../amp_core" }
+amp_math = { path = "../amp_math" }
+async-trait = "0.1"
+glam = { version = "0.25", features = ["fast-math"] }
+tokio = { version = "1.0", features = ["full"] }
+
+# GPU dependencies (behind bevy16 feature flag)
+wgpu = { workspace = true, optional = true }
+winit = { workspace = true, optional = true }
+pollster = { version = "0.3", optional = true }
+thiserror = { workspace = true, optional = true }
+anyhow = { workspace = true, optional = true }
+
+# Asset pipeline dependencies (behind bevy16 feature flag)
+ron = { version = "0.8", optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile.workspace = true

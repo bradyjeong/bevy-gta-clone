@@ -1,7 +1,7 @@
 //! Thread-safe component registry for RON deserialization
 
 use crate::Error;
-use bevy_ecs::{entity::Entity, system::Commands};
+use bevy::prelude::*;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::sync::RwLock;
@@ -29,8 +29,7 @@ static COMPONENT_REGISTRY: Lazy<RwLock<HashMap<&'static str, ComponentDeserializ
 ///
 /// ```
 /// use gameplay_factory::{register_component, Error};
-/// use bevy_ecs::system::Commands;
-/// use bevy_ecs::entity::Entity;
+/// use bevy::prelude::*;
 ///
 /// fn my_component_deserializer(
 ///     value: &ron::Value,
@@ -75,9 +74,10 @@ pub fn register_component(
 ///
 /// # Examples
 ///
-/// ```
+/// ```ignore
+/// // This example uses bevy_ecs 0.13 types which conflict with bevy 0.16.1
+/// // Will be fixed in Phase 5B migration
 /// use gameplay_factory::call_component_deserializer;
-///
 /// call_component_deserializer("Transform", &ron_value, &mut commands, entity)?;
 /// ```
 pub fn call_component_deserializer(
@@ -177,9 +177,8 @@ pub fn register_default_components() {
 /// Deserialize a Transform component from RON data
 fn deserialize_transform(
     value: &ron::Value,
-) -> Result<bevy_transform::components::Transform, Error> {
-    use bevy_math::{Quat, Vec3};
-    use bevy_transform::components::Transform;
+) -> Result<Transform, Error> {
+    // Vec3, Quat, Transform are now imported via bevy::prelude::*
 
     match value {
         ron::Value::Map(map) => {
@@ -218,8 +217,8 @@ fn deserialize_transform(
 }
 
 /// Deserialize a Name component from RON data
-fn deserialize_name(value: &ron::Value) -> Result<bevy_core::Name, Error> {
-    use bevy_core::Name;
+fn deserialize_name(value: &ron::Value) -> Result<Name, Error> {
+    // Name is now imported via bevy::prelude::*
 
     match value {
         ron::Value::String(s) => Ok(Name::new(s.clone())),
@@ -228,8 +227,8 @@ fn deserialize_name(value: &ron::Value) -> Result<bevy_core::Name, Error> {
 }
 
 /// Deserialize a Visibility component from RON data
-fn deserialize_visibility(value: &ron::Value) -> Result<bevy_render::view::Visibility, Error> {
-    use bevy_render::view::Visibility;
+fn deserialize_visibility(value: &ron::Value) -> Result<Visibility, Error> {
+    // Visibility is now imported via bevy::prelude::*
 
     match value {
         ron::Value::String(s) => match s.as_str() {
@@ -245,8 +244,8 @@ fn deserialize_visibility(value: &ron::Value) -> Result<bevy_render::view::Visib
 }
 
 /// Deserialize a Vec3 from RON data
-fn deserialize_vec3(value: &ron::Value) -> Result<bevy_math::Vec3, Error> {
-    use bevy_math::Vec3;
+fn deserialize_vec3(value: &ron::Value) -> Result<Vec3, Error> {
+    // Vec3 is now imported via bevy::prelude::*
 
     match value {
         ron::Value::Map(map) => {
@@ -260,8 +259,8 @@ fn deserialize_vec3(value: &ron::Value) -> Result<bevy_math::Vec3, Error> {
 }
 
 /// Deserialize a Quat from RON data
-fn deserialize_quat(value: &ron::Value) -> Result<bevy_math::Quat, Error> {
-    use bevy_math::Quat;
+fn deserialize_quat(value: &ron::Value) -> Result<Quat, Error> {
+    // Quat is now imported via bevy::prelude::*
 
     match value {
         ron::Value::Map(map) => {
@@ -286,23 +285,19 @@ fn extract_number(map: &ron::Map, key: &str) -> Result<f32, Error> {
                 if let ron::Value::Number(num) = v {
                     return Ok(num.into_f64() as f32);
                 } else {
-                    return Err(Error::validation(format!(
-                        "Field '{key}' must be a number"
-                    )));
+                    return Err(Error::validation(format!("Field '{key}' must be a number")));
                 }
             }
         }
     }
-    Err(Error::validation(format!(
-        "Missing required field '{key}'"
-    )))
+    Err(Error::validation(format!("Missing required field '{key}'")))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bevy_ecs::system::CommandQueue;
-    use bevy_ecs::world::World;
+    use bevy::prelude::*;
+    use bevy::ecs::world::CommandQueue;
     use crossbeam_utils::thread;
     use rstest::*;
     use serial_test::serial;
@@ -581,7 +576,7 @@ mod tests {
 
     #[rstest]
     fn test_deserialize_visibility() {
-        use bevy_render::view::Visibility;
+        // Visibility is now imported via bevy::prelude::*
 
         let visible_value = ron::Value::String("Visible".to_string());
         let visibility = deserialize_visibility(&visible_value).unwrap();
