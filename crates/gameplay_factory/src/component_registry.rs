@@ -175,9 +175,7 @@ pub fn register_default_components() {
 }
 
 /// Deserialize a Transform component from RON data
-fn deserialize_transform(
-    value: &ron::Value,
-) -> Result<Transform, Error> {
+fn deserialize_transform(value: &ron::Value) -> Result<Transform, Error> {
     // Vec3, Quat, Transform are now imported via bevy::prelude::*
 
     match value {
@@ -296,13 +294,12 @@ fn extract_number(map: &ron::Map, key: &str) -> Result<f32, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bevy::prelude::*;
     use bevy::ecs::world::CommandQueue;
     use crossbeam_utils::thread;
     use rstest::*;
     use serial_test::serial;
-    use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::Arc;
+    use std::sync::atomic::{AtomicUsize, Ordering};
 
     #[rstest]
     #[serial]
@@ -334,10 +331,12 @@ mod tests {
 
         let second_result = register_component("TestComponent", Box::new(|_, _, _| Ok(())));
         assert!(second_result.is_err());
-        assert!(second_result
-            .unwrap_err()
-            .to_string()
-            .contains("already registered"));
+        assert!(
+            second_result
+                .unwrap_err()
+                .to_string()
+                .contains("already registered")
+        );
     }
 
     #[rstest]
@@ -596,10 +595,12 @@ mod tests {
         let invalid_value = ron::Value::String("Invalid".to_string());
         let result = deserialize_visibility(&invalid_value);
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("Invalid visibility value"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("Invalid visibility value")
+        );
     }
 
     #[rstest]

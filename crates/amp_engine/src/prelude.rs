@@ -1,10 +1,12 @@
 // Re-export all modules for convenient access
 
 pub use crate::spatial::*;
-pub use crate::world::*;
+// Re-export specific items to avoid glob conflicts
+pub use crate::world::WorldManager;
 
 #[cfg(feature = "bevy16")]
 pub use crate::assets::*;
 
 #[cfg(feature = "bevy16")]
-pub use crate::gpu::*;
+// Re-export GPU module contents (avoiding Window/Color conflicts)
+pub use crate::gpu::{GpuContext, GpuError, Surface, SurfaceManager};

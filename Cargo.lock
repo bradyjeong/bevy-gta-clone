@@ -140,9 +140,9 @@ dependencies = [
 name = "amp_core"
 version = "0.3.0-alpha"
 dependencies = [
- "rstest 0.18.2",
+ "rstest",
  "serde",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -159,7 +159,7 @@ dependencies = [
  "ron",
  "serde",
  "tempfile",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tokio",
  "tokio-test",
  "wgpu",
@@ -1849,7 +1849,7 @@ dependencies = [
  "amp_core",
  "dirs 5.0.1",
  "ron",
- "rstest 0.18.2",
+ "rstest",
  "serde",
  "serial_test",
  "shellexpand",
@@ -2618,7 +2618,7 @@ dependencies = [
 
 [[package]]
 name = "gameplay_factory"
-version = "0.1.0"
+version = "0.3.0-alpha"
 dependencies = [
  "amp_core",
  "bevy",
@@ -2630,7 +2630,7 @@ dependencies = [
  "notify",
  "once_cell",
  "ron",
- "rstest 0.21.0",
+ "rstest",
  "serde",
  "serial_test",
  "tempfile",
@@ -4434,43 +4434,14 @@ checksum = "6c20b6793b5c2fa6553b250154b78d6d0db37e72700ae35fad9387a46f487c97"
 
 [[package]]
 name = "rstest"
-version = "0.18.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97eeab2f3c0a199bc4be135c36c924b6590b88c377d416494288c14f2db30199"
-dependencies = [
- "futures",
- "futures-timer",
- "rstest_macros 0.18.2",
- "rustc_version",
-]
-
-[[package]]
-name = "rstest"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9afd55a67069d6e434a95161415f5beeada95a01c7b815508a82dcb0e1593682"
 dependencies = [
  "futures",
  "futures-timer",
- "rstest_macros 0.21.0",
+ "rstest_macros",
  "rustc_version",
-]
-
-[[package]]
-name = "rstest_macros"
-version = "0.18.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d428f8247852f894ee1be110b375111b586d4fa431f6c46e64ba5a0dcccbe605"
-dependencies = [
- "cfg-if",
- "glob",
- "proc-macro2",
- "quote",
- "regex",
- "relative-path",
- "rustc_version",
- "syn",
- "unicode-ident",
 ]
 
 [[package]]

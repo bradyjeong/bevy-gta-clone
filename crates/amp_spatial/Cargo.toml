@@ -15,4 +15,4 @@ publish = false
 amp_engine = { path = "../amp_engine" }
 
 [dev-dependencies]
-tokio-test = "0.4"
+tokio-test = { workspace = true }

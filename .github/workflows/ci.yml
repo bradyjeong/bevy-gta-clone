@@ -185,15 +185,7 @@ jobs:
                          --lcov --output-path lcov.info \
                          --fail-under-lines 80
       
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: lcov.info
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: true
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
       
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
@@ -242,10 +234,46 @@ jobs:
             target/release/collision_test*
           retention-days: 30
 
+  # Oracle's Version Consistency Guard
+  oracle-guard:
+    name: Oracle's Version Consistency Guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: 1.85.0
+          override: true
+      
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: oracle-guard
+          cache-targets: true
+      
+      - name: 🛡️ Oracle's Version Consistency Guard
+        run: |
+          echo "🔍 Running Oracle's version consistency checks..."
+          ./scripts/pre-commit-check.sh
+      
+      - name: 🚨 Failure Analysis
+        if: failure()
+        run: |
+          echo ""
+          echo "❌ ORACLE'S VERSION CONSISTENCY VIOLATED"
+          echo ""
+          echo "This CI failure prevents the exact issue that occurred in ADR-0007."
+          echo "Fix version conflicts before merging."
+          echo ""
+          echo "Run locally: ./scripts/pre-commit-check.sh"
+          exit 1
+
   # Job summary report
   ci-summary:
     name: CI Summary
-    needs: [check, feature-matrix, amp-engine-test, deny, coverage, build-release]
+    needs: [check, feature-matrix, amp-engine-test, deny, coverage, oracle-guard, build-release]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -260,9 +288,10 @@ jobs:
           echo "| amp_engine Test | ${{ needs.amp-engine-test.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Dependency Check | ${{ needs.deny.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Coverage | ${{ needs.coverage.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Oracle Guard | ${{ needs.oracle-guard.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Release Build | ${{ needs.build-release.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ needs.check.result }}" != "success" ] || [ "${{ needs.feature-matrix.result }}" != "success" ] || [ "${{ needs.amp-engine-test.result }}" != "success" ] || [ "${{ needs.deny.result }}" != "success" ] || [ "${{ needs.coverage.result }}" != "success" ]; then
+          if [ "${{ needs.check.result }}" != "success" ] || [ "${{ needs.feature-matrix.result }}" != "success" ] || [ "${{ needs.amp-engine-test.result }}" != "success" ] || [ "${{ needs.deny.result }}" != "success" ] || [ "${{ needs.coverage.result }}" != "success" ] || [ "${{ needs.oracle-guard.result }}" != "success" ]; then
             echo "❌ **CI Failed**: Please check the failed jobs above" >> $GITHUB_STEP_SUMMARY
             exit 1
           else

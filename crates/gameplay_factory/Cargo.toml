@@ -1,11 +1,11 @@
 [package]
 name = "gameplay_factory"
-version = "0.1.0"
-edition = "2021"
-authors = ["AMP Team"]
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
 description = "Unified entity factory for prefab-based gameplay systems"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/bradyjeong/bevy-gta-clone"
+license.workspace = true
+repository.workspace = true
 categories = ["game-development", "game-engines"]
 keywords = ["gamedev", "bevy", "entity", "factory", "prefab"]
 
@@ -13,22 +13,21 @@ keywords = ["gamedev", "bevy", "entity", "factory", "prefab"]
 bevy = { workspace = true }
 amp_core = { path = "../amp_core" }
 config_core = { path = "../config_core" }
-serde = { version = "1.0", features = ["derive"] }
-ron = { version = "0.8", optional = true }
-glob = "0.3"
-log = "0.4"
-notify = { version = "6.1", optional = true }
-tokio = { version = "1.0", features = ["rt", "sync", "time", "test-util"], optional = true }
-once_cell = "1.19"
-dashmap = "6.0"
+serde = { workspace = true, features = ["derive"] }
+ron = { workspace = true, optional = true }
+glob = { workspace = true }
+log = { workspace = true }
+notify = { workspace = true, optional = true }
+tokio = { workspace = true, features = ["test-util"], optional = true }
+once_cell = { workspace = true }
+dashmap = { workspace = true }
 
 [dev-dependencies]
-rstest = "0.21"
-tempfile = "3.8"
-crossbeam-utils = "0.8"
-tokio = { version = "1.0", features = ["rt", "sync", "time", "macros", "test-util"] }
-serial_test = "3.0"
-bevy = { workspace = true }
+rstest = { workspace = true }
+tempfile = { workspace = true }
+crossbeam-utils = { workspace = true }
+tokio = { workspace = true, features = ["macros", "test-util"] }
+serial_test = { workspace = true }
 
 [features]
 default = ["ron"]

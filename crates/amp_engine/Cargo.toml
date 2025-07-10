@@ -15,21 +15,21 @@ bevy = { workspace = true, optional = true }
 # bevy_ecs removed: use bevy::prelude::* instead
 amp_core = { path = "../amp_core" }
 amp_math = { path = "../amp_math" }
-async-trait = "0.1"
+async-trait = { workspace = true }
 glam = { workspace = true }
-tokio = { version = "1.0", features = ["full"] }
+tokio = { workspace = true, features = ["full"] }
 
 # GPU dependencies (behind bevy16 feature flag)
 wgpu = { workspace = true, optional = true }
 winit = { workspace = true, optional = true }
-pollster = { version = "0.3", optional = true }
+pollster = { workspace = true, optional = true }
 thiserror = { workspace = true, optional = true }
 anyhow = { workspace = true, optional = true }
 
 # Asset pipeline dependencies (behind bevy16 feature flag)
-ron = { version = "0.8", optional = true }
-serde = { version = "1.0", features = ["derive"], optional = true }
+ron = { workspace = true, optional = true }
+serde = { workspace = true, features = ["derive"], optional = true }
 
 [dev-dependencies]
-tokio-test = "0.4"
-tempfile.workspace = true
+tokio-test = { workspace = true }
+tempfile = { workspace = true }

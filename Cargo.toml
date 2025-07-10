@@ -26,6 +26,7 @@ repository = "https://github.com/bradyjeong/bevy-gta-clone"
 # ORACLE'S VERSION-CONSISTENCY STRATEGY: Single source of truth for all versions
 # ---------- Bevy core ----------
 bevy = "=0.16.1"                          # Full engine, patch-locked
+bevy_ecs = "=0.16.1"                      # ECS crate (for deprecated amp_world)
 bevy_rapier3d = "=0.26.0"                 # Compiled against Bevy 0.16.1
 # ---------- Rendering ----------
 # Bevy re-exports wgpu/winit; keep them in sync for crates that still need them
@@ -35,23 +36,39 @@ winit = "=0.30.11"  # Locked to Bevy 0.16.1 version
 glam = { version = "=0.29.3", features = ["fast-math"] }
 serde = { version = "^1", features = ["derive"] }
 anyhow = { version = "^1.0", default-features = false }
-thiserror = { version = "^1.0" }
+thiserror = { version = "^2.0" }
 bitset-fixed = "^0.1"
 pollster = "^0.3"
 
 # Configuration
 ron = "^0.8"
-dirs = "=6.0.0"
+dirs = "^5.0"
 
 # Dev tools
-rstest = "^0.18"
+rstest = "^0.21"
 criterion = "^0.5"
-tempfile = "^3.0"
+tempfile = "^3.10"
+tokio-test = "^0.4.3"
+crossbeam-utils = "^0.8"
+serial_test = "^3.0"
+
+# Common runtime deps used by multiple crates
+tokio = { version = "^1.37", features = ["rt", "sync", "time"] }
+notify = "^6.1"
+once_cell = "^1.19"
+dashmap = "^6.0"
+glob = "^0.3"
+log = "^0.4"
+shellexpand = "^3.1"
+async-trait = "^0.1"
+env_logger = "^0.11"
+clap = "^4.0"
 
 # LEGACY DEPENDENCIES REMOVED: Oracle's migration cleanup complete
 
-# Ensure all crates use the exact wgpu/winit Bevy expects
-# Note: Patches removed temporarily for baseline capture
+# ORACLE'S VERSION CONSISTENCY GUARD: Ensure all crates use exact versions
+# Note: [patch.crates-io] only works for different sources, not version forcing
+# Instead, we rely on careful dependency management and workspace.dependencies
 
 [package]
 name = "gta_game"
@@ -78,7 +95,7 @@ gameplay_factory = { path = "crates/gameplay_factory" }
 config_core = { path = "crates/config_core" }
 amp_engine = { path = "crates/amp_engine", features = ["bevy16"] }
 bevy.workspace = true
-env_logger = "0.11"
+env_logger = { workspace = true }
 
 [[bin]]
 name = "prefab-ls"

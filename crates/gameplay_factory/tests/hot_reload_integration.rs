@@ -4,8 +4,10 @@
 //! that the hot-reload system works correctly.
 
 use std::fs;
+#[cfg(feature = "hot-reload")]
 use std::time::Duration;
 use tempfile::TempDir;
+#[cfg(feature = "hot-reload")]
 use tokio::time::sleep;
 
 use gameplay_factory::*;
@@ -283,7 +285,7 @@ async fn test_hot_reload_disabled_gracefully() {
     // Create factory and attempt to load directory
     let mut factory = Factory::new();
     let result = factory.load_directory(&settings);
-    
+
     // Since RON loading is now replaced with Bevy 0.16 systems, this should fail
     assert!(result.is_err());
     let error = result.unwrap_err();

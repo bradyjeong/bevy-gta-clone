@@ -12,8 +12,8 @@ keywords = ["math", "morton", "spatial", "3d", "game-engine"]
 
 [dependencies]
 glam = { workspace = true, features = ["mint", "serde"] }
-bitset-fixed = "0.1"
-serde = { version = "1.0", features = ["derive"] }
+bitset-fixed = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
-criterion = "0.5"
+criterion = { workspace = true }

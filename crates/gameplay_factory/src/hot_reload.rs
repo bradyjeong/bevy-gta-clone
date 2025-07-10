@@ -131,7 +131,7 @@ pub mod watcher {
     use super::*;
     use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
     use std::sync::mpsc;
-    use tokio::time::{sleep, Duration};
+    use tokio::time::{Duration, sleep};
 
     /// Run a file watcher that monitors files matching a glob pattern
     pub async fn run_watcher(glob_pattern: &str, reload_tx: HotReloadSender) -> Result<(), Error> {

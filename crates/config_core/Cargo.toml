@@ -16,12 +16,12 @@ hot-reload = []
 
 [dependencies]
 amp_core = { path = "../amp_core" }
-ron = "0.8"
+ron = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-dirs = "5.0"
-shellexpand = "3.1"
+dirs = { workspace = true }
+shellexpand = { workspace = true }
 
 [dev-dependencies]
 rstest = { workspace = true }
-tempfile = "3.0"
-serial_test = "3.0"
+tempfile = { workspace = true }
+serial_test = { workspace = true }

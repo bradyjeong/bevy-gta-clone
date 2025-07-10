@@ -12,8 +12,8 @@ pub use amp_core::Error;
 
 // Re-export component registry functions
 pub use component_registry::{
-    call_component_deserializer, register_component, register_default_components,
-    registered_components, ComponentDeserializer,
+    ComponentDeserializer, call_component_deserializer, register_component,
+    register_default_components, registered_components,
 };
 
 mod component_registry;
@@ -145,11 +145,7 @@ impl Factory {
     }
 
     /// Spawn an entity from a registered prefab
-    pub fn spawn(
-        &self,
-        cmd: &mut Commands,
-        id: PrefabId,
-    ) -> Result<Entity, Error> {
+    pub fn spawn(&self, cmd: &mut Commands, id: PrefabId) -> Result<Entity, Error> {
         let prefab = Prefab::new();
         self.registry.get(&id).ok_or_else(|| {
             Error::resource_load(format!("Prefab {id:?}"), "not found in registry")
