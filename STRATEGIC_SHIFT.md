@@ -26,7 +26,7 @@ Current architecture fights Bevy ecosystem, creates unnecessary complexity:
 ```
 
 ## MIGRATION PLAN (10-14 DAYS)
-1. **Days 1-2**: Branch & lock Bevy 0.16.1 versions (keep Rust 2021 edition)
+1. **Days 1-2**: Branch & lock Bevy 0.16.1 versions (upgrade to Rust 2024 edition)
 2. **Days 3-4**: Consolidate amp_spatial, amp_gpu, amp_world → amp_engine  
 3. **Days 5-6**: Replace custom RON loader with Bevy asset pipeline
 4. **Days 7-9**: Rewrite tests to use App::new().add_plugins(DefaultPlugins)

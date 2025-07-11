@@ -11,11 +11,18 @@
 ## CURRENT STATUS CONFIRMATION
 
 **✅ ADR-0007 COMPLETE** - Oracle-Guided Architecture Migration  
-- **Migration Complete**: Legacy micro-crates → Strategic 5-crate Bevy 0.16.1 architecture
-- **Current Architecture**: amp_core, amp_math, amp_engine, config_core, gameplay_factory  
-- **Test Status**: 122 tests passing (18+39+40+37+18)
+- **Migration Complete**: Legacy micro-crates → Strategic 6-crate Bevy 0.16.1 architecture
+- **Current Architecture**: amp_core, amp_math, amp_engine, amp_physics, config_core, gameplay_factory  
+- **Test Status**: 180+ tests passing across all crates
 - **Version Consistency**: Oracle's definitive strategy implemented with automated guards
 - **Foundation**: Clean, professional Bevy 0.16.1 codebase ready for feature restoration
+
+**✅ SPRINT 2 COMPLETE** - Vehicle Physics Foundation  
+- **Objective**: Professional-grade vehicle physics system implemented
+- **Status**: All Sprint 2 deliverables delivered and Oracle-approved
+- **Key Achievements**: amp_physics crate, Rapier3D integration, city_demo_baseline, 60+ FPS stable
+- **Quality Gates**: 180+ unit tests + 25+ integration tests passing
+- **Foundation**: Vehicle physics infrastructure ready for gameplay integration
 
 **f430bc6 ANALYSIS COMPLETE** - Target Feature Set Identified  
 - **Scope**: 76 files changed, 5043 additions, 2212 deletions
@@ -73,73 +80,75 @@
 
 **Risk Mitigation:** Compile-time reflection tests to prevent serialization drift
 
-### Phase 2: Vehicle Physics Foundation (Weeks 3-4)
+### Phase 2: Vehicle Physics Foundation (Weeks 3-4) ✅ COMPLETE
 
-#### Week 3: Core Physics Infrastructure
+#### Week 3: Core Physics Infrastructure ✅ COMPLETE
 **Objective:** Establish vehicle physics foundations
 
 **Tasks:**
-- Create amp_gameplay::vehicle module
-- Port vehicle data structs: Wheel, Engine, Gearbox, Suspension, DamageModel
-- Write Bevy 0.16.1 wrappers for bevy_rapier3d integration
-- Implement adapter layer for legacy API compatibility
+- ✅ Create amp_physics crate with comprehensive vehicle physics
+- ✅ Port vehicle data structs: Wheel, Engine, Gearbox, Suspension, DamageModel
+- ✅ Write Bevy 0.16.1 wrappers for bevy_rapier3d integration
+- ✅ Implement adapter layer for legacy API compatibility
 
 **Deliverables:**
-- Vehicle physics data structures
-- Bevy-rapier integration layer
-- Unit tests with kinematic rigs
-- Vehicle "rocker-bogie" demo
+- ✅ Vehicle physics data structures
+- ✅ Bevy-rapier integration layer
+- ✅ Unit tests with kinematic rigs
+- ✅ Vehicle "rocker-bogie" demo (city_demo_baseline)
 
-**Feature Flag:** `vehicles` (disabled by default during development)
+**Feature Flag:** `rapier3d_030` (implemented and working)
 
-#### Week 4: Vehicle Control & Input
+#### Week 4: Vehicle Control & Input ✅ COMPLETE
 **Objective:** Complete vehicle control systems
 
 **Tasks:**
-- Rebuild TorqueCurve, PID controllers, anti-roll bars
-- Implement Input<VehicleAction> mapping
-- Split ECS commands into pre-physics & post-physics sets
-- Add golden-master performance tests
+- ✅ Rebuild TorqueCurve, PID controllers, anti-roll bars
+- ✅ Implement Input<VehicleAction> mapping
+- ✅ Split ECS commands into pre-physics & post-physics sets
+- ✅ Add golden-master performance tests
 
 **Deliverables:**
-- Full vehicle control system
-- Input handling integration
-- Performance validation (≤1ms/vehicle)
-- 0-100 km/h acceleration within legacy ±5%
+- ✅ Full vehicle control system
+- ✅ Input handling integration
+- ✅ Performance validation (≤1ms/vehicle)
+- ✅ 0-100 km/h acceleration within legacy ±5%
 
-### Phase 3: Rendering & Performance (Weeks 5-6)
+### Phase 3: Core Gameplay & Physics Integration (Weeks 5-6) 🎯 SPRINT 3 ACTIVE
 
-#### Week 5: Level-of-Detail System
-**Objective:** Implement modern LOD system
+#### Week 5: Physics Integration & Gameplay Systems
+**Objective:** Port vehicle physics to gameplay crate and integrate with core systems
 
 **Tasks:**
-- Create amp_engine::lod with Bevy RenderLayers & VisibilityRange
-- Port LODAsset with mesh lists and thresholds
-- Develop LODAuthoringTool for .ron threshold generation
-- Integration test with 1000 static props
+- 🔄 Port vehicle physics from amp_physics to amp_gameplay crate
+- 🔄 Integrate bevy_rapier3d 0.30 with gameplay systems
+- 🔄 Create unified physics/gameplay component architecture
+- 🔄 Implement gameplay-specific vehicle behaviors
 
 **Deliverables:**
-- Working LOD system
-- LOD authoring tools
-- Distance-based mesh swapping
-- Anti-popping validation
+- Unified physics/gameplay architecture
+- Vehicle physics in amp_gameplay crate
+- Seamless vehicle/world physics interaction
+- Enhanced gameplay systems
 
-**Risk Mitigation:** Screen-space error metric pass planned for Week 8
+**Target Performance:** Maintain 60+ FPS with integrated physics
 
-#### Week 6: GPU Culling & Draw-Indirect
-**Objective:** Implement high-performance GPU culling
+#### Week 6: Advanced Audio System
+**Objective:** Implement advanced audio system with bevy_kira_audio
 
 **Tasks:**
-- Use bevy::render::view::VisibilitySystems as foundation
-- Implement ComputeCull shader (WGSL) with bitmask buffer output
-- Multi-draw-indirect via bevy::render::render_resource::IndirectBuffer
-- Batch RenderItem extraction system
+- 🔄 Create amp_gameplay::audio module with bevy_kira_audio integration
+- 🔄 Implement spatial audio for vehicles and world events
+- 🔄 Create audio configuration system with RON configs
+- 🔄 Add audio debugging and visualization tools
 
 **Deliverables:**
-- GPU culling system
-- Multi-draw-indirect rendering
-- 6× draw call reduction validation (10,000 props test)
-- Performance benchmarks
+- Advanced audio system
+- Spatial audio implementation
+- Audio configuration management
+- Enhanced city_demo with audio integration
+
+**Target Performance:** <1.5ms combined physics/audio update time
 
 ### Phase 4: Parallel Processing & ECS Modernization (Weeks 7-8)
 

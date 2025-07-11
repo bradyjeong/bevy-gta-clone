@@ -113,17 +113,25 @@ cargo test -p amp_math
 
 **ADR-0007 Migration Complete:**
 - ✅ Oracle consultation complete
-- ✅ Strategic 5-crate architecture implemented  
+- ✅ Strategic 6-crate architecture implemented  
 - ✅ Bevy 0.16.1 ecosystem alignment
 - ✅ Version consistency guards active
-- ✅ 122 tests passing (18+39+40+37+18)
+- ✅ 180+ tests passing across all crates
 - ✅ Foundation ready for feature restoration
 
-**AAA Restoration Phase Active:**
-- 📋 Strategic plan documented: [STRATEGIC_RESTORATION_PLAN.md](docs/STRATEGIC_RESTORATION_PLAN.md)
-- 🎯 Week 0: Ready for branch creation and gap analysis
-- 🏗️ Target: Restore f430bc6 features to Bevy 0.16.1 architecture
-- ⏱️ Timeline: 12-week Oracle-guided roadmap
+**Sprint 2 Complete - Vehicle Physics Foundation:**
+- ✅ Professional-grade vehicle physics system implemented
+- ✅ amp_physics crate with comprehensive physics simulation
+- ✅ Rapier3D integration for collision detection
+- ✅ city_demo_baseline example with drivable car
+- ✅ 60+ FPS stable with vehicle simulation
+
+**Sprint 3 Active - Core Gameplay & Physics Integration:**
+- 🎯 Port vehicle physics to amp_gameplay crate
+- 🎯 Advanced audio system with bevy_kira_audio integration
+- 🎯 Complete physics integration with bevy_rapier3d 0.30
+- 🎯 Enhanced city_demo with audio and integrated physics
+- 📋 Strategic plan: [STRATEGIC_RESTORATION_PLAN.md](docs/STRATEGIC_RESTORATION_PLAN.md)
 
 ## Performance Targets
 

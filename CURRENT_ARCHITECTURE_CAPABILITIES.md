@@ -131,7 +131,7 @@ amp_core → (no Bevy deps)
 - ⚠️ **Physics Integration:** No bevy_rapier3d integration yet
 
 **Extension Points:**
-- Integrate bevy_rapier3d 0.26.0 for physics systems
+- Integrate bevy_rapier3d 0.30.0 for physics systems
 - Add performance monitoring and profiling systems
 - Implement batch rendering optimizations
 - Add audio system integration
@@ -245,7 +245,7 @@ amp_core → (no Bevy deps)
 
 ### 3.4 Physics Integration Points
 **Current State:**
-- ✅ **Dependency Ready:** bevy_rapier3d 0.26.0 in workspace
+- ✅ **Dependency Ready:** bevy_rapier3d 0.30.0 in workspace
 - ✅ **Math Integration:** amp_math provides physics utilities
 - ⚠️ **Integration Layer:** No physics integration yet
 - ⚠️ **Vehicle Physics:** Missing specialized vehicle systems
@@ -406,7 +406,7 @@ RON Files → config_core → gameplay_factory → Bevy Assets
 
 ### 6.1 Critical Gaps
 **High Priority:**
-1. **Physics Integration:** bevy_rapier3d 0.26.0 integration layer
+1. **Physics Integration:** bevy_rapier3d 0.30.0 integration layer
 2. **Audio System:** Complete audio system implementation
 3. **Performance Monitoring:** Runtime performance tracking
 4. **Batch Processing:** Parallel job system for entity management

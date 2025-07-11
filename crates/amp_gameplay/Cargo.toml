@@ -1,0 +1,38 @@
+[package]
+name = "amp_gameplay"
+version = "0.3.0-alpha"
+edition = "2024"
+authors = ["Brady Jeong <bradyjeong@Mac.attlocal.net>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/bradyjeong/bevy-gta-clone"
+description = "Core gameplay systems for AAA-level open world game"
+documentation = "https://docs.rs/amp_gameplay"
+readme = "README.md"
+keywords = ["bevy", "game", "physics", "audio", "vehicle"]
+categories = ["game-development", "simulation"]
+
+[dependencies]
+# Workspace dependencies
+amp_physics = { path = "../amp_physics", version = "0.3.0-alpha" }
+amp_core = { path = "../amp_core", version = "0.3.0-alpha" }
+amp_math = { path = "../amp_math", version = "0.3.0-alpha" }
+bevy = { workspace = true }
+bevy_rapier3d = { workspace = true }
+bevy_kira_audio = { workspace = true }
+serde = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+rstest = { workspace = true }
+serial_test = { workspace = true }
+tempfile = { workspace = true }
+criterion = { workspace = true, features = ["html_reports"] }
+bevy_rapier3d = { workspace = true }
+
+[features]
+default = []
+debug = []
+
+[[bench]]
+name = "gameplay_performance"
+harness = false

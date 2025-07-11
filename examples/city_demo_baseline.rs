@@ -1,32 +1,35 @@
 //! City Demo Baseline Example
 //!
-//! This example demonstrates the Sprint 2 physics system with a drivable car
-//! featuring stable suspension, realistic vehicle dynamics, and debug visualization.
+//! This example demonstrates the Sprint 3 integrated gameplay system with:
+//! - Vehicle physics integration with amp_gameplay
+//! - Advanced audio system with bevy_kira_audio
+//! - Real-time performance monitoring
+//! - Interactive vehicle controls
 //!
 //! ## Features
 //! - Drivable car with WASD controls
-//! - Stable suspension system with realistic forces
-//! - Engine and transmission physics
-//! - Debug visualization for suspension rays and forces
+//! - Advanced audio system with engine sounds
+//! - Integrated physics and audio events
 //! - Performance metrics display
+//! - Multiple vehicle spawning
 //!
 //! ## Controls
 //! - W/S: Throttle/Brake
 //! - A/D: Steering
 //! - Space: Handbrake
+//! - V: Spawn new vehicle
 //! - F1: Toggle debug visualization
 //! - F2: Toggle performance metrics
-//! - F3: Toggle wireframe rendering
 //! - ESC: Exit
 //!
 //! ## Performance Targets
-//! - 60 FPS stable with 10 vehicles
-//! - <1ms physics update time
-//! - <50MB memory usage
+//! - 60 FPS stable with integrated audio and physics
+//! - <1.5ms combined physics/audio update time
+//! - <75MB memory usage
 //!
 //! ## Usage
 //! ```bash
-//! cargo run --example city_demo_baseline --features="rapier3d_030"
+//! cargo run --example city_demo_baseline
 //! ```
 
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
@@ -60,7 +63,7 @@ fn main() {
             FrameTimeDiagnosticsPlugin::default(),
             LogDiagnosticsPlugin::default(),
         ))
-        .add_plugins(PhysicsPlugin)
+        .add_plugins(PhysicsPlugin::default())
         .add_systems(Startup, setup_scene)
         .add_systems(
             Update,

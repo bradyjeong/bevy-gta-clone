@@ -151,7 +151,7 @@ if ! grep -q 'bevy = "=0\.16\.1"' "$ROOT_TOML"; then
     fail=true
 fi
 
-if ! grep -q 'bevy_rapier3d = "=0\.30\.0"' "$ROOT_TOML"; then
+if ! grep -qE 'bevy_rapier3d = .*version = "=0\.30\.0"' "$ROOT_TOML"; then
     echo "❌ bevy_rapier3d version not patch-locked to =0.30.0"
     fail=true
 fi

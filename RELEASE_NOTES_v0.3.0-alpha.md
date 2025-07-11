@@ -39,13 +39,13 @@ This release marks the successful completion of **ADR-0007: Strategic Migration 
 
 ### ✅ Bevy 0.16.1 Ecosystem Integration
 - **Engine**: Full Bevy 0.16.1 with strategic feature usage
-- **Physics**: Compatible with bevy_rapier3d 0.26.0
+- **Physics**: Compatible with bevy_rapier3d 0.30.0
 - **Graphics**: wgpu 26.0.0 integration maintained
 - **Input**: winit 0.30.0 window management
 - **Math**: glam 0.28+ with fast-math optimizations
 
 ### ✅ Oracle's Version Consistency Strategy
-- **Patch-locked**: `bevy = "=0.16.1"`, `bevy_rapier3d = "=0.26.0"`
+- **Patch-locked**: `bevy = "=0.16.1"`, `bevy_rapier3d = "=0.30.0"`
 - **Caret-semver**: `serde = "^1"`, `anyhow = "^1.0"`
 - **Single source**: All versions in `[workspace.dependencies]`
 - **Future-proof**: Version-bump playbook documented

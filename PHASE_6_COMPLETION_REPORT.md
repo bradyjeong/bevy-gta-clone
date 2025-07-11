@@ -44,7 +44,7 @@ gameplay_factory/  # Game systems, prefabs (27 tests, 73.81% coverage)
 
 ### ✅ Version Consistency (Oracle's Strategy)
 - **Engine**: `bevy = "=0.16.1"` (patch-locked)
-- **Physics**: `bevy_rapier3d = "=0.26.0"` (ecosystem aligned)
+- **Physics**: `bevy_rapier3d = "=0.30.0"` (ecosystem aligned)
 - **Graphics**: `wgpu = "26.0.0"`, `winit = "0.30.0"` (current versions)
 - **Utilities**: `serde = "^1"`, `anyhow = "^1.0"` (caret-semver)
 - **Single source**: All versions in `[workspace.dependencies]`

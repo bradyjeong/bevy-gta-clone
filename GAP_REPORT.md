@@ -101,7 +101,7 @@ The baseline provides denominators for Oracle's improvement tracking throughout 
 
 **Current Architecture Mapping:**
 - **Target Crate:** `amp_engine` (physics systems)
-- **Bevy Integration:** bevy_rapier3d 0.26.0 (version-locked)
+- **Bevy Integration:** bevy_rapier3d 0.30.0 (version-locked)
 - **Implementation Path:** Add physics plugin + vehicle components
 - **Readiness:** 60% (dependency ready, need implementation)
 
@@ -166,7 +166,7 @@ The baseline provides denominators for Oracle's improvement tracking throughout 
 **Priority:** HIGH | **Complexity:** HIGH | **Risk:** MEDIUM
 
 **Targets:**
-- Integrate bevy_rapier3d 0.26.0 physics
+- Integrate bevy_rapier3d 0.30.0 physics
 - Implement vehicle physics components
 - Add spatial audio with bevy_kira_audio
 - Create physics-audio interaction systems

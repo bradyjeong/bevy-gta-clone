@@ -1,0 +1,67 @@
+//! Vehicle systems and components
+//!
+//! This module provides comprehensive vehicle physics including:
+//! - Suspension systems
+//! - Drivetrain and engine simulation
+//! - Steering mechanics
+//! - Rapier3D integration
+
+pub mod bundles;
+pub mod components;
+pub mod resources;
+pub mod systems;
+
+/// Prelude for vehicle module
+pub mod prelude {
+    pub use crate::vehicle::VehiclePlugin;
+    pub use crate::vehicle::bundles::*;
+    pub use crate::vehicle::components::*;
+    pub use crate::vehicle::resources::*;
+}
+
+use bevy::prelude::*;
+
+/// Schedule set for post-physics systems
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+pub struct PostPhysics;
+
+/// Plugin for vehicle systems
+#[derive(Default)]
+pub struct VehiclePlugin;
+
+impl Plugin for VehiclePlugin {
+    fn build(&self, app: &mut App) {
+        // Configure FixedUpdate to run at 60 Hz for physics
+        app.insert_resource(Time::<Fixed>::from_hz(60.0));
+
+        app.add_systems(Startup, systems::setup::setup_vehicle_systems)
+            .add_systems(
+                FixedUpdate,
+                (
+                    // VehicleControl phase
+                    systems::input::handle_vehicle_input,
+                    // Physics phase (handled by amp_physics)
+                    // Rapier phase (handled by bevy_rapier3d)
+                    // PostPhysics phase
+                    (
+                        systems::suspension::update_suspension,
+                        systems::drivetrain::update_drivetrain,
+                        systems::steering::update_steering,
+                        systems::sync_rapier::sync_vehicle_physics,
+                    )
+                        .in_set(PostPhysics),
+                )
+                    .chain(),
+            )
+            .add_systems(Update, (systems::audio::update_vehicle_audio,))
+            .configure_sets(
+                FixedUpdate,
+                PostPhysics.after(bevy_rapier3d::plugin::PhysicsSet::StepSimulation),
+            )
+            .register_type::<components::Vehicle>()
+            // Physics component types are registered in amp_physics crate
+            .register_type::<components::VehicleInput>()
+            .register_type::<components::VehicleAudio>()
+            .register_type::<components::CarConfig>();
+    }
+}

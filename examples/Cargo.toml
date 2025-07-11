@@ -37,7 +37,7 @@ amp_engine = { path = "../crates/amp_engine", features = ["bevy16"] }
 amp_physics = { path = "../crates/amp_physics", features = ["rapier3d_030"] }
 config_core = { path = "../crates/config_core" }
 gameplay_factory = { path = "../crates/gameplay_factory", features = ["ron"] }
-bevy_ecs = "0.13"
+bevy_ecs = { workspace = true }
 bevy.workspace = true
 winit.workspace = true
 pollster = "0.3"

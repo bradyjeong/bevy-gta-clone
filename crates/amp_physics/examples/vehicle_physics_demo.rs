@@ -9,7 +9,7 @@ use bevy::prelude::*;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(PhysicsPlugin)
+        .add_plugins(PhysicsPlugin::default())
         .add_systems(Startup, setup)
         .add_systems(Update, (keyboard_input, update_camera, toggle_debug))
         .run();

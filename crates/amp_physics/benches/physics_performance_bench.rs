@@ -160,7 +160,7 @@ fn create_benchmark_app() -> App {
     let mut app = App::new();
     app.add_plugins(MinimalPlugins)
         .init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>()
-        .add_plugins(PhysicsPlugin);
+        .add_plugins(PhysicsPlugin::default());
 
     // Disable debug rendering by default
     let mut debug_config = app.world_mut().resource_mut::<DebugConfig>();

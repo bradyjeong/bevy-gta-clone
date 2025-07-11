@@ -18,7 +18,7 @@ Each consultation should include:
 
 **Key Insights**:
 - Engine nucleus (Bevy) requires patch-locking (`bevy = "=0.16.1"`)
-- Ecosystem sidekicks need patch-locking (`bevy_rapier3d = "=0.26.0"`)
+- Ecosystem sidekicks need patch-locking (`bevy_rapier3d = "=0.30.0"`)
 - Rendering dependencies managed via [patch.crates-io] for exact wgpu/winit versions
 - Mature crates use caret-semver (`serde = "^1"`, `anyhow = "^1.0"`)
 - Single source of truth in [workspace.dependencies] with workspace inheritance

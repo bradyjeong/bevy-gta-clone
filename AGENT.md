@@ -106,7 +106,7 @@
 - **Deprecated**: amp_spatial, amp_gpu, amp_world (consolidated into amp_engine)
 - **Test Status**: 180+ tests passing across all crates
 
-🎯 **SPRINT 2 COMPLETED** - Vehicle Physics Foundation ✅
+✅ **SPRINT 2 COMPLETED** - Vehicle Physics Foundation
 - **Objective**: Implement professional-grade vehicle physics system
 - **Status**: **COMPLETED** - All Sprint 2 deliverables implemented and committed
 - **Git Commit**: 43c1480 - Complete Sprint 2: Vehicle Physics Foundation
@@ -126,7 +126,23 @@
   - ✅ <1ms physics update time
   - ✅ Realistic suspension and vehicle dynamics
 - **Quality Gates**: All 180+ unit tests + 25+ integration tests passing
-- **Next**: Ready for Sprint 3 (Core Gameplay & Physics Integration)
+
+🎯 **SPRINT 3 ACTIVE** - Core Gameplay & Physics Integration
+- **Objective**: Integrate vehicle physics into core gameplay systems and expand with audio
+- **Status**: **PLANNING** - Sprint 3 documentation updated, ready for implementation
+- **Sprint Duration**: 2 weeks (aligned with Oracle's 12-week roadmap)
+- **Key Deliverables**:
+  - 🔄 Port vehicle physics from amp_physics to amp_gameplay crate
+  - 🔄 Advanced audio system with bevy_kira_audio integration
+  - 🔄 Complete physics integration with bevy_rapier3d 0.30
+  - 🔄 Enhanced city_demo with audio and integrated physics
+  - 🔄 Performance optimization for combined systems
+  - 🔄 Comprehensive test coverage for gameplay systems
+- **Performance Targets**:
+  - Maintain 60+ FPS with audio and physics integration
+  - <1.5ms combined physics/audio update time
+  - Seamless vehicle/world physics interaction
+- **Quality Gates**: All tests passing, no clippy warnings, comprehensive documentation
 
 ## Oracle Guidance
 - **Strategic Decisions**: Documented in [Oracle Consultations](docs/oracle-consultations.md)
@@ -139,7 +155,7 @@
 ## Version Consistency Strategy
 **Oracle's Lock-in Rules:**
 - **Engine nucleus**: `bevy = "=0.16.1"` (patch-locked)
-- **Ecosystem sidekicks**: `bevy_rapier3d = "=0.26.0"` (patch-locked)
+- **Ecosystem sidekicks**: `bevy_rapier3d = "=0.30.0"` (patch-locked)
 - **Rendering**: `wgpu = "=0.21.0"`, `winit = "=0.30.0"` (via [patch.crates-io])
 - **Mature crates**: `serde = "^1"`, `anyhow = "^1.0"` (caret-semver)
 - **Single source**: All versions in [workspace.dependencies]
@@ -212,7 +228,7 @@ These files must be kept current and reviewed during every strategic change:
 ### Sprint 3-4: Core Gameplay & Physics
 - **Vehicle Physics**: Port realistic vehicle physics to amp_gameplay crate
 - **Audio Systems**: Advanced audio graph with bevy_kira_audio integration
-- **Physics Integration**: Replace custom physics with bevy_rapier3d 0.26
+- **Physics Integration**: Replace custom physics with bevy_rapier3d 0.30
 
 ### Sprint 5-6: Rendering & Performance
 - **Batch Processing**: Bevy RenderWorld phases with 2.5× speed target

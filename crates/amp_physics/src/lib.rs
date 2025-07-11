@@ -39,14 +39,32 @@ pub use rapier::*;
 /// This plugin wraps the underlying physics engine (Rapier3D) and provides
 /// a unified interface for physics simulation in the game.
 #[derive(Default)]
-pub struct PhysicsPlugin;
+pub struct PhysicsPlugin {
+    /// Optional configuration for the physics plugin
+    pub config: Option<PhysicsConfig>,
+}
+
+impl PhysicsPlugin {
+    /// Create a new PhysicsPlugin with the given configuration
+    pub fn new(config: PhysicsConfig) -> Self {
+        Self {
+            config: Some(config),
+        }
+    }
+}
 
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
         // Add core physics resources and systems
         app.init_resource::<PhysicsTime>()
-            .init_resource::<PhysicsConfig>()
             .add_systems(Update, (update_physics_time, apply_physics_config));
+
+        // Insert provided config or default
+        if let Some(config) = &self.config {
+            app.insert_resource(config.clone());
+        } else {
+            app.init_resource::<PhysicsConfig>();
+        }
 
         #[cfg(feature = "rapier3d_030")]
         {
@@ -87,7 +105,7 @@ mod tests {
     #[test]
     fn physics_plugin_can_be_added() {
         let mut app = App::new();
-        app.add_plugins(PhysicsPlugin);
+        app.add_plugins(PhysicsPlugin::default());
 
         // Test that the plugin can be added without panicking
         // Note: We don't call update() because Rapier requires AssetPlugin

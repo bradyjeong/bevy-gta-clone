@@ -27,7 +27,10 @@ repository = "https://github.com/bradyjeong/bevy-gta-clone"
 # ---------- Bevy core ----------
 bevy = "=0.16.1"                          # Full engine, patch-locked
 bevy_ecs = "=0.16.1"                      # ECS crate (for deprecated amp_world)
-bevy_rapier3d = "=0.30.0"                 # Compiled against Bevy 0.16.1, physics simulation
+bevy_rapier3d = { version = "=0.30.0", default-features = false, features = ["dim3", "enhanced-determinism", "debug-render"] }
+# ---------- Audio ----------
+bevy_kira_audio = "=0.23.0"               # Audio integration for Bevy
+kira = "=0.9.6"                           # Audio engine
 # ---------- Rendering ----------
 # Bevy re-exports wgpu/winit; keep them in sync for crates that still need them
 wgpu = "=24.0.5"   # Locked to Bevy 0.16.1 version
@@ -102,6 +105,7 @@ gameplay_factory = { path = "crates/gameplay_factory" }
 config_core = { path = "crates/config_core" }
 amp_engine = { path = "crates/amp_engine", features = ["bevy16"] }
 amp_physics = { path = "crates/amp_physics", optional = true }
+amp_gameplay = { path = "crates/amp_gameplay" }
 bevy.workspace = true
 bevy_rapier3d = { workspace = true, optional = true }
 env_logger = { workspace = true }
@@ -113,3 +117,12 @@ path = "src/bin/prefab-ls.rs"
 [[bin]]
 name = "collision_test"
 path = "collision_test.rs"
+
+[[example]]
+name = "vehicle_physics_integration"
+path = "examples/vehicle_physics_integration.rs"
+
+[[example]]
+name = "sprint_3_demo"
+path = "examples/sprint_3_demo.rs"
+required-features = ["rapier3d_030"]

@@ -241,7 +241,7 @@ fn create_test_app() -> App {
             .disable::<bevy::render::RenderPlugin>()
             .disable::<bevy::winit::WinitPlugin>(),
     )
-    .add_plugins(PhysicsPlugin)
+    .add_plugins(PhysicsPlugin::default())
     .init_resource::<BenchmarkResults>();
 
     // Disable debug rendering for performance tests

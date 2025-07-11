@@ -10,9 +10,9 @@
 
 ### Architecture Transformation Complete
 - **✅ Migration**: bevy_ecs 0.13 + micro-crates → Bevy 0.16.1 + strategic modularity
-- **✅ Crate Structure**: 5-crate strategic architecture implemented
+- **✅ Crate Structure**: 6-crate strategic architecture implemented
 - **✅ Version Consistency**: Oracle's definitive strategy with automated guards
-- **✅ Test Status**: 122 tests passing (18+39+40+37+18)
+- **✅ Test Status**: 180+ tests passing across all crates
 - **✅ Foundation**: Clean, professional Bevy 0.16.1 codebase ready
 
 ### Problems Resolved
@@ -28,10 +28,11 @@
 │   ├─ amp_core/          # Pure Rust utilities, error handling (no Bevy deps)
 │   ├─ amp_math/          # glam re-exports, Morton, AABB (no Bevy deps)  
 │   ├─ amp_engine/        # Bevy 0.16.1 dependency, engine plugins
+│   ├─ amp_physics/       # Vehicle physics and Rapier3D integration
 │   ├─ config_core/       # Configuration loading and management
 │   ├─ gameplay_factory/  # Entity factory for prefab-based systems
 │   └─ tools/xtask/       # Build pipeline helpers
-├─ examples/              # city_demo.rs
+├─ examples/              # city_demo.rs, city_demo_baseline.rs
 └─ docs/adr/              # Architecture Decision Records
 ```
 
@@ -47,17 +48,19 @@
 - **Modern ECS Patterns**: SystemSets, QueryData, sparse storage optimization
 - **Performance Claims**: 300%+ FPS improvement, 60% memory reduction
 
-### Week 0 Status (Current)
-- **✅ Strategic Plan**: [STRATEGIC_RESTORATION_PLAN.md](docs/STRATEGIC_RESTORATION_PLAN.md) documented
-- **🎯 Ready For**: Branch creation, gap analysis, f430bc6 reference setup
-- **📋 Oracle Roadmap**: 12-week timeline with weekly milestones and performance gates
+### Current Sprint Status
+- **✅ Sprint 2 Complete**: Vehicle Physics Foundation delivered and Oracle-approved
+- **🎯 Sprint 3 Active**: Core Gameplay & Physics Integration
+- **📋 Strategic Plan**: [STRATEGIC_RESTORATION_PLAN.md](docs/STRATEGIC_RESTORATION_PLAN.md) updated for Sprint 3
+- **🏗️ Key Deliverables**: Physics integration into gameplay, advanced audio system
+- **⏱️ Oracle Roadmap**: 12-week timeline with weekly milestones and performance gates
 
 ## Achieved Benefits (ADR-0007)
 
 ### Migration Success
-- ✅ **Architecture Transformation**: Clean 5-crate strategic structure
+- ✅ **Architecture Transformation**: Clean 6-crate strategic structure
 - ✅ **Ecosystem Integration**: Full Bevy 0.16.1 stack alignment
-- ✅ **Test Reliability**: 122 tests passing with integrated App instances
+- ✅ **Test Reliability**: 180+ tests passing with integrated App instances
 - ✅ **Version Consistency**: Oracle's definitive strategy with automated guards
 
 ### Development Velocity
@@ -75,10 +78,11 @@
 - ✅ Version consistency guards active
 - ✅ Foundation ready for feature restoration
 
-**AAA Restoration Phase Active:**
-- 📋 Strategic plan documented: [STRATEGIC_RESTORATION_PLAN.md](docs/STRATEGIC_RESTORATION_PLAN.md)
-- 🎯 Week 0: Ready for branch creation and gap analysis
-- 🏗️ Target: Restore f430bc6 features to Bevy 0.16.1 architecture
+**Sprint 2 Complete & Sprint 3 Active:**
+- ✅ **Sprint 2**: Vehicle Physics Foundation delivered and Oracle-approved
+- 🎯 **Sprint 3**: Core Gameplay & Physics Integration active
+- 📋 Strategic plan updated: [STRATEGIC_RESTORATION_PLAN.md](docs/STRATEGIC_RESTORATION_PLAN.md)
+- 🏗️ Target: Continue f430bc6 AAA feature restoration to Bevy 0.16.1 architecture
 - ⏱️ Timeline: 12-week Oracle-guided roadmap
 
 **This foundation provides the clean, professional architecture needed for restoring AAA-level game features while maintaining Oracle's strategic principles.**
