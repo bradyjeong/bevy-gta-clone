@@ -96,6 +96,7 @@ impl Plugin for PrefabAssetPlugin {
 pub fn convert_prefab_asset_to_runtime_prefab(
     prefab_asset: &PrefabAsset,
     dsl_config: &DslConfig,
+    type_registry: &AppTypeRegistry,
 ) -> Result<Prefab, Error> {
     // Convert the component map to the format expected by the DSL
     let mut component_ron = String::new();
@@ -108,16 +109,16 @@ pub fn convert_prefab_asset_to_runtime_prefab(
     component_ron.push_str("}\n");
 
     // Use the existing DSL parsing logic
-    let component_map = parse_prefab_ron(&component_ron, dsl_config)?;
+    let component_map = parse_prefab_ron(&component_ron, type_registry, dsl_config)?;
 
     // Create prefab from component map using the existing helper
-    crate::dsl::create_prefab_from_component_map(&component_map)
+    crate::dsl::create_prefab_from_component_map(&component_map, type_registry)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dsl::DslConfig;
+    use crate::dsl::{DslConfig, ValidationMode};
     use crate::register_default_components;
 
     #[test]
@@ -156,8 +157,13 @@ mod tests {
 
         register_default_components();
 
-        let dsl_config = DslConfig::default();
-        let result = convert_prefab_asset_to_runtime_prefab(&prefab_asset, &dsl_config);
+        let dsl_config = DslConfig {
+            validation_mode: ValidationMode::Skip,
+            ..Default::default()
+        };
+        let type_registry = AppTypeRegistry::default();
+        let result =
+            convert_prefab_asset_to_runtime_prefab(&prefab_asset, &dsl_config, &type_registry);
 
         // Should succeed with registered components
         assert!(result.is_ok());

@@ -316,8 +316,9 @@ impl Factory {
 
         // Use the DSL system to load the prefab
         let config = DslConfig::default();
-        let component_map = parse_prefab_ron(&content, &config)?;
-        create_prefab_from_component_map(&component_map)
+        let type_registry = AppTypeRegistry::default();
+        let component_map = parse_prefab_ron(&content, &type_registry, &config)?;
+        create_prefab_from_component_map(&component_map, &type_registry)
     }
 
     /// Set up file watcher for hot-reload functionality

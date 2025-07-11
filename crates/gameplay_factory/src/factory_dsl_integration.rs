@@ -48,7 +48,11 @@ impl DslFactory {
     ///
     /// This method extends the existing Factory::load_directory with DSL support
     /// and component registry integration for dynamic component loading.
-    pub fn load_directory_dsl(&mut self, directory: &str) -> Result<usize, Error> {
+    pub fn load_directory_dsl(
+        &mut self,
+        directory: &str,
+        type_registry: &AppTypeRegistry,
+    ) -> Result<usize, Error> {
         let directory_path = Path::new(directory);
 
         if !directory_path.exists() {
@@ -79,7 +83,7 @@ impl DslFactory {
                     let prefab_id = self.generate_prefab_id_from_path(&path)?;
 
                     // Load prefab using DSL
-                    match self.load_prefab_file_dsl(&path_str) {
+                    match self.load_prefab_file_dsl(&path_str, type_registry) {
                         Ok(component_map) => {
                             // Cache the component map if enabled
                             if self.config.cache_prefabs {
@@ -88,10 +92,11 @@ impl DslFactory {
                             }
 
                             // Register with factory
-                            match self
-                                .factory
-                                .register_from_component_map(prefab_id, &component_map)
-                            {
+                            match self.factory.register_from_component_map(
+                                prefab_id,
+                                &component_map,
+                                type_registry,
+                            ) {
                                 Ok(()) => {
                                     loaded_count += 1;
                                     debug!("Loaded prefab {:?} from {}", prefab_id, path_str);
@@ -144,7 +149,11 @@ impl DslFactory {
     }
 
     /// Load a single prefab file using DSL
-    fn load_prefab_file_dsl(&self, file_path: &str) -> Result<ComponentMap, Error> {
+    fn load_prefab_file_dsl(
+        &self,
+        file_path: &str,
+        type_registry: &AppTypeRegistry,
+    ) -> Result<ComponentMap, Error> {
         // Check cache first
         if self.config.cache_prefabs {
             if let Some(cached) = self.component_cache.get(file_path) {
@@ -155,7 +164,7 @@ impl DslFactory {
         let ron_content = std::fs::read_to_string(file_path)
             .map_err(|e| Error::resource_load(file_path, format!("Failed to read file: {e}")))?;
 
-        let mut component_map = parse_prefab_ron(&ron_content, &self.config)?;
+        let mut component_map = parse_prefab_ron(&ron_content, type_registry, &self.config)?;
 
         // Set source path in metadata
         component_map.metadata.source_path = Some(file_path.to_string());
@@ -176,13 +185,14 @@ impl DslFactory {
         &self,
         commands: &mut Commands,
         entities: Vec<ComponentMap>,
+        type_registry: &AppTypeRegistry,
     ) -> Result<BatchSpawnResult, Error> {
         let request = BatchSpawnRequest {
             entities,
             config: self.config.clone(),
         };
 
-        spawn_many(commands, request)
+        spawn_many(commands, request, type_registry)
     }
 
     /// Get a reference to the underlying Factory
@@ -219,9 +229,15 @@ impl DslFactory {
     }
 
     /// Load a single prefab from RON string
-    pub fn load_prefab_from_ron(&mut self, id: PrefabId, ron_content: &str) -> Result<(), Error> {
-        let component_map = parse_prefab_ron(ron_content, &self.config)?;
-        self.factory.register_from_component_map(id, &component_map)
+    pub fn load_prefab_from_ron(
+        &mut self,
+        id: PrefabId,
+        ron_content: &str,
+        type_registry: &AppTypeRegistry,
+    ) -> Result<(), Error> {
+        let component_map = parse_prefab_ron(ron_content, type_registry, &self.config)?;
+        self.factory
+            .register_from_component_map(id, &component_map, type_registry)
     }
 
     /// Create a component map from a structured definition
@@ -291,11 +307,14 @@ impl Plugin for DslFactoryPlugin {
         // Add startup system for loading prefabs if directory is specified
         if let Some(directory) = &self.prefab_directory {
             let dir = directory.clone();
-            app.add_systems(Startup, move |mut factory: ResMut<DslFactory>| {
-                if let Err(e) = factory.load_directory_dsl(&dir) {
-                    error!("Failed to load prefabs from directory '{}': {}", dir, e);
-                }
-            });
+            app.add_systems(
+                Startup,
+                move |mut factory: ResMut<DslFactory>, type_registry: Res<AppTypeRegistry>| {
+                    if let Err(e) = factory.load_directory_dsl(&dir, &type_registry) {
+                        error!("Failed to load prefabs from directory '{}': {}", dir, e);
+                    }
+                },
+            );
         }
 
         // Register default components
@@ -352,17 +371,19 @@ mod tests {
     #[test]
     fn test_load_directory_dsl_invalid_path() {
         let mut factory = DslFactory::new();
+        let type_registry = AppTypeRegistry::default();
 
-        let result = factory.load_directory_dsl("/nonexistent/path");
+        let result = factory.load_directory_dsl("/nonexistent/path", &type_registry);
         assert!(result.is_err());
     }
 
     #[test]
     fn test_load_directory_dsl_empty_directory() {
         let mut factory = DslFactory::new();
+        let type_registry = AppTypeRegistry::default();
 
         let temp_dir = TempDir::new().unwrap();
-        let result = factory.load_directory_dsl(temp_dir.path().to_str().unwrap());
+        let result = factory.load_directory_dsl(temp_dir.path().to_str().unwrap(), &type_registry);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), 0);
     }
@@ -370,6 +391,7 @@ mod tests {
     #[test]
     fn test_load_prefab_from_ron() {
         let mut factory = DslFactory::new();
+        let type_registry = AppTypeRegistry::default();
 
         let ron_content = r#"
         (
@@ -380,7 +402,7 @@ mod tests {
         "#;
 
         let prefab_id = PrefabId::new(12345);
-        let result = factory.load_prefab_from_ron(prefab_id, ron_content);
+        let result = factory.load_prefab_from_ron(prefab_id, ron_content, &type_registry);
         // This will likely fail because Name is not registered in the component registry
         // but the parsing should succeed
         assert!(result.is_err() || result.is_ok());

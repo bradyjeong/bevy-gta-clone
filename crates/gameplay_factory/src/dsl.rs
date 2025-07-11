@@ -112,12 +112,17 @@ pub struct BatchSpawnMetrics {
 /// # Arguments
 ///
 /// * `ron_content` - RON file content as string
+/// * `type_registry` - Bevy type registry for component reflection
 /// * `config` - DSL configuration
 ///
 /// # Returns
 ///
 /// Returns a `ComponentMap` with parsed components and metadata
-pub fn parse_prefab_ron(ron_content: &str, config: &DslConfig) -> Result<ComponentMap, Error> {
+pub fn parse_prefab_ron(
+    ron_content: &str,
+    type_registry: &AppTypeRegistry,
+    config: &DslConfig,
+) -> Result<ComponentMap, Error> {
     let start_time = std::time::Instant::now();
 
     // Parse RON content into structured data
@@ -128,7 +133,7 @@ pub fn parse_prefab_ron(ron_content: &str, config: &DslConfig) -> Result<Compone
     let components = extract_components_from_ron(&ron_value)?;
 
     // Validate components using existing component registry
-    let validation_result = validate_components(&components, config)?;
+    let validation_result = validate_components(&components, config, type_registry)?;
 
     let component_count = components.len();
     let metadata = ComponentMapMetadata {
@@ -197,17 +202,18 @@ fn extract_component_map(value: &ron::Value) -> Result<HashMap<String, ron::Valu
 fn validate_components(
     components: &HashMap<String, ron::Value>,
     config: &DslConfig,
+    type_registry: &AppTypeRegistry,
 ) -> Result<ValidationStatus, Error> {
     if config.validation_mode == ValidationMode::Skip {
         return Ok(ValidationStatus::Valid);
     }
 
-    let registered_types = crate::registered_components();
+    let registry = type_registry.read();
     let mut warnings = Vec::new();
     let errors = Vec::new();
 
     for component_name in components.keys() {
-        if !registered_types.contains(&component_name.as_str()) {
+        if registry.get_with_short_type_path(component_name).is_none() {
             let warning = format!("Component type '{component_name}' not found in registry");
 
             if config.validation_mode == ValidationMode::Strict {
@@ -236,6 +242,7 @@ fn validate_components(
 ///
 /// * `commands` - Bevy Commands for entity spawning
 /// * `request` - Batch spawn request with component maps
+/// * `type_registry` - Bevy type registry for component reflection
 ///
 /// # Returns
 ///
@@ -243,6 +250,7 @@ fn validate_components(
 pub fn spawn_many(
     commands: &mut Commands,
     request: BatchSpawnRequest,
+    type_registry: &AppTypeRegistry,
 ) -> Result<BatchSpawnResult, Error> {
     let start_time = std::time::Instant::now();
 
@@ -262,7 +270,7 @@ pub fn spawn_many(
     let batch_size = request.config.max_batch_size.min(request.entities.len());
 
     for (batch_index, entity_batch) in request.entities.chunks(batch_size).enumerate() {
-        match spawn_batch(commands, entity_batch, &request.config) {
+        match spawn_batch(commands, entity_batch, &request.config, type_registry) {
             Ok(batch_result) => {
                 spawned.extend(batch_result.spawned);
                 for (idx, err) in batch_result.failed {
@@ -320,13 +328,14 @@ fn spawn_batch(
     commands: &mut Commands,
     entities: &[ComponentMap],
     config: &DslConfig,
+    type_registry: &AppTypeRegistry,
 ) -> Result<InternalBatchResult, Error> {
     let mut spawned = Vec::new();
     let mut failed = Vec::new();
     let mut components_processed = 0;
 
     for (index, component_map) in entities.iter().enumerate() {
-        match spawn_single_entity(commands, component_map, config) {
+        match spawn_single_entity(commands, component_map, config, type_registry) {
             Ok(entity) => {
                 spawned.push(entity);
                 components_processed += component_map.components.len();
@@ -349,6 +358,7 @@ fn spawn_single_entity(
     commands: &mut Commands,
     component_map: &ComponentMap,
     _config: &DslConfig,
+    _type_registry: &AppTypeRegistry,
 ) -> Result<Entity, Error> {
     let entity = commands.spawn_empty().id();
 
@@ -380,11 +390,15 @@ fn estimate_memory_usage(entities: &[Entity], components_processed: usize) -> us
 /// # Arguments
 ///
 /// * `component_map` - Component map to convert
+/// * `type_registry` - Bevy type registry for component reflection
 ///
 /// # Returns
 ///
 /// Returns a `Prefab` that can be registered with the Factory
-pub fn create_prefab_from_component_map(component_map: &ComponentMap) -> Result<Prefab, Error> {
+pub fn create_prefab_from_component_map(
+    component_map: &ComponentMap,
+    _type_registry: &AppTypeRegistry,
+) -> Result<Prefab, Error> {
     let mut prefab = Prefab::new();
 
     // Convert each component in the map to a ComponentInit
@@ -426,20 +440,25 @@ impl crate::ComponentInit for RegistryComponentInit {
 ///
 /// * `file_path` - Path to the RON file
 /// * `config` - DSL configuration
+/// * `type_registry` - Bevy type registry for component reflection
 ///
 /// # Returns
 ///
 /// Returns a `Prefab` loaded from the file
-pub fn load_prefab_from_file(file_path: &str, config: &DslConfig) -> Result<Prefab, Error> {
+pub fn load_prefab_from_file(
+    file_path: &str,
+    config: &DslConfig,
+    type_registry: &AppTypeRegistry,
+) -> Result<Prefab, Error> {
     let ron_content = std::fs::read_to_string(file_path)
         .map_err(|e| Error::resource_load(file_path, format!("Failed to read file: {e}")))?;
 
-    let mut component_map = parse_prefab_ron(&ron_content, config)?;
+    let mut component_map = parse_prefab_ron(&ron_content, type_registry, config)?;
 
     // Set source path in metadata
     component_map.metadata.source_path = Some(file_path.to_string());
 
-    create_prefab_from_component_map(&component_map)
+    create_prefab_from_component_map(&component_map, type_registry)
 }
 
 /// Factory extension for DSL integration
@@ -450,6 +469,7 @@ pub trait FactoryDslExt {
         id: PrefabId,
         file_path: &str,
         config: &DslConfig,
+        type_registry: &AppTypeRegistry,
     ) -> Result<(), Error>;
 
     /// Register a prefab from a component map
@@ -457,6 +477,7 @@ pub trait FactoryDslExt {
         &mut self,
         id: PrefabId,
         component_map: &ComponentMap,
+        type_registry: &AppTypeRegistry,
     ) -> Result<(), Error>;
 }
 
@@ -466,8 +487,9 @@ impl FactoryDslExt for crate::Factory {
         id: PrefabId,
         file_path: &str,
         config: &DslConfig,
+        type_registry: &AppTypeRegistry,
     ) -> Result<(), Error> {
-        let prefab = load_prefab_from_file(file_path, config)?;
+        let prefab = load_prefab_from_file(file_path, config, type_registry)?;
         self.register(id, prefab)
     }
 
@@ -475,8 +497,9 @@ impl FactoryDslExt for crate::Factory {
         &mut self,
         id: PrefabId,
         component_map: &ComponentMap,
+        type_registry: &AppTypeRegistry,
     ) -> Result<(), Error> {
-        let prefab = create_prefab_from_component_map(component_map)?;
+        let prefab = create_prefab_from_component_map(component_map, type_registry)?;
         self.register(id, prefab)
     }
 }
@@ -506,7 +529,8 @@ mod tests {
             ..Default::default()
         };
 
-        let result = parse_prefab_ron(ron_content, &config);
+        let type_registry = AppTypeRegistry::default();
+        let result = parse_prefab_ron(ron_content, &type_registry, &config);
         assert!(result.is_ok());
 
         let component_map = result.unwrap();
@@ -519,8 +543,9 @@ mod tests {
     fn test_parse_prefab_ron_invalid() {
         let ron_content = "invalid ron content";
         let config = DslConfig::default();
+        let type_registry = AppTypeRegistry::default();
 
-        let result = parse_prefab_ron(ron_content, &config);
+        let result = parse_prefab_ron(ron_content, &type_registry, &config);
         assert!(result.is_err());
     }
 
@@ -529,13 +554,14 @@ mod tests {
         let _world = World::new();
         let mut world = World::default();
         let mut commands = world.commands();
+        let type_registry = AppTypeRegistry::default();
 
         let request = BatchSpawnRequest {
             entities: Vec::new(),
             config: DslConfig::default(),
         };
 
-        let result = spawn_many(&mut commands, request);
+        let result = spawn_many(&mut commands, request, &type_registry);
         assert!(result.is_ok());
 
         let batch_result = result.unwrap();

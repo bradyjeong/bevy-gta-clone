@@ -31,8 +31,12 @@ fn test_prefab_asset_pipeline_integration() {
     register_default_components();
 
     // Test conversion to runtime prefab
-    let dsl_config = DslConfig::default();
-    let result = convert_prefab_asset_to_runtime_prefab(&prefab_asset, &dsl_config);
+    let dsl_config = DslConfig {
+        validation_mode: ValidationMode::Skip,
+        ..Default::default()
+    };
+    let type_registry = AppTypeRegistry::default();
+    let result = convert_prefab_asset_to_runtime_prefab(&prefab_asset, &dsl_config, &type_registry);
 
     // Should succeed
     assert!(result.is_ok());
@@ -79,9 +83,13 @@ fn test_factory_with_prefab_asset() {
     // Register components for testing
     register_default_components();
 
-    let dsl_config = DslConfig::default();
+    let dsl_config = DslConfig {
+        validation_mode: ValidationMode::Skip,
+        ..Default::default()
+    };
+    let type_registry = AppTypeRegistry::default();
     let runtime_prefab =
-        convert_prefab_asset_to_runtime_prefab(&prefab_asset, &dsl_config).unwrap();
+        convert_prefab_asset_to_runtime_prefab(&prefab_asset, &dsl_config, &type_registry).unwrap();
 
     // Create factory and register the prefab
     let mut factory = Factory::new();
@@ -112,8 +120,12 @@ fn test_asset_pipeline_oracle_requirements() {
 
     // 3. Helper converts PrefabAsset → runtime Prefab
     register_default_components();
-    let dsl_config = DslConfig::default();
-    let result = convert_prefab_asset_to_runtime_prefab(&prefab_asset, &dsl_config);
+    let dsl_config = DslConfig {
+        validation_mode: ValidationMode::Skip,
+        ..Default::default()
+    };
+    let type_registry = AppTypeRegistry::default();
+    let result = convert_prefab_asset_to_runtime_prefab(&prefab_asset, &dsl_config, &type_registry);
     assert!(result.is_ok());
 
     // 4. Integration with existing Factory API

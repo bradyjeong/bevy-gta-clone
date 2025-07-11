@@ -5,7 +5,7 @@
 
 use bevy::prelude::*;
 use gameplay_factory::{
-    BatchSpawnRequest, ComponentMap, DslConfig, DslFactory, DslFactoryPlugin, ValidationMode,
+    BatchSpawnRequest, DslConfig, DslFactory, DslFactoryPlugin, FactoryDslExt, ValidationMode,
     parse_prefab_ron, spawn_many,
 };
 use std::collections::HashMap;
@@ -23,7 +23,7 @@ fn main() {
         .run();
 }
 
-fn setup_dsl_example(mut factory: ResMut<DslFactory>) {
+fn setup_dsl_example(mut factory: ResMut<DslFactory>, type_registry: Res<AppTypeRegistry>) {
     info!("Setting up DSL example...");
 
     // Example 1: Parse RON content directly
@@ -125,7 +125,7 @@ fn demonstrate_batch_spawning(
         let mut components = HashMap::new();
         components.insert(
             "Name".to_string(),
-            ron::Value::String(format!("BatchEntity{}", i)),
+            ron::Value::String(format!("BatchEntity{i}")),
         );
 
         // Add Transform component
@@ -229,6 +229,7 @@ fn demonstrate_batch_spawning(
 }
 
 /// Example system showing how to use the DSL with validation modes
+#[allow(dead_code)]
 fn demonstrate_validation_modes(type_registry: Res<AppTypeRegistry>) {
     info!("Demonstrating validation modes...");
 
@@ -290,6 +291,7 @@ fn demonstrate_validation_modes(type_registry: Res<AppTypeRegistry>) {
 }
 
 /// Example system showing manual DSL usage without the factory
+#[allow(dead_code)]
 fn demonstrate_manual_dsl(mut commands: Commands, type_registry: Res<AppTypeRegistry>) {
     info!("Demonstrating manual DSL usage...");
 

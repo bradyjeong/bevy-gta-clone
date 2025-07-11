@@ -6,7 +6,8 @@
 use bevy::prelude::*;
 use gameplay_factory::{
     BatchSpawnRequest, ComponentMap, DslConfig, DslFactory, FactoryDslExt, PrefabId,
-    ValidationMode, create_prefab_from_component_map, parse_prefab_ron, spawn_many,
+    ValidationMode, clear_all_prefab_ids, create_prefab_from_component_map, parse_prefab_ron,
+    register_default_components, spawn_many,
 };
 use std::collections::HashMap;
 use std::fs;
@@ -23,7 +24,10 @@ fn test_complete_dsl_workflow() {
         .register_type::<Name>()
         .register_type::<Visibility>();
 
-    let type_registry = app.world.resource::<AppTypeRegistry>();
+    // Register default components
+    register_default_components();
+
+    let type_registry = app.world().resource::<AppTypeRegistry>();
     let mut factory = DslFactory::new();
 
     // Step 1: Parse RON content
@@ -53,8 +57,7 @@ fn test_complete_dsl_workflow() {
 
     // Step 4: Test batch spawning
     let mut world = World::new();
-    let mut queue = CommandQueue::default();
-    let mut commands = Commands::new(&mut queue, &world);
+    let mut commands = world.commands();
 
     let entities = vec![component_map];
     let result = factory
@@ -64,6 +67,9 @@ fn test_complete_dsl_workflow() {
     assert_eq!(result.spawned.len(), 1);
     assert_eq!(result.failed.len(), 0);
     assert!(result.metrics.total_time > std::time::Duration::ZERO);
+
+    // Clean up
+    clear_all_prefab_ids();
 }
 
 #[test]
@@ -73,7 +79,7 @@ fn test_validation_modes() {
     app.init_resource::<AppTypeRegistry>();
     app.register_type::<Name>();
 
-    let type_registry = app.world.resource::<AppTypeRegistry>();
+    let type_registry = app.world().resource::<AppTypeRegistry>();
 
     // Valid RON content
     let valid_ron = r#"
@@ -119,16 +125,16 @@ fn test_batch_spawning_performance() {
     app.init_resource::<AppTypeRegistry>();
     app.register_type::<Name>();
 
-    let type_registry = app.world.resource::<AppTypeRegistry>();
+    // Register default components
+    register_default_components();
+
+    let type_registry = app.world().resource::<AppTypeRegistry>();
 
     // Create a large number of entities for batch spawning
     let mut entities = Vec::new();
     for i in 0..100 {
         let mut components = HashMap::new();
-        components.insert(
-            "Name".to_string(),
-            ron::Value::String(format!("Entity{}", i)),
-        );
+        components.insert("Name".to_string(), ron::Value::String(format!("Entity{i}")));
 
         let component_map = ComponentMap {
             components,
@@ -142,8 +148,7 @@ fn test_batch_spawning_performance() {
     }
 
     let mut world = World::new();
-    let mut queue = CommandQueue::default();
-    let mut commands = Commands::new(&mut queue, &world);
+    let mut commands = world.commands();
 
     let request = BatchSpawnRequest {
         entities,
@@ -167,7 +172,7 @@ fn test_directory_loading() {
     app.init_resource::<AppTypeRegistry>();
     app.register_type::<Name>();
 
-    let type_registry = app.world.resource::<AppTypeRegistry>();
+    let type_registry = app.world().resource::<AppTypeRegistry>();
     let mut factory = DslFactory::new();
 
     // Create a temporary directory with RON files
@@ -205,6 +210,9 @@ fn test_directory_loading() {
     // Test cache
     let cache_stats = factory.cache_stats();
     assert_eq!(cache_stats.entries, 2);
+
+    // Clean up
+    clear_all_prefab_ids();
 }
 
 #[test]
@@ -232,7 +240,7 @@ fn test_prefab_creation_from_component_map() {
     app.init_resource::<AppTypeRegistry>();
     app.register_type::<Name>();
 
-    let type_registry = app.world.resource::<AppTypeRegistry>();
+    let type_registry = app.world().resource::<AppTypeRegistry>();
 
     let mut components = HashMap::new();
     components.insert("Name".to_string(), ron::Value::String("Test".to_string()));
@@ -260,7 +268,7 @@ fn test_load_prefab_from_ron_string() {
     app.init_resource::<AppTypeRegistry>();
     app.register_type::<Name>();
 
-    let type_registry = app.world.resource::<AppTypeRegistry>();
+    let type_registry = app.world().resource::<AppTypeRegistry>();
     let mut factory = DslFactory::new();
 
     let ron_content = r#"
@@ -287,6 +295,9 @@ fn test_load_prefab_from_ron_string() {
             );
         }
     }
+
+    // Clean up
+    clear_all_prefab_ids();
 }
 
 #[test]
@@ -295,7 +306,7 @@ fn test_error_handling() {
     app.add_plugins(MinimalPlugins);
     app.init_resource::<AppTypeRegistry>();
 
-    let type_registry = app.world.resource::<AppTypeRegistry>();
+    let type_registry = app.world().resource::<AppTypeRegistry>();
     let config = DslConfig::default();
 
     // Test invalid RON content
@@ -311,8 +322,7 @@ fn test_error_handling() {
 
     // Test empty batch spawn
     let mut world = World::new();
-    let mut queue = CommandQueue::default();
-    let mut commands = Commands::new(&mut queue, &world);
+    let mut commands = world.commands();
 
     let request = BatchSpawnRequest {
         entities: Vec::new(),
@@ -335,13 +345,13 @@ fn test_cache_functionality() {
     assert_eq!(stats.entries, 0);
 
     // Create some component maps
-    let component_map1 = factory.create_component_map({
+    let _component_map1 = factory.create_component_map({
         let mut components = HashMap::new();
         components.insert("Name".to_string(), ron::Value::String("Test1".to_string()));
         components
     });
 
-    let component_map2 = factory.create_component_map({
+    let _component_map2 = factory.create_component_map({
         let mut components = HashMap::new();
         components.insert("Name".to_string(), ron::Value::String("Test2".to_string()));
         components
@@ -374,7 +384,7 @@ fn test_complex_ron_parsing() {
         .register_type::<Name>()
         .register_type::<Visibility>();
 
-    let type_registry = app.world.resource::<AppTypeRegistry>();
+    let type_registry = app.world().resource::<AppTypeRegistry>();
     let config = DslConfig::default();
 
     let complex_ron = r#"

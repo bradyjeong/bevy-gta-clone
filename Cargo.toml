@@ -90,6 +90,7 @@ path = "examples/asset_pipeline_test.rs"
 [[example]]
 name = "city_demo_baseline"
 path = "examples/city_demo_baseline.rs"
+required-features = ["rapier3d_030"]
 
 [features]
 default = []

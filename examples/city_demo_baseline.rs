@@ -33,11 +33,15 @@ use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 
+#[cfg(feature = "rapier3d_030")]
 use amp_physics::{
-    BenchmarkResults, Brakes, DebugConfig, Drivetrain, Engine, PhysicsBenchmarkPlugin,
-    PhysicsDebugPlugin, PhysicsPlugin, PhysicsTime, Steering, Suspension, SuspensionRay,
-    Transmission, Vehicle, VehicleInput, WheelPhysics, WheelState, vehicle_suspension_system,
+    BenchmarkResults, Brakes, DebugConfig, Drivetrain, Engine, PhysicsPlugin, PhysicsTime,
+    Steering, Suspension, SuspensionRay, Transmission, Vehicle, VehicleInput, WheelPhysics,
+    WheelState, vehicle_suspension_system,
 };
+
+#[cfg(not(feature = "rapier3d_030"))]
+use amp_physics::{BenchmarkResults, DebugConfig, PhysicsPlugin, PhysicsTime};
 
 #[cfg(feature = "rapier3d_030")]
 use bevy_rapier3d::prelude::*;
@@ -57,13 +61,12 @@ fn main() {
             LogDiagnosticsPlugin::default(),
         ))
         .add_plugins(PhysicsPlugin)
-        .add_plugins(PhysicsDebugPlugin)
-        .add_plugins(PhysicsBenchmarkPlugin)
         .add_systems(Startup, setup_scene)
         .add_systems(
             Update,
             (
                 handle_input,
+                #[cfg(feature = "rapier3d_030")]
                 vehicle_controls,
                 toggle_debug_systems,
                 update_ui,
@@ -71,7 +74,12 @@ fn main() {
         )
         .add_systems(
             FixedUpdate,
-            (vehicle_suspension_system, update_vehicle_physics),
+            (
+                #[cfg(feature = "rapier3d_030")]
+                vehicle_suspension_system,
+                #[cfg(feature = "rapier3d_030")]
+                update_vehicle_physics,
+            ),
         )
         .run();
 }
@@ -109,7 +117,10 @@ fn setup_scene(
     // Ground plane
     commands.spawn((
         Mesh3d(meshes.add(Plane3d::default().mesh().size(100.0, 100.0))),
-        MeshMaterial3d(materials.add(Color::srgb(0.3, 0.5, 0.3))),
+        MeshMaterial3d(materials.add(StandardMaterial {
+            base_color: Color::srgb(0.3, 0.5, 0.3),
+            ..default()
+        })),
         Transform::default(),
         Name::new("Ground"),
     ));
@@ -122,15 +133,29 @@ fn setup_scene(
             Transform::from_xyz(0.0, -0.1, 0.0),
             Name::new("Ground Collider"),
         ));
+
+        // Create demo car
+        spawn_demo_car(
+            &mut commands,
+            &mut meshes,
+            &mut materials,
+            Vec3::new(0.0, 2.0, 0.0),
+        );
     }
 
-    // Create demo car
-    spawn_demo_car(
-        &mut commands,
-        &mut meshes,
-        &mut materials,
-        Vec3::new(0.0, 2.0, 0.0),
-    );
+    #[cfg(not(feature = "rapier3d_030"))]
+    {
+        // Demo sphere without physics
+        commands.spawn((
+            Mesh3d(meshes.add(Sphere::new(1.0))),
+            MeshMaterial3d(materials.add(StandardMaterial {
+                base_color: Color::srgb(0.8, 0.2, 0.2),
+                ..default()
+            })),
+            Transform::from_xyz(0.0, 2.0, 0.0),
+            Name::new("Demo Sphere"),
+        ));
+    }
 
     // Camera
     commands.spawn((
@@ -166,6 +191,7 @@ fn setup_scene(
     setup_ui(&mut commands);
 }
 
+#[cfg(feature = "rapier3d_030")]
 fn spawn_demo_car(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
@@ -176,7 +202,10 @@ fn spawn_demo_car(
     let car_entity = commands
         .spawn((
             Mesh3d(meshes.add(Cuboid::new(4.0, 1.5, 2.0))),
-            MeshMaterial3d(materials.add(Color::srgb(0.8, 0.2, 0.2))),
+            MeshMaterial3d(materials.add(StandardMaterial {
+                base_color: Color::srgb(0.8, 0.2, 0.2),
+                ..default()
+            })),
             Transform::from_translation(position),
             DemoCar,
             Vehicle,
@@ -191,20 +220,17 @@ fn spawn_demo_car(
         ))
         .id();
 
-    #[cfg(feature = "rapier3d_030")]
-    {
-        // Car body collider and rigid body
-        commands.entity(car_entity).insert((
-            RigidBody::Dynamic,
-            Collider::cuboid(2.0, 0.75, 1.0),
-            ColliderMassProperties::Density(1.0),
-            ExternalForce::default(),
-            Velocity::default(),
-            ReadMassProperties::default(),
-            GravityScale(1.0),
-            Ccd::enabled(),
-        ));
-    }
+    // Car body collider and rigid body
+    commands.entity(car_entity).insert((
+        RigidBody::Dynamic,
+        Collider::cuboid(2.0, 0.75, 1.0),
+        ColliderMassProperties::Density(1.0),
+        ExternalForce::default(),
+        Velocity::default(),
+        ReadMassProperties::default(),
+        GravityScale(1.0),
+        Ccd::enabled(),
+    ));
 
     // Wheels
     let wheel_positions = [
@@ -218,7 +244,10 @@ fn spawn_demo_car(
         let wheel_entity = commands
             .spawn((
                 Mesh3d(meshes.add(Cylinder::new(0.35, 0.2))),
-                MeshMaterial3d(materials.add(Color::srgb(0.1, 0.1, 0.1))),
+                MeshMaterial3d(materials.add(StandardMaterial {
+                    base_color: Color::srgb(0.1, 0.1, 0.1),
+                    ..default()
+                })),
                 Transform::from_translation(position + *wheel_pos)
                     .with_rotation(Quat::from_rotation_z(std::f32::consts::FRAC_PI_2)),
                 WheelPhysics::default(),
@@ -318,10 +347,11 @@ fn handle_input(
     }
 
     if keys.just_pressed(KeyCode::Escape) {
-        app_exit_events.write(AppExit::Success);
+        app_exit_events.write(bevy::app::AppExit::Success);
     }
 }
 
+#[cfg(feature = "rapier3d_030")]
 fn vehicle_controls(
     keys: Res<ButtonInput<KeyCode>>,
     mut query: Query<&mut VehicleInput, With<DemoCar>>,
@@ -400,6 +430,7 @@ fn update_ui(
     }
 }
 
+#[cfg(feature = "rapier3d_030")]
 fn update_vehicle_physics(
     mut vehicle_query: Query<
         (
@@ -464,6 +495,7 @@ fn update_vehicle_physics(
     }
 }
 
+#[cfg(feature = "rapier3d_030")]
 fn calculate_engine_torque(engine: &Engine) -> f32 {
     // Interpolate torque from the torque curve
     let torque_curve = &engine.torque_curve;
@@ -502,6 +534,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg(feature = "rapier3d_030")]
     fn test_engine_torque_calculation() {
         let engine = Engine::default();
         let torque = calculate_engine_torque(&engine);
@@ -509,6 +542,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "rapier3d_030")]
     fn test_engine_torque_with_throttle() {
         let mut engine = Engine::default();
         engine.throttle = 0.5;
