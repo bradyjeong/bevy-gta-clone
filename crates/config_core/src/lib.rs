@@ -339,6 +339,11 @@ mod tests {
     #[test]
     #[serial]
     fn test_config_loader_load_invalid_ron() {
+        // Ensure AMP_CONFIG is not set to avoid race conditions with other tests
+        unsafe {
+            std::env::remove_var("AMP_CONFIG");
+        }
+
         let temp_dir = TempDir::new().unwrap();
         let config_path = temp_dir.path().join("test.ron");
 
@@ -560,6 +565,16 @@ mod tests {
 
     #[test]
     fn test_amp_config_env_override() {
+        // Helper struct to ensure cleanup
+        struct EnvGuard;
+        impl Drop for EnvGuard {
+            fn drop(&mut self) {
+                unsafe {
+                    std::env::remove_var("AMP_CONFIG");
+                }
+            }
+        }
+
         let temp_dir = TempDir::new().unwrap();
         let config_path = temp_dir.path().join("custom_game.ron");
 
@@ -580,6 +595,9 @@ mod tests {
             std::env::set_var("AMP_CONFIG", config_path.to_str().unwrap());
         }
 
+        // Ensure cleanup happens even if test panics
+        let _guard = EnvGuard;
+
         let loader = ConfigLoader {
             search_paths: vec![PathBuf::from("/nonexistent")],
         };
@@ -588,18 +606,26 @@ mod tests {
         let config: GameConfig = loader.load().unwrap();
         assert_eq!(config.factory.prefab_path, "/env/override/prefabs/*.ron");
         assert!(!config.factory.hot_reload);
-
-        // Clean up
-        unsafe {
-            std::env::remove_var("AMP_CONFIG");
-        }
     }
 
     #[test]
     fn test_amp_config_env_override_nonexistent() {
+        // Helper struct to ensure cleanup
+        struct EnvGuard;
+        impl Drop for EnvGuard {
+            fn drop(&mut self) {
+                unsafe {
+                    std::env::remove_var("AMP_CONFIG");
+                }
+            }
+        }
+
         unsafe {
             std::env::set_var("AMP_CONFIG", "/nonexistent/config.ron");
         }
+
+        // Ensure cleanup happens even if test panics
+        let _guard = EnvGuard;
 
         let loader = ConfigLoader {
             search_paths: vec![PathBuf::from("/nonexistent")],
@@ -615,11 +641,6 @@ mod tests {
             "~/.config/my_game/prefabs/*.ron"
         );
         assert!(config.factory.hot_reload);
-
-        // Clean up
-        unsafe {
-            std::env::remove_var("AMP_CONFIG");
-        }
     }
 
     #[test]
