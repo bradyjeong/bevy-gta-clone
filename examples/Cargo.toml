@@ -13,6 +13,7 @@ publish = false
 [features]
 default = ["ron"]
 ron = ["gameplay_factory/ron"]
+rapier3d_030 = ["amp_physics/rapier3d_030"]
 
 [[bin]]
 name = "minimal"
@@ -33,6 +34,7 @@ path = "city_demo_baseline.rs"
 [dependencies]
 amp_core = { path = "../crates/amp_core" }
 amp_engine = { path = "../crates/amp_engine", features = ["bevy16"] }
+amp_physics = { path = "../crates/amp_physics", features = ["rapier3d_030"] }
 config_core = { path = "../crates/config_core" }
 gameplay_factory = { path = "../crates/gameplay_factory", features = ["ron"] }
 bevy_ecs = "0.13"

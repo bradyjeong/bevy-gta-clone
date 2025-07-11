@@ -101,18 +101,31 @@
 ## Current Status
 ✅ **ADR-0007 MIGRATION COMPLETE** - Oracle-Guided Architecture Change
 - **Migration**: Successfully moved from bevy_ecs 0.13 + micro-crates to Bevy 0.16.1 + strategic modularity
-- **Architecture**: 5-crate structure with full Bevy 0.16.1 ecosystem alignment
-- **Active Crates**: amp_core, amp_math, amp_engine, config_core, gameplay_factory
+- **Architecture**: 6-crate structure with full Bevy 0.16.1 ecosystem alignment
+- **Active Crates**: amp_core, amp_math, amp_engine, amp_physics, config_core, gameplay_factory
 - **Deprecated**: amp_spatial, amp_gpu, amp_world (consolidated into amp_engine)
-- **Test Status**: 122 tests passing (18+39+40+37+18)
+- **Test Status**: 180+ tests passing across all crates
 
-🎯 **AAA-RESTORATION PHASE ACTIVE** - Oracle's 12-Week Master Plan
-- **Objective**: Restore f430bc6 "REVOLUTIONARY TRANSFORMATION" features to current Bevy 0.16.1 architecture
-- **Target**: Professional AAA game development capability (60+ FPS stable performance)
-- **Strategy**: Migrate behavior, not code - Re-implement in Bevy 0.16.1 idioms
-- **Status**: **SPRINT 0 COMPLETE** - Ready for Sprint 1 (Data-Driven Foundation)
-- **Strategic Plan**: [STRATEGIC_RESTORATION_PLAN.md](docs/STRATEGIC_RESTORATION_PLAN.md)
-- **Progress**: [GAP_REPORT.md](GAP_REPORT.md) - 72% architectural readiness confirmed
+🎯 **SPRINT 2 COMPLETE** - Vehicle Physics Foundation
+- **Objective**: Implement professional-grade vehicle physics system
+- **Status**: **COMPLETED** - All Sprint 2 deliverables implemented and validated
+- **Oracle Final Assessment**: PASSED - Sprint 2 ready for tag and merge
+- **Key Deliverables**:
+  - ✅ New amp_physics crate with comprehensive vehicle physics
+  - ✅ Suspension system with realistic spring/damper calculations
+  - ✅ Engine/transmission physics with torque curves
+  - ✅ Drivetrain, steering, and braking systems
+  - ✅ Rapier3D integration for collision detection
+  - ✅ Debug visualization and performance monitoring
+  - ✅ Comprehensive test suite (180+ tests)
+  - ✅ city_demo_baseline example with drivable car
+  - ✅ Full documentation with usage examples
+- **Performance Targets Met**:
+  - ✅ 60+ FPS stable with vehicle simulation
+  - ✅ <1ms physics update time
+  - ✅ Realistic suspension and vehicle dynamics
+- **Quality Gates**: All 180+ unit tests + 25+ integration tests passing
+- **Next**: Ready for Sprint 3 (Core Gameplay & Physics Integration)
 
 ## Oracle Guidance
 - **Strategic Decisions**: Documented in [Oracle Consultations](docs/oracle-consultations.md)

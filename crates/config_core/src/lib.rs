@@ -16,6 +16,23 @@ use amp_core::{ConfigError, Error, Result};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use std::path::PathBuf;
 
+// Bevy asset system integration (feature-gated)
+#[cfg(feature = "bevy-assets")]
+pub mod assets;
+
+// Configuration type definitions
+#[cfg(feature = "bevy-assets")]
+pub mod types;
+
+// Vehicle configuration types
+pub mod vehicle;
+
+// Re-export vehicle configuration types for convenience
+pub use vehicle::{
+    EngineConfig, SuspensionConfig, TransmissionConfig, TransmissionType, VehicleConfig,
+    WheelConfig,
+};
+
 /// Factory configuration settings for entity and prefab management.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(default)]

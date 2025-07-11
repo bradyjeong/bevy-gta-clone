@@ -118,6 +118,14 @@ fn test_bevy_integration() {
 - Use appropriate buffer management
 - Profile GPU usage
 
+### Physics
+- Maintain 60Hz fixed timestep for consistent simulation
+- Disable CCD (Continuous Collision Detection) for performance
+- Keep physics CPU time < 16ms per frame (60 FPS target)
+- Use time accumulation for sub-frame interpolation
+- Profile physics systems regularly with benchmarks
+- Test with 10+ vehicles to ensure performance targets
+
 ## Commit Guidelines
 
 ### Commit Messages
@@ -143,6 +151,7 @@ Longer description if needed, explaining the why behind the change.
 - `core`: amp_core crate
 - `math`: amp_math crate
 - `engine`: amp_engine crate
+- `physics`: amp_physics crate
 - `config`: config_core crate
 - `factory`: gameplay_factory crate
 - `ci`: CI/CD changes

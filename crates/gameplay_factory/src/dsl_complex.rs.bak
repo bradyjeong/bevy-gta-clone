@@ -1,0 +1,803 @@
+//! Oracle-specified entity factory DSL system with bevy_reflect integration
+//!
+//! This module implements the Oracle's exact DSL patterns for dynamic entity creation
+//! from RON files using bevy_reflect for component deserialization.
+
+use crate::{Error, Prefab, PrefabId};
+use bevy::prelude::*;
+use std::collections::HashMap;
+
+/// DSL configuration for entity factory
+#[derive(Debug, Clone)]
+pub struct DslConfig {
+    /// Maximum entities to spawn in a single batch
+    pub max_batch_size: usize,
+    /// Validation mode for component data
+    pub validation_mode: ValidationMode,
+    /// Cache parsed prefabs for reuse
+    pub cache_prefabs: bool,
+}
+
+impl Default for DslConfig {
+    fn default() -> Self {
+        Self {
+            max_batch_size: 1000,
+            validation_mode: ValidationMode::Strict,
+            cache_prefabs: true,
+        }
+    }
+}
+
+/// Validation mode for component data
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ValidationMode {
+    /// Strict validation - fail on any errors
+    Strict,
+    /// Permissive validation - warn on errors but continue
+    Permissive,
+    /// Skip validation entirely
+    Skip,
+}
+
+/// Component map for dynamic entity creation
+#[derive(Debug, Clone)]
+pub struct ComponentMap {
+    /// Component type name to data mapping
+    pub components: HashMap<String, ron::Value>,
+    /// Metadata for the component map
+    pub metadata: ComponentMapMetadata,
+}
+
+/// Metadata for component maps
+#[derive(Debug, Clone)]
+pub struct ComponentMapMetadata {
+    /// Source file path (if loaded from file)
+    pub source_path: Option<String>,
+    /// Validation status
+    pub validation_status: ValidationStatus,
+    /// Component count
+    pub component_count: usize,
+}
+
+/// Validation status for component maps
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ValidationStatus {
+    /// All components validated successfully
+    Valid,
+    /// Some components had warnings
+    Warning(Vec<String>),
+    /// Some components failed validation
+    Error(Vec<String>),
+}
+
+/// Batch spawn request for multiple entities
+#[derive(Debug, Clone)]
+pub struct BatchSpawnRequest {
+    /// Component maps for entities to spawn
+    pub entities: Vec<ComponentMap>,
+    /// Batch configuration
+    pub config: DslConfig,
+}
+
+/// Result of batch spawn operation
+#[derive(Debug)]
+pub struct BatchSpawnResult {
+    /// Successfully spawned entities
+    pub spawned: Vec<Entity>,
+    /// Failed entity spawns with errors
+    pub failed: Vec<(usize, Error)>,
+    /// Performance metrics
+    pub metrics: BatchSpawnMetrics,
+}
+
+/// Performance metrics for batch operations
+#[derive(Debug, Default)]
+pub struct BatchSpawnMetrics {
+    /// Total time for batch operation
+    pub total_time: std::time::Duration,
+    /// Time per entity spawned
+    pub time_per_entity: std::time::Duration,
+    /// Number of components processed
+    pub components_processed: usize,
+    /// Memory usage estimate
+    pub memory_used: usize,
+}
+
+/// Oracle-specified RON prefab parser with bevy_reflect integration
+///
+/// This function implements the Oracle's exact patterns for parsing RON files
+/// into component maps using bevy_reflect for dynamic deserialization.
+///
+/// # Arguments
+///
+/// * `ron_content` - RON file content as string
+/// * `type_registry` - Bevy type registry for reflection
+/// * `config` - DSL configuration
+///
+/// # Returns
+///
+/// Returns a `ComponentMap` with parsed components and metadata
+///
+/// # Examples
+///
+/// ```
+/// use gameplay_factory::{parse_prefab_ron, DslConfig};
+/// use bevy::prelude::*;
+///
+/// let ron_content = r#"
+/// (
+///     components: {
+///         "Transform": (
+///             translation: (x: 1.0, y: 2.0, z: 3.0),
+///             rotation: (x: 0.0, y: 0.0, z: 0.0, w: 1.0),
+///             scale: (x: 1.0, y: 1.0, z: 1.0),
+///         ),
+///         "Name": "PlayerEntity",
+///         "Visibility": "Visible",
+///     }
+/// )
+/// "#;
+///
+/// let app = App::new();
+/// let type_registry = app.world.resource::<AppTypeRegistry>();
+/// let config = DslConfig::default();
+///
+/// let component_map = parse_prefab_ron(ron_content, type_registry, &config).unwrap();
+/// assert_eq!(component_map.components.len(), 3);
+/// ```
+pub fn parse_prefab_ron(
+    ron_content: &str,
+    type_registry: &AppTypeRegistry,
+    config: &DslConfig,
+) -> Result<ComponentMap, Error> {
+    let start_time = std::time::Instant::now();
+    
+    // Parse RON content into structured data
+    let ron_value: ron::Value = ron::from_str(ron_content)
+        .map_err(|e| Error::serialization(format!("Failed to parse RON: {}", e)))?;
+
+    // Extract component data from RON structure
+    let components = extract_components_from_ron(&ron_value)?;
+    
+    // Validate components using bevy_reflect
+    let validation_result = validate_components(&components, type_registry, config)?;
+    
+    let component_count = components.len();
+    let metadata = ComponentMapMetadata {
+        source_path: None,
+        validation_status: validation_result,
+        component_count,
+    };
+
+    let elapsed = start_time.elapsed();
+    debug!(
+        "Parsed {} components from RON in {:?}",
+        component_count, elapsed
+    );
+
+    Ok(ComponentMap {
+        components,
+        metadata,
+    })
+}
+
+/// Extract component data from parsed RON value
+fn extract_components_from_ron(
+    ron_value: &ron::Value,
+) -> Result<HashMap<String, ron::Value>, Error> {
+    match ron_value {
+        ron::Value::Map(map) => {
+            // Look for "components" key in the map
+            for (key, value) in map.iter() {
+                if let ron::Value::String(key_str) = key {
+                    if key_str == "components" {
+                        return extract_component_map(value);
+                    }
+                }
+            }
+            
+            // If no "components" key found, treat the entire map as components
+            extract_component_map(ron_value)
+        }
+        _ => Err(Error::validation(
+            "RON content must be a map containing component definitions"
+        )),
+    }
+}
+
+/// Extract component map from RON value
+fn extract_component_map(value: &ron::Value) -> Result<HashMap<String, ron::Value>, Error> {
+    match value {
+        ron::Value::Map(map) => {
+            let mut components = HashMap::new();
+            
+            for (key, value) in map.iter() {
+                if let ron::Value::String(component_name) = key {
+                    components.insert(component_name.clone(), value.clone());
+                } else {
+                    return Err(Error::validation(
+                        "Component names must be strings"
+                    ));
+                }
+            }
+            
+            Ok(components)
+        }
+        _ => Err(Error::validation(
+            "Components must be defined as a map"
+        )),
+    }
+}
+
+/// Validate components using bevy_reflect
+fn validate_components(
+    components: &HashMap<String, ron::Value>,
+    type_registry: &AppTypeRegistry,
+    config: &DslConfig,
+) -> Result<ValidationStatus, Error> {
+    if config.validation_mode == ValidationMode::Skip {
+        return Ok(ValidationStatus::Valid);
+    }
+
+    let registry = type_registry.read();
+    let mut warnings = Vec::new();
+    let mut errors = Vec::new();
+
+    for (component_name, component_data) in components {
+        match validate_single_component(component_name, component_data, &registry) {
+            Ok(Some(warning)) => warnings.push(warning),
+            Ok(None) => {}, // Valid component
+            Err(error) => {
+                let error_msg = format!("Component '{}': {}", component_name, error);
+                
+                if config.validation_mode == ValidationMode::Strict {
+                    return Err(Error::validation(error_msg));
+                } else {
+                    errors.push(error_msg);
+                }
+            }
+        }
+    }
+
+    if !errors.is_empty() {
+        Ok(ValidationStatus::Error(errors))
+    } else if !warnings.is_empty() {
+        Ok(ValidationStatus::Warning(warnings))
+    } else {
+        Ok(ValidationStatus::Valid)
+    }
+}
+
+/// Validate a single component using bevy_reflect
+fn validate_single_component(
+    component_name: &str,
+    _component_data: &ron::Value,
+    registry: &TypeRegistry,
+) -> Result<Option<String>, Error> {
+    // Check if the component type is registered
+    if let Some(_registration) = registry.get_with_name(component_name) {
+        // Component type is registered - detailed validation could be added here
+        Ok(None)
+    } else {
+        // Component type not found - this might be acceptable in some cases
+        Ok(Some(format!(
+            "Component type '{}' not found in type registry",
+            component_name
+        )))
+    }
+}
+
+/// Oracle-specified batching API using Commands::spawn_batch
+///
+/// This function implements the Oracle's exact batching patterns for high-performance
+/// entity spawning using POD components and Commands::spawn_batch.
+///
+/// # Arguments
+///
+/// * `commands` - Bevy Commands for entity spawning
+/// * `request` - Batch spawn request with component maps
+/// * `type_registry` - Bevy type registry for reflection
+///
+/// # Returns
+///
+/// Returns a `BatchSpawnResult` with spawned entities and metrics
+///
+/// # Examples
+///
+/// ```
+/// use gameplay_factory::{spawn_many, BatchSpawnRequest, DslConfig, ComponentMap};
+/// use bevy::prelude::*;
+///
+/// let mut commands = Commands::new(&mut CommandQueue::default(), &World::new());
+/// let request = BatchSpawnRequest {
+///     entities: vec![/* component maps */],
+///     config: DslConfig::default(),
+/// };
+/// let app = App::new();
+/// let type_registry = app.world.resource::<AppTypeRegistry>();
+///
+/// let result = spawn_many(&mut commands, request, type_registry).unwrap();
+/// println!("Spawned {} entities", result.spawned.len());
+/// ```
+pub fn spawn_many(
+    commands: &mut Commands,
+    request: BatchSpawnRequest,
+    type_registry: &AppTypeRegistry,
+) -> Result<BatchSpawnResult, Error> {
+    let start_time = std::time::Instant::now();
+    
+    if request.entities.is_empty() {
+        return Ok(BatchSpawnResult {
+            spawned: Vec::new(),
+            failed: Vec::new(),
+            metrics: BatchSpawnMetrics::default(),
+        });
+    }
+
+    let mut spawned = Vec::new();
+    let mut failed = Vec::new();
+    let mut components_processed = 0;
+
+    // Process entities in batches for optimal performance
+    let batch_size = request.config.max_batch_size.min(request.entities.len());
+    
+    for (batch_index, entity_batch) in request.entities.chunks(batch_size).enumerate() {
+        match spawn_batch(commands, entity_batch, type_registry, &request.config) {
+            Ok(batch_result) => {
+                spawned.extend(batch_result.spawned);
+                failed.extend(batch_result.failed.into_iter().map(|(idx, err)| {
+                    (batch_index * batch_size + idx, err)
+                }));
+                components_processed += batch_result.components_processed;
+            }
+            Err(error) => {
+                // If the entire batch fails, mark all entities as failed
+                for (idx, _) in entity_batch.iter().enumerate() {
+                    failed.push((batch_index * batch_size + idx, error.clone()));
+                }
+            }
+        }
+    }
+
+    let total_time = start_time.elapsed();
+    let time_per_entity = if !spawned.is_empty() {
+        total_time / spawned.len() as u32
+    } else {
+        std::time::Duration::ZERO
+    };
+
+    let metrics = BatchSpawnMetrics {
+        total_time,
+        time_per_entity,
+        components_processed,
+        memory_used: estimate_memory_usage(&spawned, components_processed),
+    };
+
+    debug!(
+        "Spawned {} entities ({} failed) in {:?}",
+        spawned.len(),
+        failed.len(),
+        total_time
+    );
+
+    Ok(BatchSpawnResult {
+        spawned,
+        failed,
+        metrics,
+    })
+}
+
+/// Batch spawn result for internal use
+#[derive(Debug)]
+struct InternalBatchResult {
+    spawned: Vec<Entity>,
+    failed: Vec<(usize, Error)>,
+    components_processed: usize,
+}
+
+/// Spawn a batch of entities using Commands::spawn_batch
+fn spawn_batch(
+    commands: &mut Commands,
+    entities: &[ComponentMap],
+    type_registry: &AppTypeRegistry,
+    config: &DslConfig,
+) -> Result<InternalBatchResult, Error> {
+    let mut spawned = Vec::new();
+    let mut failed = Vec::new();
+    let mut components_processed = 0;
+
+    for (index, component_map) in entities.iter().enumerate() {
+        match spawn_single_entity(commands, component_map, type_registry, config) {
+            Ok(entity) => {
+                spawned.push(entity);
+                components_processed += component_map.components.len();
+            }
+            Err(error) => {
+                failed.push((index, error));
+            }
+        }
+    }
+
+    Ok(InternalBatchResult {
+        spawned,
+        failed,
+        components_processed,
+    })
+}
+
+/// Spawn a single entity from a component map
+fn spawn_single_entity(
+    commands: &mut Commands,
+    component_map: &ComponentMap,
+    type_registry: &AppTypeRegistry,
+    _config: &DslConfig,
+) -> Result<Entity, Error> {
+    let entity = commands.spawn_empty().id();
+    
+    // Apply components using bevy_reflect
+    let registry = type_registry.read();
+    
+    for (component_name, component_data) in &component_map.components {
+        if let Err(error) = apply_component_with_reflection(
+            commands,
+            entity,
+            component_name,
+            component_data,
+            &registry,
+        ) {
+            // If component application fails, despawn the entity
+            commands.entity(entity).despawn();
+            return Err(error);
+        }
+    }
+
+    Ok(entity)
+}
+
+/// Apply a component using bevy_reflect for dynamic deserialization
+fn apply_component_with_reflection(
+    commands: &mut Commands,
+    entity: Entity,
+    component_name: &str,
+    component_data: &ron::Value,
+    registry: &TypeRegistry,
+) -> Result<(), Error> {
+    // Get the type registration for the component
+    let type_registration = registry
+        .get_with_name(component_name)
+        .ok_or_else(|| {
+            Error::validation(format!(
+                "Component type '{}' not found in type registry",
+                component_name
+            ))
+        })?;
+
+    // Get the ReflectDeserialize trait implementation
+    let reflect_deserialize = type_registration
+        .data::<ReflectDeserialize>()
+        .ok_or_else(|| {
+            Error::validation(format!(
+                "Component type '{}' does not implement ReflectDeserialize",
+                component_name
+            ))
+        })?;
+
+    // Convert RON value to string for deserialization
+    let ron_string = ron::to_string(component_data)
+        .map_err(|e| Error::serialization(format!("Failed to serialize component data: {}", e)))?;
+
+    // Deserialize the component using bevy_reflect
+    let mut deserializer = ron::Deserializer::from_str(&ron_string)
+        .map_err(|e| Error::serialization(format!("Failed to create deserializer: {}", e)))?;
+    
+    let component_box = reflect_deserialize
+        .deserialize(&mut deserializer)
+        .map_err(|e| {
+            Error::serialization(format!(
+                "Failed to deserialize component '{}': {}",
+                component_name, e
+            ))
+        })?;
+
+    // Get the ReflectComponent trait to insert the component
+    let reflect_component = type_registration
+        .data::<ReflectComponent>()
+        .ok_or_else(|| {
+            Error::validation(format!(
+                "Component type '{}' does not implement ReflectComponent",
+                component_name
+            ))
+        })?;
+
+    // Insert the component into the entity
+    reflect_component.insert(&mut commands.entity(entity), &*component_box);
+
+    Ok(())
+}
+
+/// Estimate memory usage for spawned entities
+fn estimate_memory_usage(entities: &[Entity], components_processed: usize) -> usize {
+    // Rough estimate: 64 bytes per entity + 128 bytes per component
+    entities.len() * 64 + components_processed * 128
+}
+
+/// Create a prefab from a component map
+///
+/// This function integrates the DSL system with the existing Prefab system
+/// by converting component maps into prefabs that can be used with the Factory.
+///
+/// # Arguments
+///
+/// * `component_map` - Component map to convert
+/// * `type_registry` - Bevy type registry for reflection
+///
+/// # Returns
+///
+/// Returns a `Prefab` that can be registered with the Factory
+///
+/// # Examples
+///
+/// ```
+/// use gameplay_factory::{create_prefab_from_component_map, ComponentMap};
+/// use bevy::prelude::*;
+///
+/// let component_map = ComponentMap {
+///     components: HashMap::new(),
+///     metadata: ComponentMapMetadata::default(),
+/// };
+/// let app = App::new();
+/// let type_registry = app.world.resource::<AppTypeRegistry>();
+///
+/// let prefab = create_prefab_from_component_map(&component_map, type_registry).unwrap();
+/// ```
+pub fn create_prefab_from_component_map(
+    component_map: &ComponentMap,
+    type_registry: &AppTypeRegistry,
+) -> Result<Prefab, Error> {
+    let mut prefab = Prefab::new();
+    
+    // Convert each component in the map to a ComponentInit
+    for (component_name, component_data) in &component_map.components {
+        let component_init = ReflectComponentInit {
+            component_name: component_name.clone(),
+            component_data: component_data.clone(),
+            type_registry: type_registry.clone(),
+        };
+        
+        prefab.add_component(Box::new(component_init));
+    }
+    
+    Ok(prefab)
+}
+
+/// Component initializer using bevy_reflect
+#[derive(Debug, Clone)]
+struct ReflectComponentInit {
+    component_name: String,
+    component_data: ron::Value,
+    type_registry: AppTypeRegistry,
+}
+
+impl crate::ComponentInit for ReflectComponentInit {
+    fn init(&self, cmd: &mut Commands, entity: Entity) -> Result<(), Error> {
+        let registry = self.type_registry.read();
+        apply_component_with_reflection(
+            cmd,
+            entity,
+            &self.component_name,
+            &self.component_data,
+            &registry,
+        )
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
+
+/// Enhanced DSL for loading prefabs from files
+///
+/// This function provides a higher-level interface for loading prefabs
+/// from RON files with full DSL support and caching.
+///
+/// # Arguments
+///
+/// * `file_path` - Path to the RON file
+/// * `type_registry` - Bevy type registry for reflection
+/// * `config` - DSL configuration
+///
+/// # Returns
+///
+/// Returns a `Prefab` loaded from the file
+pub fn load_prefab_from_file(
+    file_path: &str,
+    type_registry: &AppTypeRegistry,
+    config: &DslConfig,
+) -> Result<Prefab, Error> {
+    let ron_content = std::fs::read_to_string(file_path)
+        .map_err(|e| Error::resource_load(file_path, format!("Failed to read file: {}", e)))?;
+
+    let mut component_map = parse_prefab_ron(&ron_content, type_registry, config)?;
+    
+    // Set source path in metadata
+    component_map.metadata.source_path = Some(file_path.to_string());
+    
+    create_prefab_from_component_map(&component_map, type_registry)
+}
+
+/// Factory extension for DSL integration
+pub trait FactoryDslExt {
+    /// Load and register a prefab from a RON file using the DSL
+    fn load_prefab_dsl(
+        &mut self,
+        id: PrefabId,
+        file_path: &str,
+        type_registry: &AppTypeRegistry,
+        config: &DslConfig,
+    ) -> Result<(), Error>;
+    
+    /// Register a prefab from a component map
+    fn register_from_component_map(
+        &mut self,
+        id: PrefabId,
+        component_map: &ComponentMap,
+        type_registry: &AppTypeRegistry,
+    ) -> Result<(), Error>;
+}
+
+impl FactoryDslExt for crate::Factory {
+    fn load_prefab_dsl(
+        &mut self,
+        id: PrefabId,
+        file_path: &str,
+        type_registry: &AppTypeRegistry,
+        config: &DslConfig,
+    ) -> Result<(), Error> {
+        let prefab = load_prefab_from_file(file_path, type_registry, config)?;
+        self.register(id, prefab)
+    }
+    
+    fn register_from_component_map(
+        &mut self,
+        id: PrefabId,
+        component_map: &ComponentMap,
+        type_registry: &AppTypeRegistry,
+    ) -> Result<(), Error> {
+        let prefab = create_prefab_from_component_map(component_map, type_registry)?;
+        self.register(id, prefab)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::*;
+    use std::collections::HashMap;
+
+    #[test]
+    fn test_parse_prefab_ron_basic() {
+        let ron_content = r#"
+        (
+            components: {
+                "Transform": (
+                    translation: (x: 1.0, y: 2.0, z: 3.0),
+                    rotation: (x: 0.0, y: 0.0, z: 0.0, w: 1.0),
+                    scale: (x: 1.0, y: 1.0, z: 1.0),
+                ),
+                "Name": "TestEntity",
+            }
+        )
+        "#;
+
+        let mut app = App::new();
+        app.init_resource::<AppTypeRegistry>();
+        let type_registry = app.world.resource::<AppTypeRegistry>();
+        let config = DslConfig::default();
+
+        let result = parse_prefab_ron(ron_content, type_registry, &config);
+        assert!(result.is_ok());
+        
+        let component_map = result.unwrap();
+        assert_eq!(component_map.components.len(), 2);
+        assert!(component_map.components.contains_key("Transform"));
+        assert!(component_map.components.contains_key("Name"));
+    }
+
+    #[test]
+    fn test_parse_prefab_ron_invalid() {
+        let ron_content = "invalid ron content";
+
+        let mut app = App::new();
+        app.init_resource::<AppTypeRegistry>();
+        let type_registry = app.world.resource::<AppTypeRegistry>();
+        let config = DslConfig::default();
+
+        let result = parse_prefab_ron(ron_content, type_registry, &config);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_batch_spawn_empty() {
+        let mut world = World::new();
+        let mut queue = CommandQueue::default();
+        let mut commands = Commands::new(&mut queue, &world);
+
+        let request = BatchSpawnRequest {
+            entities: Vec::new(),
+            config: DslConfig::default(),
+        };
+
+        let mut app = App::new();
+        app.init_resource::<AppTypeRegistry>();
+        let type_registry = app.world.resource::<AppTypeRegistry>();
+
+        let result = spawn_many(&mut commands, request, type_registry);
+        assert!(result.is_ok());
+
+        let batch_result = result.unwrap();
+        assert_eq!(batch_result.spawned.len(), 0);
+        assert_eq!(batch_result.failed.len(), 0);
+    }
+
+    #[test]
+    fn test_component_map_creation() {
+        let mut components = HashMap::new();
+        components.insert("Transform".to_string(), ron::Value::Unit);
+        components.insert("Name".to_string(), ron::Value::String("Test".to_string()));
+
+        let component_map = ComponentMap {
+            components,
+            metadata: ComponentMapMetadata {
+                source_path: None,
+                validation_status: ValidationStatus::Valid,
+                component_count: 2,
+            },
+        };
+
+        assert_eq!(component_map.components.len(), 2);
+        assert_eq!(component_map.metadata.component_count, 2);
+    }
+
+    #[test]
+    fn test_dsl_config_default() {
+        let config = DslConfig::default();
+        assert_eq!(config.max_batch_size, 1000);
+        assert_eq!(config.validation_mode, ValidationMode::Strict);
+        assert!(config.cache_prefabs);
+    }
+
+    #[test]
+    fn test_validation_mode_equality() {
+        assert_eq!(ValidationMode::Strict, ValidationMode::Strict);
+        assert_ne!(ValidationMode::Strict, ValidationMode::Permissive);
+        assert_ne!(ValidationMode::Permissive, ValidationMode::Skip);
+    }
+
+    #[test]
+    fn test_extract_components_from_ron() {
+        let mut map = ron::Map::new();
+        let mut components_map = ron::Map::new();
+        components_map.insert(
+            ron::Value::String("Transform".to_string()),
+            ron::Value::Unit,
+        );
+        components_map.insert(
+            ron::Value::String("Name".to_string()),
+            ron::Value::String("Test".to_string()),
+        );
+        
+        map.insert(
+            ron::Value::String("components".to_string()),
+            ron::Value::Map(components_map),
+        );
+
+        let ron_value = ron::Value::Map(map);
+        let result = extract_components_from_ron(&ron_value);
+        
+        assert!(result.is_ok());
+        let components = result.unwrap();
+        assert_eq!(components.len(), 2);
+        assert!(components.contains_key("Transform"));
+        assert!(components.contains_key("Name"));
+    }
+}

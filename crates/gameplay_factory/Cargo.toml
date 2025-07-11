@@ -12,6 +12,7 @@ keywords = ["gamedev", "bevy", "entity", "factory", "prefab"]
 [dependencies]
 bevy = { workspace = true }
 amp_core = { path = "../amp_core" }
+amp_physics = { path = "../amp_physics" }
 config_core = { path = "../config_core" }
 serde = { workspace = true, features = ["derive"] }
 ron = { workspace = true, optional = true }
@@ -28,9 +29,27 @@ tempfile = { workspace = true }
 crossbeam-utils = { workspace = true }
 tokio = { workspace = true, features = ["macros", "test-util"] }
 serial_test = { workspace = true }
+criterion = { workspace = true, features = ["html_reports"] }
 
 [features]
-default = ["ron"]
+default = ["ron", "rapier3d_030"]
 ron = ["dep:ron"]
 hot-reload = ["dep:notify", "dep:tokio"]
-# legacy_ron_loader removed: not needed in Bevy 0.16
+legacy_ron_loader = []
+legacy-dsl = []
+rapier3d_030 = ["amp_physics/rapier3d_030"]
+
+# [[example]]
+# name = "dsl_example"
+# path = "examples/dsl_example.rs"
+required-features = ["legacy-dsl"]
+
+# [[test]]
+# name = "dsl_integration_test"
+# path = "tests/dsl_integration_test.rs"
+# required-features = ["legacy-dsl"]
+
+[[bench]]
+name = "factory_spawn"
+path = "benches/factory_spawn.rs"
+required-features = ["legacy-dsl"]

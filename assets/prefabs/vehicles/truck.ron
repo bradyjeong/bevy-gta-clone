@@ -1,0 +1,38 @@
+// Truck configuration - heavy duty vehicle
+(
+    mass: 3500.0,
+    engine: (
+        max_power: 400.0,
+        power_curve_rpm: [800.0, 1500.0, 2000.0, 2500.0, 3000.0],
+        power_curve_power: [200.0, 350.0, 400.0, 380.0, 320.0],
+        torque_curve_rpm: [800.0, 1200.0, 1800.0, 2200.0, 2800.0],
+        torque_curve_torque: [600.0, 800.0, 850.0, 820.0, 700.0],
+        idle_rpm: 650.0,
+        max_rpm: 3500.0,
+        engine_braking: 0.5,
+        fuel_consumption: 25.0,
+    ),
+    wheels: ((radius: 0.45, width: 0.285, mass: 45.0, grip: 0.85, rolling_resistance: 0.025, lateral_friction: 0.8, longitudinal_friction: 0.85, stiffness: 80000.0, damping: 4000.0), (radius: 0.45, width: 0.285, mass: 45.0, grip: 0.85, rolling_resistance: 0.025, lateral_friction: 0.8, longitudinal_friction: 0.85, stiffness: 80000.0, damping: 4000.0), (radius: 0.45, width: 0.285, mass: 45.0, grip: 0.85, rolling_resistance: 0.025, lateral_friction: 0.8, longitudinal_friction: 0.85, stiffness: 80000.0, damping: 4000.0), (radius: 0.45, width: 0.285, mass: 45.0, grip: 0.85, rolling_resistance: 0.025, lateral_friction: 0.8, longitudinal_friction: 0.85, stiffness: 80000.0, damping: 4000.0)),
+    suspension: (
+        spring_stiffness: 60000.0,
+        damper_damping: 6000.0,
+        max_compression: 0.25,
+        max_extension: 0.25,
+        rest_length: 0.7,
+        anti_roll_bar_stiffness: 8000.0,
+        travel: 0.5,
+        camber: 0.0,
+        caster: 4.0,
+        toe: 0.0,
+    ),
+    transmission: (
+        gear_ratios: [-3.5, 0.0, 5.8, 3.2, 2.1, 1.4, 1.0, 0.75],
+        final_drive_ratio: 4.5,
+        clutch_engagement_rpm: 800.0,
+        shift_up_rpm: 3200.0,
+        shift_down_rpm: 1200.0,
+        shift_time: 0.6,
+        efficiency: 0.92,
+        transmission_type: Manual,
+    ),
+)

@@ -27,7 +27,7 @@ repository = "https://github.com/bradyjeong/bevy-gta-clone"
 # ---------- Bevy core ----------
 bevy = "=0.16.1"                          # Full engine, patch-locked
 bevy_ecs = "=0.16.1"                      # ECS crate (for deprecated amp_world)
-bevy_rapier3d = "=0.26.0"                 # Compiled against Bevy 0.16.1
+bevy_rapier3d = "=0.30.0"                 # Compiled against Bevy 0.16.1, physics simulation
 # ---------- Rendering ----------
 # Bevy re-exports wgpu/winit; keep them in sync for crates that still need them
 wgpu = "=24.0.5"   # Locked to Bevy 0.16.1 version
@@ -43,6 +43,7 @@ pollster = "^0.3"
 # Configuration
 ron = "^0.8"
 dirs = "^5.0"
+serde_json = "^1.0"
 
 # Dev tools
 rstest = "^0.21"
@@ -93,12 +94,15 @@ path = "examples/city_demo_baseline.rs"
 [features]
 default = []
 ron = ["gameplay_factory/ron"]
+rapier3d_030 = ["gameplay_factory/rapier3d_030", "amp_physics", "bevy_rapier3d"]
 
 [dependencies]
 gameplay_factory = { path = "crates/gameplay_factory" }
 config_core = { path = "crates/config_core" }
 amp_engine = { path = "crates/amp_engine", features = ["bevy16"] }
+amp_physics = { path = "crates/amp_physics", optional = true }
 bevy.workspace = true
+bevy_rapier3d = { workspace = true, optional = true }
 env_logger = { workspace = true }
 
 [[bin]]

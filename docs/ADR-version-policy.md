@@ -19,7 +19,7 @@ After ADR-0007's strategic migration from micro-crates to Bevy 0.16.1, we needed
 ### Engine Nucleus Lock-in
 
 - **bevy = "=0.16.1"** (patch-locked, ecosystem nucleus)
-- **bevy_rapier3d = "=0.26.0"** (patch-locked, ecosystem sidekick)
+- **bevy_rapier3d = "=0.30.0"** (patch-locked, ecosystem sidekick)
 - **wgpu/winit** versions enforced via `[patch.crates-io]`
 
 ### Mature Crate Flexibility

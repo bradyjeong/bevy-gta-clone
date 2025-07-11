@@ -21,10 +21,25 @@ mod component_registry;
 mod prefab;
 pub use prefab::*;
 
-// Legacy RON loader removed: not needed in Bevy 0.16
+#[cfg(feature = "legacy_ron_loader")]
+mod ron_loader;
+#[cfg(feature = "legacy_ron_loader")]
+pub use ron_loader::*;
 
 mod hot_reload;
 pub use hot_reload::*;
+
+mod dsl;
+pub use dsl::*;
+
+mod factory_dsl_integration;
+pub use factory_dsl_integration::*;
+
+mod assets;
+pub use assets::*;
+
+mod vehicle_factory;
+pub use vehicle_factory::*;
 
 /// Unique identifier for prefab definitions
 ///
@@ -138,16 +153,14 @@ impl Factory {
         id: PrefabId,
         source: &dyn PrefabSource,
     ) -> Result<(), Error> {
-        let prefab = Prefab::new();
-        source.load()?;
+        let prefab = source.load()?;
         self.register(id, prefab)?;
         Ok(())
     }
 
     /// Spawn an entity from a registered prefab
     pub fn spawn(&self, cmd: &mut Commands, id: PrefabId) -> Result<Entity, Error> {
-        let prefab = Prefab::new();
-        self.registry.get(&id).ok_or_else(|| {
+        let prefab = self.registry.get(&id).ok_or_else(|| {
             Error::resource_load(format!("Prefab {id:?}"), "not found in registry")
         })?;
 
@@ -294,18 +307,17 @@ impl Factory {
     /// Load a prefab from a RON file
     #[cfg(feature = "ron")]
     fn load_prefab_file(&self, path: &std::path::Path) -> Result<Prefab, Error> {
-        let _content = std::fs::read_to_string(path).map_err(|e| {
+        let content = std::fs::read_to_string(path).map_err(|e| {
             Error::resource_load(
                 format!("prefab file {}", path.display()),
                 format!("IO error: {e}"),
             )
         })?;
 
-        // Legacy RON loader removed: not needed in Bevy 0.16
-        Err(Error::resource_load(
-            format!("prefab file {}", path.display()),
-            "RON prefab loading replaced with Bevy 0.16 systems".to_string(),
-        ))
+        // Use the DSL system to load the prefab
+        let config = DslConfig::default();
+        let component_map = parse_prefab_ron(&content, &config)?;
+        create_prefab_from_component_map(&component_map)
     }
 
     /// Set up file watcher for hot-reload functionality

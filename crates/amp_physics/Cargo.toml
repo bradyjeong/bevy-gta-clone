@@ -1,0 +1,38 @@
+[package]
+name = "amp_physics"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Physics simulation and collision detection for the Amp game engine"
+
+[features]
+default = ["rapier3d_030"]
+rapier3d_030 = ["bevy_rapier3d"]
+inspector = ["bevy-inspector-egui"]
+
+[dependencies]
+bevy = { workspace = true, features = ["default"] }
+bevy_rapier3d = { workspace = true, optional = true }
+bevy-inspector-egui = { version = "0.31", optional = true }
+amp_core = { path = "../amp_core" }
+amp_math = { path = "../amp_math" }
+serde = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+tokio-test = { workspace = true }
+serde_json = { workspace = true }
+criterion = { workspace = true, features = ["html_reports"] }
+
+[[bench]]
+name = "suspension_bench"
+harness = false
+
+[[bench]]
+name = "physics_performance_bench"
+harness = false
+
+[[example]]
+name = "vehicle_physics_demo"
+path = "examples/vehicle_physics_demo.rs"

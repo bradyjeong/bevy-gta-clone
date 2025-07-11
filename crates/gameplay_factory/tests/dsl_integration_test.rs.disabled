@@ -1,0 +1,402 @@
+//! Integration tests for the Oracle-specified DSL system
+//!
+//! These tests verify that the DSL system works correctly with bevy_reflect
+//! and integrates properly with the existing Factory system.
+
+use bevy::prelude::*;
+use gameplay_factory::{
+    BatchSpawnRequest, ComponentMap, DslConfig, DslFactory, FactoryDslExt, PrefabId,
+    ValidationMode, create_prefab_from_component_map, parse_prefab_ron, spawn_many,
+};
+use std::collections::HashMap;
+use std::fs;
+use tempfile::TempDir;
+
+#[test]
+fn test_complete_dsl_workflow() {
+    let mut app = App::new();
+    app.add_plugins(MinimalPlugins);
+    app.init_resource::<AppTypeRegistry>();
+
+    // Register reflection for standard components
+    app.register_type::<Transform>()
+        .register_type::<Name>()
+        .register_type::<Visibility>();
+
+    let type_registry = app.world.resource::<AppTypeRegistry>();
+    let mut factory = DslFactory::new();
+
+    // Step 1: Parse RON content
+    let ron_content = r#"
+    (
+        components: {
+            "Name": "TestEntity",
+        }
+    )
+    "#;
+
+    let component_map = parse_prefab_ron(ron_content, type_registry, factory.config())
+        .expect("Failed to parse RON content");
+
+    assert_eq!(component_map.components.len(), 1);
+    assert!(component_map.components.contains_key("Name"));
+
+    // Step 2: Register prefab with factory
+    let prefab_id = PrefabId::new(12345);
+    factory
+        .factory_mut()
+        .register_from_component_map(prefab_id, &component_map, type_registry)
+        .expect("Failed to register prefab");
+
+    // Step 3: Verify prefab is registered
+    assert!(factory.factory().contains(prefab_id));
+
+    // Step 4: Test batch spawning
+    let mut world = World::new();
+    let mut queue = CommandQueue::default();
+    let mut commands = Commands::new(&mut queue, &world);
+
+    let entities = vec![component_map];
+    let result = factory
+        .spawn_batch_dsl(&mut commands, entities, type_registry)
+        .expect("Batch spawn failed");
+
+    assert_eq!(result.spawned.len(), 1);
+    assert_eq!(result.failed.len(), 0);
+    assert!(result.metrics.total_time > std::time::Duration::ZERO);
+}
+
+#[test]
+fn test_validation_modes() {
+    let mut app = App::new();
+    app.add_plugins(MinimalPlugins);
+    app.init_resource::<AppTypeRegistry>();
+    app.register_type::<Name>();
+
+    let type_registry = app.world.resource::<AppTypeRegistry>();
+
+    // Valid RON content
+    let valid_ron = r#"
+    (
+        components: {
+            "Name": "ValidEntity",
+        }
+    )
+    "#;
+
+    // Test strict validation
+    let strict_config = DslConfig {
+        validation_mode: ValidationMode::Strict,
+        ..Default::default()
+    };
+
+    let result = parse_prefab_ron(valid_ron, type_registry, &strict_config);
+    assert!(result.is_ok());
+
+    // Test permissive validation
+    let permissive_config = DslConfig {
+        validation_mode: ValidationMode::Permissive,
+        ..Default::default()
+    };
+
+    let result = parse_prefab_ron(valid_ron, type_registry, &permissive_config);
+    assert!(result.is_ok());
+
+    // Test skip validation
+    let skip_config = DslConfig {
+        validation_mode: ValidationMode::Skip,
+        ..Default::default()
+    };
+
+    let result = parse_prefab_ron(valid_ron, type_registry, &skip_config);
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_batch_spawning_performance() {
+    let mut app = App::new();
+    app.add_plugins(MinimalPlugins);
+    app.init_resource::<AppTypeRegistry>();
+    app.register_type::<Name>();
+
+    let type_registry = app.world.resource::<AppTypeRegistry>();
+
+    // Create a large number of entities for batch spawning
+    let mut entities = Vec::new();
+    for i in 0..100 {
+        let mut components = HashMap::new();
+        components.insert(
+            "Name".to_string(),
+            ron::Value::String(format!("Entity{}", i)),
+        );
+
+        let component_map = ComponentMap {
+            components,
+            metadata: gameplay_factory::ComponentMapMetadata {
+                source_path: None,
+                validation_status: gameplay_factory::ValidationStatus::Valid,
+                component_count: 1,
+            },
+        };
+        entities.push(component_map);
+    }
+
+    let mut world = World::new();
+    let mut queue = CommandQueue::default();
+    let mut commands = Commands::new(&mut queue, &world);
+
+    let request = BatchSpawnRequest {
+        entities,
+        config: DslConfig::default(),
+    };
+
+    let start_time = std::time::Instant::now();
+    let result = spawn_many(&mut commands, request, type_registry).expect("Batch spawn failed");
+    let elapsed = start_time.elapsed();
+
+    assert_eq!(result.spawned.len(), 100);
+    assert_eq!(result.failed.len(), 0);
+    assert!(elapsed < std::time::Duration::from_millis(100)); // Should be fast
+    assert!(result.metrics.total_time > std::time::Duration::ZERO);
+}
+
+#[test]
+fn test_directory_loading() {
+    let mut app = App::new();
+    app.add_plugins(MinimalPlugins);
+    app.init_resource::<AppTypeRegistry>();
+    app.register_type::<Name>();
+
+    let type_registry = app.world.resource::<AppTypeRegistry>();
+    let mut factory = DslFactory::new();
+
+    // Create a temporary directory with RON files
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    let dir_path = temp_dir.path();
+
+    // Create test RON files
+    let ron_content1 = r#"
+    (
+        components: {
+            "Name": "Entity1",
+        }
+    )
+    "#;
+
+    let ron_content2 = r#"
+    (
+        components: {
+            "Name": "Entity2",
+        }
+    )
+    "#;
+
+    fs::write(dir_path.join("entity1.ron"), ron_content1).expect("Failed to write entity1.ron");
+    fs::write(dir_path.join("entity2.ron"), ron_content2).expect("Failed to write entity2.ron");
+
+    // Load prefabs from directory
+    let loaded_count = factory
+        .load_directory_dsl(dir_path.to_str().unwrap(), type_registry)
+        .expect("Failed to load directory");
+
+    assert_eq!(loaded_count, 2);
+    assert_eq!(factory.factory().len(), 2);
+
+    // Test cache
+    let cache_stats = factory.cache_stats();
+    assert_eq!(cache_stats.entries, 2);
+}
+
+#[test]
+fn test_component_map_creation() {
+    let factory = DslFactory::new();
+
+    let mut components = HashMap::new();
+    components.insert("Name".to_string(), ron::Value::String("Test".to_string()));
+    components.insert("Transform".to_string(), ron::Value::Unit);
+
+    let component_map = factory.create_component_map(components);
+
+    assert_eq!(component_map.components.len(), 2);
+    assert_eq!(component_map.metadata.component_count, 2);
+    assert_eq!(
+        component_map.metadata.validation_status,
+        gameplay_factory::ValidationStatus::Valid
+    );
+}
+
+#[test]
+fn test_prefab_creation_from_component_map() {
+    let mut app = App::new();
+    app.add_plugins(MinimalPlugins);
+    app.init_resource::<AppTypeRegistry>();
+    app.register_type::<Name>();
+
+    let type_registry = app.world.resource::<AppTypeRegistry>();
+
+    let mut components = HashMap::new();
+    components.insert("Name".to_string(), ron::Value::String("Test".to_string()));
+
+    let component_map = ComponentMap {
+        components,
+        metadata: gameplay_factory::ComponentMapMetadata {
+            source_path: None,
+            validation_status: gameplay_factory::ValidationStatus::Valid,
+            component_count: 1,
+        },
+    };
+
+    let prefab = create_prefab_from_component_map(&component_map, type_registry)
+        .expect("Failed to create prefab");
+
+    assert_eq!(prefab.len(), 1);
+    assert!(!prefab.is_empty());
+}
+
+#[test]
+fn test_load_prefab_from_ron_string() {
+    let mut app = App::new();
+    app.add_plugins(MinimalPlugins);
+    app.init_resource::<AppTypeRegistry>();
+    app.register_type::<Name>();
+
+    let type_registry = app.world.resource::<AppTypeRegistry>();
+    let mut factory = DslFactory::new();
+
+    let ron_content = r#"
+    (
+        components: {
+            "Name": "RonEntity",
+        }
+    )
+    "#;
+
+    let prefab_id = PrefabId::new(99999);
+    let result = factory.load_prefab_from_ron(prefab_id, ron_content, type_registry);
+
+    // This might fail due to type registration issues, but parsing should work
+    match result {
+        Ok(()) => {
+            assert!(factory.factory().contains(prefab_id));
+        }
+        Err(e) => {
+            // Expected if components aren't properly registered
+            assert!(
+                e.to_string().contains("not found in type registry")
+                    || e.to_string().contains("ReflectComponent")
+            );
+        }
+    }
+}
+
+#[test]
+fn test_error_handling() {
+    let mut app = App::new();
+    app.add_plugins(MinimalPlugins);
+    app.init_resource::<AppTypeRegistry>();
+
+    let type_registry = app.world.resource::<AppTypeRegistry>();
+    let config = DslConfig::default();
+
+    // Test invalid RON content
+    let invalid_ron = "invalid ron content";
+    let result = parse_prefab_ron(invalid_ron, type_registry, &config);
+    assert!(result.is_err());
+    assert!(
+        result
+            .unwrap_err()
+            .to_string()
+            .contains("Failed to parse RON")
+    );
+
+    // Test empty batch spawn
+    let mut world = World::new();
+    let mut queue = CommandQueue::default();
+    let mut commands = Commands::new(&mut queue, &world);
+
+    let request = BatchSpawnRequest {
+        entities: Vec::new(),
+        config: DslConfig::default(),
+    };
+
+    let result = spawn_many(&mut commands, request, type_registry)
+        .expect("Empty batch spawn should succeed");
+
+    assert_eq!(result.spawned.len(), 0);
+    assert_eq!(result.failed.len(), 0);
+}
+
+#[test]
+fn test_cache_functionality() {
+    let mut factory = DslFactory::new();
+
+    // Initially empty cache
+    let stats = factory.cache_stats();
+    assert_eq!(stats.entries, 0);
+
+    // Create some component maps
+    let component_map1 = factory.create_component_map({
+        let mut components = HashMap::new();
+        components.insert("Name".to_string(), ron::Value::String("Test1".to_string()));
+        components
+    });
+
+    let component_map2 = factory.create_component_map({
+        let mut components = HashMap::new();
+        components.insert("Name".to_string(), ron::Value::String("Test2".to_string()));
+        components
+    });
+
+    // Cache doesn't store these automatically since they're created programmatically
+    // Clear cache to test the functionality
+    factory.clear_cache();
+    let stats = factory.cache_stats();
+    assert_eq!(stats.entries, 0);
+
+    // Test configuration
+    factory.set_config(DslConfig {
+        max_batch_size: 500,
+        validation_mode: ValidationMode::Permissive,
+        cache_prefabs: false,
+    });
+
+    assert_eq!(factory.config().max_batch_size, 500);
+    assert_eq!(factory.config().validation_mode, ValidationMode::Permissive);
+    assert!(!factory.config().cache_prefabs);
+}
+
+#[test]
+fn test_complex_ron_parsing() {
+    let mut app = App::new();
+    app.add_plugins(MinimalPlugins);
+    app.init_resource::<AppTypeRegistry>();
+    app.register_type::<Transform>()
+        .register_type::<Name>()
+        .register_type::<Visibility>();
+
+    let type_registry = app.world.resource::<AppTypeRegistry>();
+    let config = DslConfig::default();
+
+    let complex_ron = r#"
+    (
+        components: {
+            "Transform": (
+                translation: (x: 1.0, y: 2.0, z: 3.0),
+                rotation: (x: 0.0, y: 0.0, z: 0.0, w: 1.0),
+                scale: (x: 2.0, y: 2.0, z: 2.0),
+            ),
+            "Name": "ComplexEntity",
+            "Visibility": "Visible",
+        }
+    )
+    "#;
+
+    let result = parse_prefab_ron(complex_ron, type_registry, &config);
+    assert!(result.is_ok());
+
+    let component_map = result.unwrap();
+    assert_eq!(component_map.components.len(), 3);
+    assert!(component_map.components.contains_key("Transform"));
+    assert!(component_map.components.contains_key("Name"));
+    assert!(component_map.components.contains_key("Visibility"));
+}

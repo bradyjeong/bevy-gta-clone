@@ -13,6 +13,7 @@ keywords = ["config", "ron", "game-engine", "configuration"]
 [features]
 default = []
 hot-reload = []
+bevy-assets = ["dep:bevy"]
 
 [dependencies]
 amp_core = { path = "../amp_core" }
@@ -20,6 +21,9 @@ ron = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 dirs = { workspace = true }
 shellexpand = { workspace = true }
+
+# Bevy dependencies for asset system integration
+bevy = { workspace = true, optional = true }
 
 [dev-dependencies]
 rstest = { workspace = true }

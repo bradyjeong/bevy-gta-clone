@@ -1,0 +1,38 @@
+// Sedan configuration - balanced everyday vehicle
+(
+    mass: 1500.0,
+    engine: (
+        max_power: 180.0,
+        power_curve_rpm: [1000.0, 2000.0, 3500.0, 5000.0, 6000.0],
+        power_curve_power: [80.0, 140.0, 170.0, 180.0, 160.0],
+        torque_curve_rpm: [1000.0, 1500.0, 2500.0, 3500.0, 4500.0],
+        torque_curve_torque: [180.0, 220.0, 250.0, 240.0, 210.0],
+        idle_rpm: 750.0,
+        max_rpm: 6000.0,
+        engine_braking: 0.25,
+        fuel_consumption: 8.5,
+    ),
+    wheels: ((radius: 0.32, width: 0.205, mass: 18.0, grip: 0.95, rolling_resistance: 0.018, lateral_friction: 1.0, longitudinal_friction: 0.9, stiffness: 45000.0, damping: 2200.0), (radius: 0.32, width: 0.205, mass: 18.0, grip: 0.95, rolling_resistance: 0.018, lateral_friction: 1.0, longitudinal_friction: 0.9, stiffness: 45000.0, damping: 2200.0), (radius: 0.32, width: 0.205, mass: 18.0, grip: 0.95, rolling_resistance: 0.018, lateral_friction: 1.0, longitudinal_friction: 0.9, stiffness: 45000.0, damping: 2200.0), (radius: 0.32, width: 0.205, mass: 18.0, grip: 0.95, rolling_resistance: 0.018, lateral_friction: 1.0, longitudinal_friction: 0.9, stiffness: 45000.0, damping: 2200.0)),
+    suspension: (
+        spring_stiffness: 30000.0,
+        damper_damping: 3000.0,
+        max_compression: 0.18,
+        max_extension: 0.18,
+        rest_length: 0.55,
+        anti_roll_bar_stiffness: 12000.0,
+        travel: 0.36,
+        camber: -0.5,
+        caster: 5.0,
+        toe: 0.0,
+    ),
+    transmission: (
+        gear_ratios: [-2.8, 0.0, 3.8, 2.2, 1.5, 1.0, 0.8],
+        final_drive_ratio: 3.5,
+        clutch_engagement_rpm: 1000.0,
+        shift_up_rpm: 5500.0,
+        shift_down_rpm: 1800.0,
+        shift_time: 0.4,
+        efficiency: 0.94,
+        transmission_type: Automatic,
+    ),
+)

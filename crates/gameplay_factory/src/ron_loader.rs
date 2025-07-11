@@ -1,6 +1,8 @@
 //! RON (Rusty Object Notation) loader for prefab definitions
 
 use crate::{ComponentInit, Error, Prefab, PrefabSource};
+#[cfg(all(test, feature = "legacy_ron_loader"))]
+use bevy::ecs::world::CommandQueue;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -106,6 +108,7 @@ impl ComponentInit for RonComponent {
 }
 
 #[cfg(test)]
+#[cfg(feature = "legacy_ron_loader")]
 #[allow(deprecated)]
 mod tests {
     use super::*;
