@@ -175,8 +175,7 @@ impl Default for Suspension {
 /// This component handles the transmission of power from the engine to the wheels,
 /// including gear ratios, differential behavior, and drive type.
 #[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
-#[reflect(Component)]
-pub struct Drivetrain {
+#[reflect(Component)]pub struct Drivetrain {
     /// Drive type: 0 = FWD, 1 = RWD, 2 = AWD
     pub drive_type: u8,
     /// Differential ratio
@@ -203,8 +202,7 @@ impl Default for Drivetrain {
 /// This component handles the steering system including Ackermann geometry,
 /// steering limits, and return-to-center forces.
 #[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
-#[reflect(Component)]
-pub struct Steering {
+#[reflect(Component)]pub struct Steering {
     /// Current steering angle in radians
     pub angle: f32,
     /// Maximum steering angle in radians
@@ -237,8 +235,7 @@ impl Default for Steering {
 /// This component handles the braking system including brake torque,
 /// brake bias, and ABS-like behavior.
 #[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
-#[reflect(Component)]
-pub struct Brakes {
+#[reflect(Component)]pub struct Brakes {
     /// Current brake input (0.0 to 1.0)
     pub brake_input: f32,
     /// Maximum brake torque (Newton-meters)
@@ -268,8 +265,7 @@ impl Default for Brakes {
 /// This component stores the current input state from the player,
 /// including throttle, brake, and steering inputs.
 #[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
-#[reflect(Component)]
-pub struct PhysicsVehicleInput {
+#[reflect(Component)]pub struct PhysicsVehicleInput {
     /// Throttle input (0.0 to 1.0)
     pub throttle: f32,
     /// Brake input (0.0 to 1.0)
@@ -302,7 +298,6 @@ impl Default for PhysicsVehicleInput {
 /// This component stores physics parameters for individual wheels,
 /// including slip ratios, forces, and contact information.
 #[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize, Reflect)]
-#[reflect(Component)]
 pub struct WheelPhysics {
     /// Wheel radius (meters)
     pub radius: f32,

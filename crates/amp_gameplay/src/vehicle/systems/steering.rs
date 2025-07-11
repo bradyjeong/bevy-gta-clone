@@ -4,7 +4,6 @@
 
 use crate::vehicle::components::*;
 use crate::vehicle::resources::*;
-use amp_physics::components::Steering;
 use bevy::prelude::*;
 
 /// Update steering physics for all vehicles

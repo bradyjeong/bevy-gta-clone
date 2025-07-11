@@ -7,6 +7,7 @@
 //! - Interactive vehicle controls
 
 use amp_gameplay::prelude::*;
+use amp_gameplay::vehicle::components::{Engine, Steering, Suspension};
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     input::common_conditions::input_pressed,
@@ -158,19 +159,19 @@ fn spawn_vehicle(
             drag_coefficient: 0.3,
             ..default()
         },
-        engine: VehicleEngine {
+        engine: Engine {
             max_torque: 500.0,
             max_rpm: 7000.0,
             idle_rpm: 800.0,
             ..default()
         },
-        suspension: VehicleSuspension {
+        suspension: Suspension {
             spring_stiffness: 35000.0,
             damper_damping: 3500.0,
             rest_length: 0.4,
             ..default()
         },
-        steering: VehicleSteering {
+        steering: Steering {
             max_angle: 35.0_f32.to_radians(),
             steering_rate: 5.0,
             ..default()
@@ -266,7 +267,7 @@ fn display_vehicle_info(
     mut text_query: Query<&mut Text, With<VehicleInfoText>>,
     vehicle_query: Query<
         (
-            &VehicleEngine,
+            &Engine,
             &bevy_rapier3d::dynamics::Velocity,
             &VehicleInput,
             &amp_gameplay::vehicle::components::Vehicle,

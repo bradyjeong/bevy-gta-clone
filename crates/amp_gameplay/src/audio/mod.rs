@@ -8,10 +8,12 @@
 
 pub mod components;
 pub mod config;
-pub mod simple_audio;
+pub mod resources;
+pub mod systems;
 
 pub use components::*;
-pub use simple_audio::*;
+pub use resources::*;
+pub use systems::*;
 
 use bevy::prelude::*;
 
@@ -21,9 +23,10 @@ pub struct AudioPlugin;
 
 impl Plugin for AudioPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<VehicleEngineAudioEvent>()
+        app.add_plugins(bevy_kira_audio::AudioPlugin)
+            .add_event::<VehicleEngineAudioEvent>()
             .init_resource::<GameplayAudioSettings>()
-            .add_systems(Startup, setup_audio_systems)
+            .add_systems(Startup, (setup_audio_systems, load_audio_assets))
             .add_systems(
                 Update,
                 (

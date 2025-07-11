@@ -20,6 +20,7 @@
 //! - V: Spawn new vehicle
 //! - F1: Toggle debug visualization
 //! - F2: Toggle performance metrics
+//! - Q/E: Engine rev up/down (audio test)
 //! - ESC: Exit
 //!
 //! ## Performance Targets
@@ -29,32 +30,44 @@
 //!
 //! ## Usage
 //! ```bash
-//! cargo run --example city_demo_baseline
+//! cargo run --example city_demo_baseline --features rapier3d_030
 //! ```
 
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 
-#[cfg(feature = "rapier3d_030")]
-use amp_physics::{
-    BenchmarkResults, Brakes, DebugConfig, Drivetrain, Engine, PhysicsPlugin, PhysicsTime,
-    Steering, Suspension, SuspensionRay, Transmission, Vehicle, VehicleInput, WheelPhysics,
-    WheelState, vehicle_suspension_system,
-};
-
-#[cfg(not(feature = "rapier3d_030"))]
-use amp_physics::{BenchmarkResults, DebugConfig, PhysicsPlugin, PhysicsTime};
+use amp_gameplay::prelude::*;
 
 #[cfg(feature = "rapier3d_030")]
 use bevy_rapier3d::prelude::*;
+
+// Type aliases for complex query types
+type DebugUIQuery<'w, 's> = Query<
+    'w,
+    's,
+    &'static mut Visibility,
+    (With<DebugUI>, Without<PerformanceUI>, Without<AudioUI>),
+>;
+type PerformanceUIQuery<'w, 's> = Query<
+    'w,
+    's,
+    &'static mut Visibility,
+    (With<PerformanceUI>, Without<DebugUI>, Without<AudioUI>),
+>;
+type AudioUIQuery<'w, 's> = Query<
+    'w,
+    's,
+    &'static mut Visibility,
+    (With<AudioUI>, Without<DebugUI>, Without<PerformanceUI>),
+>;
 
 fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
-                    title: "City Demo Baseline - Sprint 2 Physics".to_string(),
+                    title: "City Demo Baseline - Sprint 3 Gameplay".to_string(),
                     resolution: WindowResolution::new(1280.0, 720.0),
                     ..default()
                 }),
@@ -63,7 +76,8 @@ fn main() {
             FrameTimeDiagnosticsPlugin::default(),
             LogDiagnosticsPlugin::default(),
         ))
-        .add_plugins(PhysicsPlugin::default())
+        .add_plugins(GameplayPlugins)
+        .add_event::<VehicleEngineAudioEvent>()
         .add_systems(Startup, setup_scene)
         .add_systems(
             Update,
@@ -73,15 +87,7 @@ fn main() {
                 vehicle_controls,
                 toggle_debug_systems,
                 update_ui,
-            ),
-        )
-        .add_systems(
-            FixedUpdate,
-            (
-                #[cfg(feature = "rapier3d_030")]
-                vehicle_suspension_system,
-                #[cfg(feature = "rapier3d_030")]
-                update_vehicle_physics,
+                update_audio_ui,
             ),
         )
         .run();
@@ -99,14 +105,21 @@ struct DebugUI;
 #[derive(Component)]
 struct PerformanceUI;
 
+/// Component for audio UI
+#[derive(Component)]
+struct AudioUI;
+
 /// Resource for demo state
 #[derive(Resource, Default)]
 struct DemoState {
     debug_enabled: bool,
     performance_ui_enabled: bool,
     wireframe_enabled: bool,
+    audio_ui_enabled: bool,
     #[allow(dead_code)]
     vehicle_count: usize,
+    /// Engine RPM override for audio testing
+    engine_rpm_override: Option<f32>,
 }
 
 fn setup_scene(
@@ -201,24 +214,24 @@ fn spawn_demo_car(
     materials: &mut ResMut<Assets<StandardMaterial>>,
     position: Vec3,
 ) {
-    // Car body
+    // Car body using VehicleBundle
     let car_entity = commands
         .spawn((
+            VehicleBundle {
+                transform: Transform::from_translation(position),
+                audio: VehicleAudio {
+                    engine_sound_enabled: true,
+                    engine_volume: 0.8,
+                    ..default()
+                },
+                ..default()
+            },
             Mesh3d(meshes.add(Cuboid::new(4.0, 1.5, 2.0))),
             MeshMaterial3d(materials.add(StandardMaterial {
                 base_color: Color::srgb(0.8, 0.2, 0.2),
                 ..default()
             })),
-            Transform::from_translation(position),
             DemoCar,
-            Vehicle,
-            Engine::default(),
-            Transmission::default(),
-            Suspension::default(),
-            Drivetrain::default(),
-            Steering::default(),
-            Brakes::default(),
-            VehicleInput::default(),
             Name::new("Demo Car"),
         ))
         .id();
@@ -253,12 +266,10 @@ fn spawn_demo_car(
                 })),
                 Transform::from_translation(position + *wheel_pos)
                     .with_rotation(Quat::from_rotation_z(std::f32::consts::FRAC_PI_2)),
-                WheelPhysics::default(),
-                WheelState::default(),
-                SuspensionRay {
-                    cast_distance: 1.0,
-                    ray_origin: *wheel_pos,
-                    ray_direction: Vec3::NEG_Y,
+                Wheel {
+                    position: *wheel_pos,
+                    is_steered: i < 2, // Front wheels are steered
+                    is_driven: true,   // All wheels are driven for AWD
                     ..default()
                 },
                 Name::new(format!("Wheel {i}")),
@@ -309,7 +320,7 @@ fn setup_ui(commands: &mut Commands) {
 
     // Controls UI
     commands.spawn((
-        Text::new("Controls:\nW/S: Throttle/Brake\nA/D: Steering\nSpace: Handbrake\nF1: Debug viz\nF2: Performance\nF3: Wireframe\nESC: Exit"),
+        Text::new("Controls:\nW/S: Throttle/Brake\nA/D: Steering\nSpace: Handbrake\nQ/E: Engine rev (audio test)\nF1: Debug viz\nF2: Performance\nF3: Wireframe\nF4: Audio UI\nESC: Exit"),
         TextFont {
             font_size: 14.0,
             ..default()
@@ -323,19 +334,33 @@ fn setup_ui(commands: &mut Commands) {
         },
         Name::new("Controls UI"),
     ));
+
+    // Audio UI
+    commands.spawn((
+        Text::new("Audio Status\nEngine Sound: OFF\nRPM: 0\nThrottle: 0%\nAudio Events: 0"),
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
+        TextColor(Color::srgb(0.0, 1.0, 1.0)),
+        Node {
+            position_type: PositionType::Absolute,
+            top: Val::Px(150.0),
+            right: Val::Px(10.0),
+            ..default()
+        },
+        AudioUI,
+        Name::new("Audio UI"),
+    ));
 }
 
 fn handle_input(
     keys: Res<ButtonInput<KeyCode>>,
     mut demo_state: ResMut<DemoState>,
-    mut debug_config: ResMut<DebugConfig>,
     mut app_exit_events: EventWriter<bevy::app::AppExit>,
 ) {
     if keys.just_pressed(KeyCode::F1) {
         demo_state.debug_enabled = !demo_state.debug_enabled;
-        debug_config.show_suspension_rays = demo_state.debug_enabled;
-        debug_config.show_force_vectors = demo_state.debug_enabled;
-        debug_config.show_contact_points = demo_state.debug_enabled;
         info!("Debug visualization: {}", demo_state.debug_enabled);
     }
 
@@ -347,6 +372,20 @@ fn handle_input(
     if keys.just_pressed(KeyCode::F3) {
         demo_state.wireframe_enabled = !demo_state.wireframe_enabled;
         info!("Wireframe: {}", demo_state.wireframe_enabled);
+    }
+
+    if keys.just_pressed(KeyCode::F4) {
+        demo_state.audio_ui_enabled = !demo_state.audio_ui_enabled;
+        info!("Audio UI: {}", demo_state.audio_ui_enabled);
+    }
+
+    // Audio testing controls
+    if keys.pressed(KeyCode::KeyQ) {
+        demo_state.engine_rpm_override = Some(4000.0);
+    } else if keys.pressed(KeyCode::KeyE) {
+        demo_state.engine_rpm_override = Some(6000.0);
+    } else {
+        demo_state.engine_rpm_override = None;
     }
 
     if keys.just_pressed(KeyCode::Escape) {
@@ -391,8 +430,9 @@ fn vehicle_controls(
 
 fn toggle_debug_systems(
     demo_state: Res<DemoState>,
-    mut debug_ui_query: Query<&mut Visibility, (With<DebugUI>, Without<PerformanceUI>)>,
-    mut performance_ui_query: Query<&mut Visibility, (With<PerformanceUI>, Without<DebugUI>)>,
+    mut debug_ui_query: DebugUIQuery,
+    mut performance_ui_query: PerformanceUIQuery,
+    mut audio_ui_query: AudioUIQuery,
 ) {
     for mut visibility in debug_ui_query.iter_mut() {
         *visibility = if demo_state.debug_enabled {
@@ -409,127 +449,76 @@ fn toggle_debug_systems(
             Visibility::Hidden
         };
     }
+
+    for mut visibility in audio_ui_query.iter_mut() {
+        *visibility = if demo_state.audio_ui_enabled {
+            Visibility::Visible
+        } else {
+            Visibility::Hidden
+        };
+    }
 }
 
-fn update_ui(
-    mut performance_ui_query: Query<&mut Text, With<PerformanceUI>>,
-    physics_time: Res<PhysicsTime>,
-    benchmark_results: Res<BenchmarkResults>,
-    time: Res<Time>,
-) {
+fn update_ui(mut performance_ui_query: Query<&mut Text, With<PerformanceUI>>, time: Res<Time>) {
     for mut text in performance_ui_query.iter_mut() {
         let fps = 1.0 / time.delta_secs();
         let frame_time = time.delta_secs() * 1000.0;
-        let physics_time_ms = physics_time.interpolation_alpha * 16.67; // Approximate physics time
+        let physics_time_ms = 16.67; // Fixed at 60 Hz
 
         **text = format!(
-            "Performance Metrics\nFPS: {:.1}\nFrame Time: {:.2}ms\nPhysics Time: {:.2}ms\nSuspension Updates: {}\nBenchmark Score: {:.2}",
-            fps,
-            frame_time,
-            physics_time_ms,
-            benchmark_results.suspension_times.len(),
-            benchmark_results.average_cpu_time
+            "Performance Metrics\nFPS: {fps:.1}\nFrame Time: {frame_time:.2}ms\nPhysics Time: {physics_time_ms:.2}ms\nVehicles: Active\nAudio: Enabled"
         );
     }
 }
 
-#[cfg(feature = "rapier3d_030")]
-fn update_vehicle_physics(
-    mut vehicle_query: Query<
-        (
-            &mut Engine,
-            &mut Transmission,
-            &VehicleInput,
-            &mut Transform,
-        ),
-        With<DemoCar>,
-    >,
-    mut wheel_query: Query<(&mut WheelPhysics, &mut WheelState, &SuspensionRay)>,
-    time: Res<Time>,
+/// Update audio UI with current vehicle state
+fn update_audio_ui(
+    mut audio_ui_query: Query<&mut Text, With<AudioUI>>,
+    demo_state: Res<DemoState>,
+    vehicle_query: Query<(&Engine, &VehicleInput, &VehicleAudio), With<DemoCar>>,
+    mut audio_event_writer: EventWriter<VehicleEngineAudioEvent>,
 ) {
-    let dt = time.delta_secs();
+    for mut text in audio_ui_query.iter_mut() {
+        let (engine_status, rpm, throttle, audio_events) =
+            if let Ok((engine, input, audio)) = vehicle_query.single() {
+                // Use RPM override for audio testing or actual engine RPM
+                let current_rpm = demo_state.engine_rpm_override.unwrap_or(engine.rpm);
+                let current_throttle = if demo_state.engine_rpm_override.is_some() {
+                    0.8
+                } else {
+                    input.throttle
+                };
 
-    for (mut engine, _transmission, input, mut transform) in vehicle_query.iter_mut() {
-        // Update engine RPM based on throttle
-        if input.throttle > 0.0 {
-            engine.rpm = (engine.rpm + dt * 1000.0 * input.throttle).min(engine.max_rpm);
-        } else {
-            engine.rpm = (engine.rpm - dt * 500.0).max(engine.idle_rpm);
-        }
+                // Send audio event for engine sounds
+                if audio.engine_sound_enabled {
+                    audio_event_writer.write(VehicleEngineAudioEvent {
+                        vehicle_entity: Entity::PLACEHOLDER, // Entity will be set by the audio system
+                        rpm: current_rpm,
+                        throttle: current_throttle,
+                        load: current_throttle * 0.5,
+                        gear: 1, // Simplified gear
+                        position: Vec3::ZERO,
+                    });
+                }
 
-        // Calculate engine torque from RPM using torque curve
-        engine.torque = calculate_engine_torque(&engine);
+                (
+                    if audio.engine_sound_enabled {
+                        "ON"
+                    } else {
+                        "OFF"
+                    },
+                    current_rpm,
+                    (current_throttle * 100.0) as i32,
+                    1, // Simplified event count
+                )
+            } else {
+                ("N/A", 0.0, 0, 0)
+            };
 
-        // Simple vehicle movement for demo (replace with proper physics)
-        if input.throttle > 0.0 {
-            let forward = transform.forward();
-            transform.translation += forward * input.throttle * 10.0 * dt;
-        }
-
-        if input.brake > 0.0 {
-            // Apply braking deceleration
-            let forward = transform.forward();
-            transform.translation -= forward * input.brake * 5.0 * dt;
-        }
-
-        // Apply steering
-        if input.steering.abs() > 0.1 {
-            let rotation = Quat::from_axis_angle(Vec3::Y, input.steering * dt);
-            transform.rotation = rotation * transform.rotation;
-        }
+        **text = format!(
+            "Audio Status\nEngine Sound: {engine_status}\nRPM: {rpm:.0}\nThrottle: {throttle}%\nAudio Events: {audio_events}"
+        );
     }
-
-    // Update wheel physics
-    for (mut wheel_physics, mut wheel_state, suspension_ray) in wheel_query.iter_mut() {
-        // Update wheel contact state
-        wheel_state.in_contact = suspension_ray.hit_distance.is_some();
-
-        if wheel_state.in_contact {
-            let compression = suspension_ray.hit_distance.unwrap_or(0.0);
-            wheel_state.contact_force = compression * 1000.0; // Simple spring force
-        } else {
-            wheel_state.contact_force = 0.0;
-        }
-
-        // Update wheel rotation based on vehicle motion
-        wheel_physics.angular_velocity =
-            wheel_physics.motor_torque / (wheel_physics.mass * wheel_physics.radius);
-        wheel_state.rotation_angle += wheel_physics.angular_velocity * dt;
-    }
-}
-
-#[cfg(feature = "rapier3d_030")]
-fn calculate_engine_torque(engine: &Engine) -> f32 {
-    // Interpolate torque from the torque curve
-    let torque_curve = &engine.torque_curve;
-    if torque_curve.is_empty() {
-        return 0.0;
-    }
-
-    let rpm = engine.rpm;
-
-    // Find the two points to interpolate between
-    let mut lower_point = torque_curve[0];
-    let mut upper_point = torque_curve[torque_curve.len() - 1];
-
-    for i in 0..torque_curve.len() - 1 {
-        if rpm >= torque_curve[i].0 && rpm <= torque_curve[i + 1].0 {
-            lower_point = torque_curve[i];
-            upper_point = torque_curve[i + 1];
-            break;
-        }
-    }
-
-    // Linear interpolation
-    let rpm_range = upper_point.0 - lower_point.0;
-    if rpm_range == 0.0 {
-        return lower_point.1 * engine.throttle;
-    }
-
-    let t = (rpm - lower_point.0) / rpm_range;
-    let torque = lower_point.1 + t * (upper_point.1 - lower_point.1);
-
-    torque * engine.throttle
 }
 
 #[cfg(test)]
@@ -537,30 +526,18 @@ mod tests {
     use super::*;
 
     #[test]
-    #[cfg(feature = "rapier3d_030")]
-    fn test_engine_torque_calculation() {
-        let engine = Engine::default();
-        let torque = calculate_engine_torque(&engine);
-        assert_eq!(torque, 0.0); // No throttle, no torque
+    fn test_demo_state_creation() {
+        let demo_state = DemoState::default();
+        assert!(!demo_state.debug_enabled);
+        assert!(!demo_state.performance_ui_enabled);
+        assert!(!demo_state.audio_ui_enabled);
+        assert_eq!(demo_state.engine_rpm_override, None);
     }
 
     #[test]
-    #[cfg(feature = "rapier3d_030")]
-    fn test_engine_torque_with_throttle() {
-        let mut engine = Engine::default();
-        engine.throttle = 0.5;
-        engine.rpm = 3000.0;
-        let torque = calculate_engine_torque(&engine);
-        assert!(torque > 0.0); // With throttle and RPM, should have torque
-    }
-
-    #[test]
-    fn test_demo_car_spawning() {
-        let mut app = App::new();
-        app.add_plugins(MinimalPlugins);
-
-        // This would test the spawning logic, but requires more setup
-        // For now, just verify the function exists
-        assert!(true);
+    fn test_demo_car_component() {
+        let demo_car = DemoCar;
+        // Just verify the component exists
+        assert!(format!("{:?}", demo_car).contains("DemoCar"));
     }
 }

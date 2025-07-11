@@ -4,7 +4,6 @@
 
 use crate::vehicle::components::*;
 use crate::vehicle::resources::*;
-use amp_physics::components::Engine;
 use bevy::prelude::*;
 
 /// Update drivetrain physics for all vehicles

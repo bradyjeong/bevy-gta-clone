@@ -24,22 +24,14 @@ pub mod audio;
 pub mod physics;
 pub mod vehicle;
 
-// Re-export amp_physics components as single source of truth
-pub use amp_physics::components::{
-    Brakes, Drivetrain, Engine as VehicleEngine, Steering as VehicleSteering,
-    Suspension as VehicleSuspension, VehicleInput as PhysicsVehicleInput,
-};
+// Physics components are now owned by amp_gameplay and defined in vehicle::components
 
 /// Prelude module for convenient imports
 pub mod prelude {
     pub use crate::GameplayPlugins;
-    pub use crate::audio::*;
-    pub use crate::physics::*;
+    pub use crate::audio::{AudioPlugin, components::*, resources::*};
+    pub use crate::physics::{PhysicsPluginBridge, resources::*};
     pub use crate::vehicle::prelude::*;
-    // Re-export physics components in prelude
-    pub use crate::{
-        Brakes, Drivetrain, PhysicsVehicleInput, VehicleEngine, VehicleSteering, VehicleSuspension,
-    };
 }
 
 use bevy::app::PluginGroupBuilder;

@@ -28,6 +28,7 @@ serial_test = { workspace = true }
 tempfile = { workspace = true }
 criterion = { workspace = true, features = ["html_reports"] }
 bevy_rapier3d = { workspace = true }
+serde_json = { workspace = true }
 
 [features]
 default = []

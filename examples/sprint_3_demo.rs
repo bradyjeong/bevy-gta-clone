@@ -14,6 +14,7 @@
 //! - ESC: Exit
 
 use amp_gameplay::prelude::*;
+use amp_gameplay::vehicle::components::Engine;
 use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
 
@@ -141,7 +142,7 @@ fn spawn_demo_vehicle(
                 mass: 1200.0,
                 ..default()
             },
-            engine: VehicleEngine {
+            engine: Engine {
                 max_torque: 300.0,
                 max_rpm: 6500.0,
                 idle_rpm: 800.0,
@@ -202,11 +203,7 @@ fn update_performance_display(
     mut text_query: Query<&mut Text, With<PerformanceText>>,
     diagnostics: Res<DiagnosticsStore>,
     vehicle_query: Query<
-        (
-            &VehicleEngine,
-            &bevy_rapier3d::dynamics::Velocity,
-            &VehicleInput,
-        ),
+        (&Engine, &bevy_rapier3d::dynamics::Velocity, &VehicleInput),
         With<DemoVehicle>,
     >,
     audio_events: Res<Events<VehicleEngineAudioEvent>>,

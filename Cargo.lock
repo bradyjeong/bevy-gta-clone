@@ -195,6 +195,7 @@ dependencies = [
  "criterion",
  "rstest",
  "serde",
+ "serde_json",
  "serial_test",
  "tempfile",
 ]

@@ -1,17 +1,13 @@
 //! Vehicle component bundles for easy entity creation
 
 use crate::vehicle::components::*;
-use amp_physics::components::{
-    Brakes, Drivetrain, Engine, Steering, Suspension, Transmission, Vehicle as PhysicsVehicle,
-    VehicleInput as PhysicsVehicleInput,
-};
 use bevy::prelude::*;
 
 /// Bundle for creating a complete vehicle entity
 #[derive(Bundle, Default)]
 pub struct VehicleBundle {
     /// Vehicle identification and metadata (gameplay)
-    pub vehicle: crate::vehicle::components::Vehicle,
+    pub vehicle: Vehicle,
     /// Vehicle input handling (gameplay)
     pub input: VehicleInput,
     /// Vehicle audio components (gameplay)
@@ -48,7 +44,7 @@ pub struct VehicleBundle {
 #[derive(Bundle, Default)]
 pub struct CarBundle {
     /// Vehicle identification and metadata (gameplay)
-    pub vehicle: crate::vehicle::components::Vehicle,
+    pub vehicle: Vehicle,
     /// Vehicle input handling (gameplay)
     pub input: VehicleInput,
     /// Vehicle audio components (gameplay)

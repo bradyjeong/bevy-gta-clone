@@ -1,47 +1,20 @@
 //! Audio resources for managing channels and assets
 
 use bevy::prelude::*;
-use bevy_kira_audio::prelude::*;
+use bevy_kira_audio::prelude::AudioSource as KiraAudioSource;
 use std::collections::HashMap;
-
-/// Audio channels resource for managing different audio types
-#[derive(Resource, Debug, Clone)]
-pub struct AudioChannels {
-    /// Engine audio channel
-    pub engine: Handle<AudioChannel<MainTrack>>,
-    /// Sound effects channel
-    pub sfx: Handle<AudioChannel<MainTrack>>,
-    /// Music channel
-    pub music: Handle<AudioChannel<MainTrack>>,
-    /// Environmental audio channel
-    pub environment: Handle<AudioChannel<MainTrack>>,
-    /// UI sound channel
-    pub ui: Handle<AudioChannel<MainTrack>>,
-}
-
-impl AudioChannels {
-    pub fn new(audio: &Res<Audio>) -> Self {
-        Self {
-            engine: audio.create_channel(),
-            sfx: audio.create_channel(),
-            music: audio.create_channel(),
-            environment: audio.create_channel(),
-            ui: audio.create_channel(),
-        }
-    }
-}
 
 /// Audio assets resource for managing pre-loaded sounds
 #[derive(Resource, Debug, Default)]
 pub struct AudioAssets {
     /// Engine sound assets
-    pub engine_sounds: HashMap<String, Handle<bevy_kira_audio::AudioSource>>,
+    pub engine_sounds: HashMap<String, Handle<KiraAudioSource>>,
     /// Environmental sound assets
-    pub environmental_sounds: HashMap<String, Handle<bevy_kira_audio::AudioSource>>,
+    pub environmental_sounds: HashMap<String, Handle<KiraAudioSource>>,
     /// Music tracks
-    pub music_tracks: HashMap<String, Handle<bevy_kira_audio::AudioSource>>,
+    pub music_tracks: HashMap<String, Handle<KiraAudioSource>>,
     /// Sound effects
-    pub sound_effects: HashMap<String, Handle<bevy_kira_audio::AudioSource>>,
+    pub sound_effects: HashMap<String, Handle<KiraAudioSource>>,
 }
 
 impl AudioAssets {
@@ -55,19 +28,28 @@ impl AudioAssets {
     }
 
     pub fn load_engine_sound(&mut self, name: &str, path: &str, asset_server: &Res<AssetServer>) {
-        self.engine_sounds.insert(name.to_string(), asset_server.load(path));
+        self.engine_sounds
+            .insert(name.to_string(), asset_server.load(path));
     }
 
-    pub fn load_environmental_sound(&mut self, name: &str, path: &str, asset_server: &Res<AssetServer>) {
-        self.environmental_sounds.insert(name.to_string(), asset_server.load(path));
+    pub fn load_environmental_sound(
+        &mut self,
+        name: &str,
+        path: &str,
+        asset_server: &Res<AssetServer>,
+    ) {
+        self.environmental_sounds
+            .insert(name.to_string(), asset_server.load(path));
     }
 
     pub fn load_music_track(&mut self, name: &str, path: &str, asset_server: &Res<AssetServer>) {
-        self.music_tracks.insert(name.to_string(), asset_server.load(path));
+        self.music_tracks
+            .insert(name.to_string(), asset_server.load(path));
     }
 
     pub fn load_sound_effect(&mut self, name: &str, path: &str, asset_server: &Res<AssetServer>) {
-        self.sound_effects.insert(name.to_string(), asset_server.load(path));
+        self.sound_effects
+            .insert(name.to_string(), asset_server.load(path));
     }
 }
 
@@ -90,7 +72,7 @@ pub struct VehicleEngineAudioEvent {
 
 /// Audio settings resource
 #[derive(Resource, Debug, Clone)]
-pub struct GameplayAudioSettings {
+pub struct AudioSettings {
     /// Master volume
     pub master_volume: f32,
     /// Engine volume
@@ -104,6 +86,9 @@ pub struct GameplayAudioSettings {
     /// UI volume
     pub ui_volume: f32,
 }
+
+/// Alias for backwards compatibility
+pub type GameplayAudioSettings = AudioSettings;
 
 impl Default for GameplayAudioSettings {
     fn default() -> Self {

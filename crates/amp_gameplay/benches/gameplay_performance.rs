@@ -1,6 +1,7 @@
 //! Performance benchmarks for gameplay systems
 
 use amp_gameplay::prelude::*;
+use amp_gameplay::vehicle::components::Engine;
 use bevy::prelude::*;
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use std::time::Duration;
@@ -8,7 +9,10 @@ use std::time::Duration;
 /// Create a benchmark app with minimal plugins
 fn create_benchmark_app() -> App {
     let mut app = App::new();
-    app.add_plugins((MinimalPlugins, AssetPlugin::default(), TransformPlugin))
+    app.add_plugins(MinimalPlugins)
+        .add_plugins(AssetPlugin::default())
+        .add_plugins(TransformPlugin)
+        .add_plugins(bevy::input::InputPlugin)
         .add_plugins(GameplayPlugins)
         .insert_resource(Time::<Fixed>::from_hz(60.0));
 
@@ -28,7 +32,7 @@ fn bench_spawn_vehicles(c: &mut Criterion) {
                         mass: 1500.0,
                         ..default()
                     },
-                    engine: VehicleEngine {
+                    engine: Engine {
                         max_torque: 400.0,
                         max_rpm: 6000.0,
                         ..default()
@@ -104,17 +108,17 @@ fn bench_spawn_mixed_scene(c: &mut Criterion) {
     });
 }
 
-/// Benchmark 1000 physics simulation ticks
+/// Benchmark 1000 physics simulation ticks with Sprint 3 performance target
 fn bench_physics_ticks(c: &mut Criterion) {
     let mut group = c.benchmark_group("physics_simulation");
     group.measurement_time(Duration::from_secs(10));
 
-    group.bench_function("1000_physics_ticks", |b| {
+    group.bench_function("1000_physics_ticks_32_vehicles", |b| {
         b.iter(|| {
             let mut app = create_benchmark_app();
 
-            // Spawn 10 vehicles for simulation
-            for i in 0..10 {
+            // Spawn 32 vehicles for simulation (Sprint 3 requirement)
+            for i in 0..32 {
                 app.world_mut().spawn(VehicleBundle {
                     transform: Transform::from_xyz(i as f32 * 5.0, 0.0, 0.0),
                     input: VehicleInput {
@@ -122,12 +126,16 @@ fn bench_physics_ticks(c: &mut Criterion) {
                         steering: if i % 2 == 0 { 0.2 } else { -0.2 },
                         ..default()
                     },
+                    audio: VehicleAudio {
+                        engine_sound_enabled: true,
+                        ..default()
+                    },
                     ..default()
                 });
             }
 
             // Spawn some static colliders
-            for i in 0..50 {
+            for i in 0..100 {
                 app.world_mut().spawn((
                     bevy_rapier3d::geometry::Collider::cuboid(1.0, 1.0, 1.0),
                     Transform::from_xyz(i as f32 * 2.0, 0.0, 15.0),
@@ -145,11 +153,11 @@ fn bench_physics_ticks(c: &mut Criterion) {
             }
             let elapsed = start.elapsed();
 
-            // Verify target performance (should be < 16ms per tick for 60 FPS)
+            // Verify Sprint 3 performance target (≤1.5ms per tick)
             let avg_per_tick = elapsed.as_millis() as f64 / 1000.0;
             assert!(
-                avg_per_tick < 16.0,
-                "Physics tick too slow: {avg_per_tick:.2}ms avg"
+                avg_per_tick < 1.5,
+                "Physics tick too slow: {avg_per_tick:.2}ms avg (target: ≤1.5ms)"
             );
 
             black_box(app);

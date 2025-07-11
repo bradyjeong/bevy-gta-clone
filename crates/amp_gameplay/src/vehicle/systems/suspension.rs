@@ -4,7 +4,6 @@
 
 use crate::vehicle::components::*;
 use crate::vehicle::resources::*;
-use amp_physics::components::Suspension;
 use bevy::prelude::*;
 
 /// Update suspension physics for all vehicles

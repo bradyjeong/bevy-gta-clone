@@ -53,15 +53,30 @@ impl Plugin for VehiclePlugin {
                 )
                     .chain(),
             )
-            .add_systems(Update, (systems::audio::update_vehicle_audio,))
+            .add_systems(
+                Update,
+                (
+                    systems::input::handle_vehicle_input,
+                    systems::audio::update_vehicle_audio,
+                ),
+            )
             .configure_sets(
                 FixedUpdate,
                 PostPhysics.after(bevy_rapier3d::plugin::PhysicsSet::StepSimulation),
             )
             .register_type::<components::Vehicle>()
-            // Physics component types are registered in amp_physics crate
             .register_type::<components::VehicleInput>()
             .register_type::<components::VehicleAudio>()
-            .register_type::<components::CarConfig>();
+            .register_type::<components::CarConfig>()
+            // Physics component types are now owned by amp_gameplay
+            .register_type::<components::PhysicsVehicle>()
+            .register_type::<components::Engine>()
+            .register_type::<components::Transmission>()
+            .register_type::<components::Suspension>()
+            .register_type::<components::Drivetrain>()
+            .register_type::<components::Steering>()
+            .register_type::<components::Brakes>()
+            .register_type::<components::PhysicsVehicleInput>()
+            .register_type::<components::WheelPhysics>();
     }
 }

@@ -3,7 +3,6 @@
 //! Systems for initializing vehicle components and resources.
 
 use crate::vehicle::resources::*;
-use crate::{VehicleEngine, VehicleSteering, VehicleSuspension};
 use bevy::prelude::*;
 
 /// Initialize vehicle systems and resources
@@ -29,9 +28,9 @@ pub fn spawn_basic_vehicle(
     commands
         .spawn((Mesh3d(mesh), MeshMaterial3d(material), transform))
         .insert(Vehicle::default())
-        .insert(VehicleEngine::default())
-        .insert(VehicleSuspension::default())
-        .insert(VehicleSteering::default())
+        .insert(Engine::default())
+        .insert(Suspension::default())
+        .insert(Steering::default())
         .insert(Name::new("Vehicle"))
         .id()
 }
