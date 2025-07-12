@@ -6,8 +6,9 @@
 
 [package]
 name = "amp_examples"
-version.workspace = true
-edition.workspace = true
+version = "0.3.0-alpha"
+edition = "2024"
+rust-version = "1.85"
 publish = false
 
 [features]
@@ -31,14 +32,19 @@ path = "bevy_asset_pipeline.rs"
 name = "city_demo_baseline"
 path = "city_demo_baseline.rs"
 
+[[bin]]
+name = "buffer_pool_demo"
+path = "buffer_pool_demo.rs"
+
 [dependencies]
 amp_core = { path = "../crates/amp_core" }
 amp_engine = { path = "../crates/amp_engine", features = ["bevy16"] }
 amp_physics = { path = "../crates/amp_physics", features = ["rapier3d_030"] }
+amp_render = { path = "../crates/amp_render" }
 config_core = { path = "../crates/config_core" }
 gameplay_factory = { path = "../crates/gameplay_factory", features = ["ron"] }
-bevy_ecs = { workspace = true }
-bevy.workspace = true
-winit.workspace = true
+bevy_ecs = "=0.16.1"
+bevy = { version = "=0.16.1", default-features = false, features = ["bevy_winit", "bevy_render", "bevy_pbr", "bevy_ui", "bevy_text"] }
+winit = "=0.30.11"
 pollster = "0.3"
 env_logger = "0.10"

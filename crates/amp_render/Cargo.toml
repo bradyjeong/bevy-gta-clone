@@ -1,0 +1,36 @@
+[package]
+name = "amp_render"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "High-performance batch rendering and GPU culling for Amp"
+
+[features]
+default = ["instancing"]
+instancing = []
+gpu = ["wgpu"]
+
+[dependencies]
+# Core Bevy (use workspace version with all features)
+bevy = { workspace = true }
+
+# GPU compute shaders (optional feature)
+wgpu = { workspace = true, optional = true }
+
+# Math and utilities
+glam = { workspace = true }
+bitset-fixed = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+bytemuck = { workspace = true }
+smallvec = { workspace = true }
+
+# Internal crates
+amp_core = { path = "../amp_core" }
+amp_math = { path = "../amp_math" }
+
+[dev-dependencies]
+bevy = { workspace = true, features = ["dynamic_linking"] }

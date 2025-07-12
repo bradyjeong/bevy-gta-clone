@@ -227,6 +227,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "amp_render"
+version = "0.3.0-alpha"
+dependencies = [
+ "amp_core",
+ "amp_math",
+ "anyhow",
+ "bevy",
+ "bitset-fixed",
+ "bytemuck",
+ "glam",
+ "smallvec",
+ "thiserror 2.0.12",
+ "wgpu",
+]
+
+[[package]]
 name = "android-activity"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -597,6 +613,7 @@ version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4b8369c16b7c017437021341521f8b4a0d98e1c70113fb358c3258ae7d661d79"
 dependencies = [
+ "bevy_dylib",
  "bevy_internal",
 ]
 
@@ -858,6 +875,15 @@ dependencies = [
  "log",
  "serde",
  "sysinfo",
+]
+
+[[package]]
+name = "bevy_dylib"
+version = "0.16.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1dc3602098b2604941b2829a04ac316de1e36aad949cbffce8861896b9b32532"
+dependencies = [
+ "bevy_internal",
 ]
 
 [[package]]
@@ -3293,6 +3319,7 @@ dependencies = [
  "amp_engine",
  "amp_gameplay",
  "amp_physics",
+ "amp_render",
  "bevy",
  "bevy_rapier3d",
  "config_core",

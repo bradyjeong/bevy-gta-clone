@@ -42,6 +42,8 @@ anyhow = { version = "^1.0", default-features = false }
 thiserror = { version = "^2.0" }
 bitset-fixed = "^0.1"
 pollster = "^0.3"
+bytemuck = { version = "^1.14", features = ["derive"] }
+smallvec = "^1.13"
 
 # Configuration
 ron = "^0.8"
@@ -95,6 +97,10 @@ name = "city_demo_baseline"
 path = "examples/city_demo_baseline.rs"
 required-features = ["rapier3d_030"]
 
+[[example]]
+name = "batch_processing_test"
+path = "examples/batch_processing_test.rs"
+
 [features]
 default = []
 ron = ["gameplay_factory/ron"]
@@ -106,6 +112,7 @@ config_core = { path = "crates/config_core" }
 amp_engine = { path = "crates/amp_engine", features = ["bevy16"] }
 amp_physics = { path = "crates/amp_physics", optional = true }
 amp_gameplay = { path = "crates/amp_gameplay" }
+amp_render = { path = "crates/amp_render" }
 bevy.workspace = true
 bevy_rapier3d = { workspace = true, optional = true }
 env_logger = { workspace = true }
@@ -126,3 +133,15 @@ path = "examples/vehicle_physics_integration.rs"
 name = "sprint_3_demo"
 path = "examples/sprint_3_demo.rs"
 required-features = ["rapier3d_030"]
+
+[[example]]
+name = "gpu_culling_demo"
+path = "examples/gpu_culling_demo.rs"
+
+[[example]]
+name = "lod_system_demo"
+path = "examples/lod_system_demo.rs"
+
+[[example]]
+name = "simple_lod_demo"
+path = "examples/simple_lod_demo.rs"

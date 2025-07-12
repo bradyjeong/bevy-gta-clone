@@ -1,0 +1,8 @@
+/Users/bradyjeong/Documents/Projects/Amp/gta4/gta_game/examples/target/debug/deps/bevy_render_macros-a5462ca6fd05e58f.d: /Users/bradyjeong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render_macros-0.16.1/src/lib.rs /Users/bradyjeong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render_macros-0.16.1/src/as_bind_group.rs /Users/bradyjeong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render_macros-0.16.1/src/extract_component.rs /Users/bradyjeong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render_macros-0.16.1/src/extract_resource.rs
+
+/Users/bradyjeong/Documents/Projects/Amp/gta4/gta_game/examples/target/debug/deps/libbevy_render_macros-a5462ca6fd05e58f.dylib: /Users/bradyjeong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render_macros-0.16.1/src/lib.rs /Users/bradyjeong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render_macros-0.16.1/src/as_bind_group.rs /Users/bradyjeong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render_macros-0.16.1/src/extract_component.rs /Users/bradyjeong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render_macros-0.16.1/src/extract_resource.rs
+
+/Users/bradyjeong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render_macros-0.16.1/src/lib.rs:
+/Users/bradyjeong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render_macros-0.16.1/src/as_bind_group.rs:
+/Users/bradyjeong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render_macros-0.16.1/src/extract_component.rs:
+/Users/bradyjeong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render_macros-0.16.1/src/extract_resource.rs:
