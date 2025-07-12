@@ -1,0 +1,60 @@
+(
+    // Audio Configuration
+    audio: (
+        // Volume Levels
+        volumes: (
+            master: 1.0,
+            engine: 0.8,
+            turbo: 0.9,
+            exhaust: 0.85,
+            backfire: 0.7,
+            footstep: 0.5,
+            horn: 0.8,
+            ambient: 0.6,
+        ),
+
+        // Footstep Configuration
+        footsteps: (
+            base_interval: 0.5,
+            walk_multiplier: 1.0,
+            run_multiplier: 0.6,
+            interval_variation: 0.1,
+            min_speed_threshold: 0.5,
+            volume_variation: 0.2,
+        ),
+
+        // Spatial Audio
+        spatial: (
+            fade_distance: 100.0,
+            max_audio_distance: 250.0,
+            doppler_factor: 1.0,
+            reverb_factor: 0.3,
+        ),
+
+        // Audio Timing
+        timing: (
+            cleanup_interval: 1.0,
+            update_interval: 0.05,
+            fade_in_time: 0.2,
+            fade_out_time: 0.5,
+        ),
+
+        // Engine Audio
+        engine: (
+            idle_frequency: 800.0,
+            max_frequency: 4000.0,
+            frequency_curve: [0.8, 1.0, 1.2, 1.5, 2.0],
+            volume_curve: [0.3, 0.5, 0.7, 0.9, 1.0],
+            turbo_whistle_frequency: 2500.0,
+            backfire_chance: 0.02,
+        ),
+
+        // Audio Effects
+        effects: (
+            echo_delay: 0.3,
+            echo_decay: 0.4,
+            low_pass_cutoff: 5000.0,
+            high_pass_cutoff: 80.0,
+        ),
+    ),
+)

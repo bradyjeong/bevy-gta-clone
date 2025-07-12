@@ -1,0 +1,88 @@
+(
+    // UI Configuration
+    ui: (
+        // Typography
+        typography: (
+            default_font_size: 16.0,
+            fps_font_size: 20.0,
+            title_font_size: 32.0,
+            subtitle_font_size: 24.0,
+            body_font_size: 14.0,
+            caption_font_size: 12.0,
+        ),
+        
+        // Layout
+        layout: (
+            default_padding: 10.0,
+            panel_padding: 8.0,
+            button_padding: 12.0,
+            margin: 5.0,
+            border_radius: 5.0,
+            panel_spacing: 15.0,
+        ),
+        
+        // Colors
+        colors: (
+            background: (0.0, 0.0, 0.0, 0.7),
+            text: (1.0, 1.0, 1.0, 1.0),
+            text_secondary: (0.8, 0.8, 0.8, 1.0),
+            accent: (0.2, 0.6, 1.0, 1.0),
+            success: (0.3, 0.8, 0.3, 1.0),
+            warning: (1.0, 0.7, 0.2, 1.0),
+            error: (1.0, 0.3, 0.3, 1.0),
+            panel_background: (0.1, 0.1, 0.1, 0.9),
+            button_background: (0.2, 0.2, 0.2, 0.8),
+            button_hover: (0.3, 0.3, 0.3, 0.9),
+            button_active: (0.4, 0.4, 0.4, 1.0),
+        ),
+        
+        // Animation
+        animation: (
+            fade_duration: 0.3,
+            slide_duration: 0.25,
+            scale_duration: 0.2,
+            ease_type: "ease_out",
+        ),
+        
+        // HUD Elements
+        hud: (
+            fps_counter: (
+                position: (10.0, 10.0),
+                size: (120.0, 40.0),
+                update_interval: 0.1,
+                show_frame_time: true,
+            ),
+            
+            vehicle_info: (
+                position: (10.0, 60.0),
+                size: (200.0, 100.0),
+                show_speed: true,
+                show_fuel: true,
+                show_damage: true,
+                show_gear: true,
+            ),
+            
+            minimap: (
+                position: (-150.0, 10.0),
+                size: (140.0, 140.0),
+                zoom_level: 1.0,
+                show_entities: true,
+                show_roads: true,
+            ),
+        ),
+        
+        // Debug UI
+        debug: (
+            show_debug_info: false,
+            show_physics_debug: false,
+            show_performance_graph: false,
+            debug_text_size: 12.0,
+            debug_colors: [
+                (1.0, 0.0, 0.0, 1.0),  // Red
+                (0.0, 1.0, 0.0, 1.0),  // Green
+                (0.0, 0.0, 1.0, 1.0),  // Blue
+                (1.0, 1.0, 0.0, 1.0),  // Yellow
+            ],
+        ),
+    ),
+)

@@ -1,6 +1,6 @@
 //! RON (Rusty Object Notation) loader for prefab definitions
 
-use crate::{ComponentInit, Error, Prefab, PrefabSource};
+use crate::{BasicPrefab, ComponentInit, Error, PrefabSource};
 #[cfg(all(test, feature = "legacy_ron_loader"))]
 use bevy::ecs::world::CommandQueue;
 use bevy::prelude::*;
@@ -50,7 +50,7 @@ impl RonLoader {
 #[cfg(feature = "legacy_ron_loader")]
 #[allow(deprecated)]
 impl PrefabSource for RonLoader {
-    fn load(&self) -> Result<Prefab, Error> {
+    fn load(&self) -> Result<BasicPrefab, Error> {
         let ron_prefab: RonPrefab = ron::from_str(&self.content)
             .map_err(|e| Error::serialization(format!("Failed to parse RON: {e}")))?;
 
@@ -65,11 +65,12 @@ pub struct RonPrefab {
     pub components: Vec<RonComponent>,
 }
 
-impl From<RonPrefab> for Prefab {
+impl From<RonPrefab> for BasicPrefab {
     fn from(ron_prefab: RonPrefab) -> Self {
-        let mut prefab = Prefab::new();
+        let mut prefab = BasicPrefab::new();
         for component in ron_prefab.components {
-            prefab.add_component(Box::new(component));
+            let data_string = ron::to_string(&component.data).unwrap_or_default();
+            prefab.add_component(component.component_type, data_string);
         }
         prefab
     }
@@ -135,8 +136,8 @@ mod tests {
         let loader = RonLoader::new(ron_content.to_string());
         let prefab = loader.load().unwrap();
 
-        assert_eq!(prefab.len(), 2);
-        assert!(!prefab.is_empty());
+        assert_eq!(prefab.component_count(), 2);
+        assert!(prefab.component_count() > 0);
     }
 
     #[rstest]
@@ -150,8 +151,8 @@ mod tests {
         let loader = RonLoader::new(ron_content.to_string());
         let prefab = loader.load().unwrap();
 
-        assert_eq!(prefab.len(), 0);
-        assert!(prefab.is_empty());
+        assert_eq!(prefab.component_count(), 0);
+        assert!(prefab.component_count() == 0);
     }
 
     #[rstest]
@@ -185,7 +186,7 @@ mod tests {
         let loader = RonLoader::from_file(temp_path).unwrap();
         let prefab = loader.load().unwrap();
 
-        assert_eq!(prefab.len(), 1);
+        assert_eq!(prefab.component_count(), 1);
 
         // Cleanup
         fs::remove_file(temp_path).ok();

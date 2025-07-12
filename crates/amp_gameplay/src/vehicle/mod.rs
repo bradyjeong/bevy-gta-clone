@@ -11,6 +11,9 @@ pub mod components;
 pub mod resources;
 pub mod systems;
 
+#[cfg(test)]
+pub mod tests;
+
 /// Prelude for vehicle module
 pub mod prelude {
     pub use crate::vehicle::VehiclePlugin;

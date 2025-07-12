@@ -1,0 +1,60 @@
+//! Demo of the Bevy config system with hot-reload
+//! 
+//! This example shows how to use the RonAssetPlugin and ConfigHandle<T> resource pattern
+//! for loading and hot-reloading configuration files in Bevy.
+//!
+//! Run with: cargo run --example bevy_config_demo --features="bevy-assets"
+
+use bevy::prelude::*;
+use config_core::assets::{ConfigHandle, RonAssetPlugin};
+use config_core::types::{GameConfigAsset, VehicleStatsConfig, PerformanceSettingsConfig};
+
+fn main() {
+    App::new()
+        .add_plugins(DefaultPlugins)
+        // Add config plugins for each config type
+        .add_plugins((
+            RonAssetPlugin::<GameConfigAsset>::new("configs/game_config.ron"),
+            RonAssetPlugin::<VehicleStatsConfig>::new("configs/vehicle_stats.ron"),
+            RonAssetPlugin::<PerformanceSettingsConfig>::new("configs/performance_settings.ron"),
+        ))
+        .add_systems(Update, (
+            monitor_game_config,
+            monitor_vehicle_stats,
+            monitor_performance_settings,
+        ))
+        .run();
+}
+
+fn monitor_game_config(
+    game_config: Res<ConfigHandle<GameConfigAsset>>,
+) {
+    if game_config.is_loaded() {
+        if let Some(config) = game_config.get() {
+            info!("Game Config - Title: {}, Debug: {}, Version: {}", 
+                config.window_title, config.debug_mode, game_config.version());
+        }
+    }
+}
+
+fn monitor_vehicle_stats(
+    vehicle_stats: Res<ConfigHandle<VehicleStatsConfig>>,
+) {
+    if vehicle_stats.is_loaded() {
+        if let Some(config) = vehicle_stats.get() {
+            info!("Vehicle Stats - {} vehicles configured, Version: {}", 
+                config.vehicle_configs.len(), vehicle_stats.version());
+        }
+    }
+}
+
+fn monitor_performance_settings(
+    perf_settings: Res<ConfigHandle<PerformanceSettingsConfig>>,
+) {
+    if perf_settings.is_loaded() {
+        if let Some(config) = perf_settings.get() {
+            info!("Performance Settings - Target FPS: {}, Max Entities: {}, Version: {}", 
+                config.target_fps, config.max_entities, perf_settings.version());
+        }
+    }
+}

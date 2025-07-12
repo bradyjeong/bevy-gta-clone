@@ -1,0 +1,7 @@
+(
+    culling_distance: 1500.0,
+    max_entities: 15000,
+    vsync: true,
+    target_fps: 60,
+    quality_level: High,
+)

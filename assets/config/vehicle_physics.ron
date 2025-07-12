@@ -1,0 +1,212 @@
+(
+    // Vehicle Physics Constants
+    vehicle_physics: (
+        // Time Step Controls
+        min_delta_time: 0.001,
+        max_delta_time: 0.05,
+        max_processing_time: 5.0,
+
+        // Physics Limits
+        max_physics_entities: 8,
+        physics_distance_threshold: 200.0,
+        simplification_distance: 100.0,
+
+        // Suspension
+        suspension_stiffness: 35000.0,
+        suspension_damping: 4500.0,
+
+        // Tire Physics
+        tire_grip_coefficient: 1.2,
+        tire_slip_threshold: 0.3,
+        tire_friction_curve: [0.8, 1.0, 0.9, 0.7],
+
+        // Aerodynamics
+        air_density: 1.225,
+        drag_coefficient: 0.3,
+        downforce_coefficient: 0.1,
+
+        // Safety Bounds
+        max_engine_force: 10000.0,
+        max_brake_force: 8000.0,
+        max_steering_angle: 45.0,
+    ),
+
+    // Vehicle Types Configuration
+    vehicle_types: {
+        "starter_car": (
+            // Physical Properties
+            body_size: (1.8, 1.0, 3.6),
+            collider_size: (0.9, 0.5, 1.8),
+            mass: 1200.0,
+
+            // Performance
+            max_speed: 80.0,
+            acceleration: 25.0,
+            braking_force: 3000.0,
+            turning_radius: 6.0,
+
+            // Physics
+            linear_damping: 1.0,
+            angular_damping: 5.0,
+            center_of_mass_offset: (0.0, -0.3, 0.0),
+
+            // Visual
+            default_color: (0.8, 0.8, 0.8, 1.0),
+
+            // Audio
+            engine_volume: 0.6,
+            horn_volume: 0.8,
+
+            // Fuel
+            fuel_capacity: 55.0,
+            fuel_consumption: 0.08,
+        ),
+
+        "luxury_car": (
+            // Physical Properties
+            body_size: (1.8, 1.0, 4.2),
+            collider_size: (0.9, 0.5, 2.1),
+            mass: 1600.0,
+
+            // Performance
+            max_speed: 120.0,
+            acceleration: 35.0,
+            braking_force: 4000.0,
+            turning_radius: 7.0,
+
+            // Physics
+            linear_damping: 1.0,
+            angular_damping: 5.0,
+            center_of_mass_offset: (0.0, -0.2, 0.0),
+
+            // Visual
+            default_color: (0.2, 0.2, 0.5, 1.0),
+
+            // Audio
+            engine_volume: 0.7,
+            horn_volume: 0.9,
+
+            // Fuel
+            fuel_capacity: 60.0,
+            fuel_consumption: 0.10,
+        ),
+
+        "supercar": (
+            // Physical Properties
+            body_size: (1.8, 0.4, 4.2),
+            collider_size: (0.9, 0.5, 2.1),
+            mass: 1400.0,
+
+            // Performance
+            max_speed: 280.0,
+            acceleration: 60.0,
+            braking_force: 6000.0,
+            turning_radius: 8.5,
+
+            // Physics
+            linear_damping: 1.0,
+            angular_damping: 5.0,
+            center_of_mass_offset: (0.0, -0.1, 0.0),
+
+            // Visual
+            default_color: (1.0, 0.0, 0.0, 1.0),
+
+            // Audio
+            engine_volume: 0.8,
+            horn_volume: 0.9,
+
+            // Fuel
+            fuel_capacity: 65.0,
+            fuel_consumption: 0.15,
+
+            // Exhaust Effects
+            exhaust_timer_threshold: 0.04,
+            exhaust_position_offset: (0.0, 0.15, -2.8),
+            turbo_stages: [
+                (
+                    stage: 1,
+                    flame_color: (0.6, 0.8, 1.0, 1.0),
+                    emission_intensity: 2.8,
+                ),
+                (
+                    stage: 2,
+                    flame_color: (0.3, 0.7, 1.0, 1.0),
+                    emission_intensity: 3.2,
+                ),
+                (
+                    stage: 3,
+                    flame_color: (0.1, 0.4, 1.0, 1.0),
+                    emission_intensity: 4.5,
+                ),
+            ],
+        ),
+
+        "helicopter": (
+            // Physical Properties
+            body_size: (2.5, 1.5, 5.0),
+            collider_size: (1.25, 0.75, 2.5),
+            mass: 2500.0,
+
+            // Performance
+            max_speed: 60.0,
+            acceleration: 30.0,
+            braking_force: 2000.0,
+            turning_radius: 0.0,
+
+            // Physics
+            linear_damping: 2.0,
+            angular_damping: 8.0,
+            center_of_mass_offset: (0.0, -0.5, 0.0),
+
+            // Visual
+            default_color: (0.9, 0.9, 0.9, 1.0),
+
+            // Audio
+            engine_volume: 1.0,
+            horn_volume: 0.5,
+
+            // Fuel
+            fuel_capacity: 200.0,
+            fuel_consumption: 0.25,
+        ),
+
+        "f16_fighter": (
+            // Physical Properties
+            body_size: (16.0, 2.0, 3.0),
+            collider_size: (8.0, 1.0, 1.5),
+            mass: 8000.0,
+
+            // Performance
+            max_speed: 500.0,
+            acceleration: 120.0,
+            braking_force: 5000.0,
+            turning_radius: 50.0,
+
+            // Physics
+            linear_damping: 0.5,
+            angular_damping: 3.0,
+            center_of_mass_offset: (0.0, 0.0, 0.0),
+
+            // Visual
+            default_color: (0.4, 0.4, 0.5, 1.0),
+
+            // Audio
+            engine_volume: 1.2,
+            horn_volume: 0.3,
+
+            // Fuel
+            fuel_capacity: 3000.0,
+            fuel_consumption: 0.8,
+
+            // Jet Effects
+            afterburner_boost: 0.8,
+            flame_intensity_threshold: 0.1,
+            flicker_speed: 12.0,
+            flame_scale_multiplier: 1.5,
+            flame_colors: [
+                (0.8, 0.6, 1.0, 1.0),  // Base flame
+                (1.0, 0.3, 0.1, 1.0),  // Afterburner
+            ],
+        ),
+    },
+)

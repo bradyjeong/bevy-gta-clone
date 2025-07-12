@@ -12,8 +12,9 @@ keywords = ["config", "ron", "game-engine", "configuration"]
 
 [features]
 default = []
-hot-reload = []
-bevy-assets = ["dep:bevy"]
+hot-reload = ["dep:notify"]
+bevy-assets = ["dep:bevy", "dep:notify"]
+schemars = ["dep:schemars", "dep:serde_json"]
 
 [dependencies]
 amp_core = { path = "../amp_core" }
@@ -24,8 +25,14 @@ shellexpand = { workspace = true }
 
 # Bevy dependencies for asset system integration
 bevy = { workspace = true, optional = true }
+notify = { workspace = true, optional = true }
+
+# Schema validation dependencies
+schemars = { version = "0.8", optional = true }
+serde_json = { workspace = true, optional = true }
 
 [dev-dependencies]
 rstest = { workspace = true }
 tempfile = { workspace = true }
 serial_test = { workspace = true }
+serde_json = { workspace = true }

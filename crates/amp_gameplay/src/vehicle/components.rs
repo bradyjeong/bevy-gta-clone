@@ -420,11 +420,24 @@ pub struct VehicleAudio {
 
 impl Default for VehicleAudio {
     fn default() -> Self {
-        Self {
-            engine_sound_enabled: true,
-            engine_volume: 0.5,
-            tire_screech_enabled: true,
-            tire_screech_volume: 0.3,
+        // Load from config if available, otherwise use fallback values
+        if let Ok(config) =
+            config_core::ConfigLoader::new().load_with_merge::<config_core::AudioConfig>()
+        {
+            Self {
+                engine_sound_enabled: config.vehicle.engine_sound_enabled,
+                engine_volume: config.vehicle.default_engine_volume,
+                tire_screech_enabled: config.vehicle.tire_screech_enabled,
+                tire_screech_volume: config.vehicle.default_tire_screech_volume,
+            }
+        } else {
+            // Fallback to hardcoded values if config loading fails
+            Self {
+                engine_sound_enabled: true,
+                engine_volume: 0.5,
+                tire_screech_enabled: true,
+                tire_screech_volume: 0.3,
+            }
         }
     }
 }

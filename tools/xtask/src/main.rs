@@ -35,6 +35,8 @@ enum Commands {
         #[arg(value_enum)]
         version_type: VersionType,
     },
+    /// Validate configuration files
+    ValidateConfigs,
 }
 
 #[derive(clap::ValueEnum, Clone)]
@@ -57,6 +59,7 @@ fn main() -> Result<()> {
         Commands::Check => run_check(),
         Commands::Coverage => run_coverage(),
         Commands::BumpVersion { version_type } => bump_version(version_type),
+        Commands::ValidateConfigs => validate_configs(),
     }
 }
 
@@ -69,6 +72,7 @@ fn run_ci() -> Result<()> {
     run_coverage()?;
     run_doc()?;
     run_doc_validate()?;
+    validate_configs()?;
 
     println!("✅ CI pipeline completed successfully!");
     Ok(())
@@ -243,6 +247,104 @@ fn bump_version(version_type: VersionType) -> Result<()> {
 
     // This is a stub - in a real implementation you'd use cargo-edit or similar
     println!("Version bump for {version_arg} - implementation needed");
+
+    Ok(())
+}
+
+fn validate_configs() -> Result<()> {
+    println!("Validating configuration files...");
+
+    // Find all config files in the workspace
+    let config_dirs = [
+        "assets/configs",
+        "crates/config_core/assets/examples/configs",
+        "examples/configs",
+    ];
+
+    let mut found_configs = false;
+    let mut validation_errors = Vec::new();
+
+    for config_dir in &config_dirs {
+        let path = std::path::Path::new(config_dir);
+        if path.exists() {
+            println!("  Checking config directory: {config_dir}");
+
+            if let Ok(entries) = std::fs::read_dir(path) {
+                for entry in entries.flatten() {
+                    let file_path = entry.path();
+                    if file_path.extension().is_some_and(|ext| ext == "ron") {
+                        found_configs = true;
+                        println!("    Validating: {}", file_path.display());
+
+                        // Try to parse the RON file
+                        match std::fs::read_to_string(&file_path) {
+                            Ok(content) => {
+                                if let Err(e) = ron::from_str::<ron::Value>(&content) {
+                                    validation_errors.push(format!(
+                                        "  ❌ {}: RON parsing error: {}",
+                                        file_path.display(),
+                                        e
+                                    ));
+                                } else {
+                                    println!("    ✅ {}: Valid RON syntax", file_path.display());
+                                }
+                            }
+                            Err(e) => {
+                                validation_errors.push(format!(
+                                    "  ❌ {}: Failed to read file: {}",
+                                    file_path.display(),
+                                    e
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Validate example configs with specific config types
+    validate_typed_configs(&mut validation_errors)?;
+
+    if !validation_errors.is_empty() {
+        println!("❌ Configuration validation failed:");
+        for error in &validation_errors {
+            println!("{error}");
+        }
+        anyhow::bail!(
+            "Configuration validation failed with {} errors",
+            validation_errors.len()
+        );
+    }
+
+    if found_configs {
+        println!("✅ All configuration files are valid");
+    } else {
+        println!("⚠️  No configuration files found to validate");
+    }
+
+    Ok(())
+}
+
+fn validate_typed_configs(validation_errors: &mut Vec<String>) -> Result<()> {
+    // Test loading configs using the config_core system
+    let status = Command::new("cargo")
+        .args([
+            "test",
+            "-p",
+            "config_core",
+            "--",
+            "test_config",
+            "--nocapture",
+        ])
+        .output()?;
+
+    if !status.status.success() {
+        let error_output = String::from_utf8_lossy(&status.stderr);
+        validation_errors.push(format!(
+            "  ❌ config_core validation tests failed:\n{error_output}"
+        ));
+    }
 
     Ok(())
 }

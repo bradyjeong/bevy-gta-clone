@@ -50,3 +50,4 @@ path = "tests/dsl_integration_test.rs"
 [[bench]]
 name = "factory_spawn"
 path = "benches/factory_spawn.rs"
+harness = false

@@ -1,0 +1,162 @@
+(
+    // PHASE 1: Core hardcoded values extraction - spawn rates and entity limits
+
+    // Entity spawn rates (AAA data-driven approach)
+    spawn_rates: (
+        buildings: 0.08,     // 8% spawn rate from AGENT.md
+        vehicles: 0.04,      // 4% spawn rate from AGENT.md
+        trees: 0.05,         // 5% spawn rate from AGENT.md
+        npcs: 0.01,          // 1% spawn rate from AGENT.md
+    ),
+
+    // Entity limits (from factories/entity_factory_unified.rs)
+    entity_limits: (
+        buildings: 80,       // 8% of 1000 = 80 buildings
+        vehicles: 20,        // 4% of 500 = 20 vehicles
+        npcs: 2,             // 1% of 200 = 2 NPCs
+        trees: 100,          // 5% of 2000 = 100 trees
+        particles: 50,       // Particle system limit
+    ),
+
+    // LOD distances (Level of Detail transitions)
+    lod_distances: (
+        full: 50.0,          // Full detail distance
+        medium: 150.0,       // Medium detail distance
+        low: 300.0,          // Low detail distance
+        cull: 500.0,         // Culling distance
+    ),
+
+    // Entity-specific culling distances
+    culling_distances: (
+        buildings: 300.0,    // Buildings visible up to 300m
+        vehicles: 150.0,     // Vehicles visible up to 150m
+        npcs: 100.0,         // NPCs visible up to 100m
+        vegetation: 200.0,   // Trees/vegetation visible up to 200m
+    ),
+
+    // Update intervals (performance optimization)
+    update_intervals: (
+        road_generation: 0.5,    // Road generation every 0.5s
+        dynamic_content: 2.0,    // Dynamic content spawning every 2s
+        culling: 0.5,            // Culling checks every 0.5s
+        lod_update: 0.1,         // LOD updates every 0.1s
+        npc_close: 0.05,         // Close NPC updates every 0.05s
+        effect_update: 0.05,     // Effect updates every 0.05s
+    ),
+
+    // Physics constants
+    physics: (
+        min_collider_size: 0.01,
+        max_collider_size: 1000.0,
+        max_world_coord: 10000.0,
+        min_world_coord: -10000.0,
+        max_velocity: 500.0,
+        max_angular_velocity: 50.0,
+        min_mass: 0.1,
+        max_mass: 100000.0,
+        linear_damping: 1.0,
+        angular_damping: 5.0,
+        ground_friction: 0.3,
+        rolling_resistance: 0.015,
+        dt_clamp_min: 0.001,
+        dt_clamp_max: 0.05,
+        static_group: 1,
+        vehicle_group: 2,
+        character_group: 3,
+    ),
+
+    // Vehicle physics
+    vehicle_physics: (
+        wing_deploy_speed: 150.0,
+        downforce_multiplier: 0.05,
+        cooling_rate: 0.05,
+        exhaust_timer_threshold: 0.04,
+        tire_temp_factor: 0.01,
+    ),
+
+    // World generation
+    world: (
+        chunk_size: 200.0,
+        streaming_radius: 800.0,
+        lake_position: (300.0, -2.0, 300.0),
+        lake_size: 200.0,
+        lake_depth: 5.0,
+        active_radius: 100.0,
+        road_marking_height: 0.01,
+        lod_distances: [150.0, 300.0, 500.0],
+    ),
+
+    // Audio settings
+    audio: (
+        update_timer_threshold: 0.05,
+        wind_strength: 0.05,
+    ),
+
+    // Visual effects
+    visual: (
+        particle_sphere_radius: 0.05,
+        exhaust_sphere_radius: 0.08,
+        smoke_sphere_radius: 0.04,
+        emissive_intensity: 0.05,
+        transparency_alpha: 0.3,
+    ),
+
+    // NPC behavior
+    npc_behavior: (
+        reaction_time_min: 0.03,
+        reaction_time_max: 0.12,
+        update_interval_range: (0.05, 0.2),
+    ),
+
+    // Performance monitoring
+    performance: (
+        frame_consistency_factor: 0.01,
+        fps_smoothing_factor: 0.05,
+        cache_max_entries: 2048,
+        cache_duration: 5.0,
+    ),
+
+    // Vehicle configurations
+    vehicles: (
+        basic_car: (
+            body_size: (2.0, 1.0, 4.5),
+            mass: 1500.0,
+            linear_damping: 1.0,
+            angular_damping: 5.0,
+            default_color: (0.2, 0.3, 0.8),
+        ),
+        super_car: (
+            body_size: (2.0, 1.0, 4.8),
+            mass: 1200.0,
+            linear_damping: 0.8,
+            angular_damping: 3.0,
+            default_color: (0.8, 0.1, 0.1),
+        ),
+        helicopter: (
+            body_size: (3.0, 2.0, 12.0),
+            mass: 2500.0,
+            linear_damping: 2.0,
+            angular_damping: 8.0,
+            default_color: (0.1, 0.5, 0.1),
+        ),
+        f16: (
+            body_size: (4.0, 2.0, 15.0),
+            mass: 8000.0,
+            linear_damping: 0.5,
+            angular_damping: 2.0,
+            default_color: (0.5, 0.5, 0.5),
+        ),
+    ),
+
+    // NPC configuration
+    npc: (
+        default_height: 1.8,
+        default_build: 1.0,
+        walk_speed: 2.0,
+        capsule_height: 1.8,
+        capsule_radius: 0.3,
+        update_intervals: (
+            close_interval: 0.05,
+        ),
+    ),
+)

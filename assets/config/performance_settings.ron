@@ -1,0 +1,31 @@
+(
+    culling_distances: CullingDistances(
+        buildings: 300.0,
+        vehicles: 150.0,
+        npcs: 100.0,
+        vegetation: 200.0,
+        effects: 80.0,
+    ),
+    lod_distances: LodDistances(
+        high_detail: 100.0,
+        medium_detail: 200.0,
+        sleep_mode: 300.0,
+    ),
+    spawn_rates: SpawnRates(
+        buildings: 0.08,
+        vehicles: 0.04,
+        trees: 0.05,
+        npcs: 0.01,
+    ),
+    performance_targets: PerformanceTargets(
+        target_fps: 60.0,
+        frame_time_budget_ms: 16.67,
+        max_entities: 2000,
+        max_active_systems: 50,
+    ),
+    cache_settings: CacheSettings(
+        distance_cache_size: 2048,
+        cache_duration_frames: 5,
+        cleanup_interval_frames: 300,
+    ),
+)

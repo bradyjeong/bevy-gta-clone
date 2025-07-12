@@ -1,8 +1,10 @@
-//! Generic typed RON → Bevy Asset loader.
+//! Generic typed RON → Bevy Asset loader with hot-reload support.
 use bevy::asset::{AssetLoadFailedEvent, AssetLoader, LoadContext};
 use bevy::prelude::*;
 use serde::de::DeserializeOwned;
 use std::marker::PhantomData;
+use std::ops::Deref;
+use std::sync::Arc;
 
 /// Generic asset loader for RON files
 pub struct RonAssetLoader<T> {
@@ -50,11 +52,12 @@ where
     }
 }
 
-/// Resource handle for configuration assets
+/// Resource handle for configuration assets with deref support
 #[derive(Resource)]
 pub struct ConfigHandle<T: Asset> {
     pub handle: Handle<T>,
-    pub data: Option<T>,
+    pub data: Option<Arc<T>>,
+    pub version: u64,
 }
 
 /// Resource holding the path to the configuration file
@@ -66,6 +69,7 @@ impl<T: Asset> Default for ConfigHandle<T> {
         Self {
             handle: Handle::default(),
             data: None,
+            version: 0,
         }
     }
 }
@@ -73,12 +77,30 @@ impl<T: Asset> Default for ConfigHandle<T> {
 impl<T: Asset> ConfigHandle<T> {
     /// Get the configuration data if available
     pub fn get(&self) -> Option<&T> {
-        self.data.as_ref()
+        self.data.as_ref().map(|arc| arc.as_ref())
     }
 
     /// Check if the configuration is loaded
     pub fn is_loaded(&self) -> bool {
         self.data.is_some()
+    }
+
+    /// Get the version counter for change detection
+    pub fn version(&self) -> u64 {
+        self.version
+    }
+
+    /// Check if the configuration has changed since the given version
+    pub fn has_changed(&self, since_version: u64) -> bool {
+        self.version > since_version
+    }
+}
+
+impl<T: Asset> Deref for ConfigHandle<T> {
+    type Target = Option<Arc<T>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.data
     }
 }
 
@@ -140,8 +162,13 @@ fn publish_config<T: Asset + Clone>(
             AssetEvent::LoadedWithDependencies { id } | AssetEvent::Modified { id } => {
                 if *id == config_handle.handle.id() {
                     if let Some(config) = assets.get(&config_handle.handle) {
-                        config_handle.data = Some(config.clone());
-                        info!("Config {} reloaded", std::any::type_name::<T>());
+                        config_handle.data = Some(Arc::new(config.clone()));
+                        config_handle.version += 1;
+                        info!(
+                            "Config {} reloaded (version {})",
+                            std::any::type_name::<T>(),
+                            config_handle.version
+                        );
                     } else {
                         warn!(
                             "Config {} loaded but not found in assets",
@@ -153,7 +180,12 @@ fn publish_config<T: Asset + Clone>(
             AssetEvent::Removed { id } => {
                 if *id == config_handle.handle.id() {
                     config_handle.data = None;
-                    warn!("Config {} removed", std::any::type_name::<T>());
+                    config_handle.version += 1;
+                    warn!(
+                        "Config {} removed (version {})",
+                        std::any::type_name::<T>(),
+                        config_handle.version
+                    );
                 }
             }
             _ => {}
@@ -195,20 +227,25 @@ mod tests {
         let handle = ConfigHandle::<TestConfig>::default();
         assert!(!handle.is_loaded());
         assert!(handle.get().is_none());
+        assert_eq!(handle.version(), 0);
     }
 
     #[test]
     fn test_config_handle_with_data() {
         let handle = ConfigHandle::<TestConfig> {
-            data: Some(TestConfig {
+            data: Some(Arc::new(TestConfig {
                 value: 42,
                 name: "test".to_string(),
-            }),
+            })),
+            version: 1,
             ..Default::default()
         };
         assert!(handle.is_loaded());
         assert!(handle.get().is_some());
         assert_eq!(handle.get().unwrap().value, 42);
+        assert_eq!(handle.version(), 1);
+        assert!(handle.has_changed(0));
+        assert!(!handle.has_changed(1));
     }
 
     #[test]
@@ -216,5 +253,43 @@ mod tests {
         let plugin = RonAssetPlugin::<TestConfig>::new("test/path.ron");
         // Just verify plugin can be created
         assert_eq!(plugin.path, "test/path.ron");
+    }
+
+    #[test]
+    fn test_config_handle_deref() {
+        let handle = ConfigHandle::<TestConfig> {
+            data: Some(Arc::new(TestConfig {
+                value: 42,
+                name: "test".to_string(),
+            })),
+            version: 1,
+            ..Default::default()
+        };
+
+        // Test deref functionality
+        let data = &*handle;
+        assert!(data.is_some());
+        assert_eq!(data.as_ref().unwrap().value, 42);
+    }
+
+    #[test]
+    fn test_config_handle_change_detection() {
+        let mut handle = ConfigHandle::<TestConfig>::default();
+
+        // Initially no changes
+        assert!(!handle.has_changed(0));
+        assert_eq!(handle.version(), 0);
+
+        // Simulate a config load/change
+        handle.data = Some(Arc::new(TestConfig {
+            value: 100,
+            name: "updated".to_string(),
+        }));
+        handle.version += 1;
+
+        // Should detect change
+        assert!(handle.has_changed(0));
+        assert_eq!(handle.version(), 1);
+        assert!(!handle.has_changed(1));
     }
 }

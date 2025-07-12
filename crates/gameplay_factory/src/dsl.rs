@@ -3,7 +3,7 @@
 //! This module implements the Oracle's exact DSL patterns for dynamic entity creation
 //! from RON files with component registry integration.
 
-use crate::{Error, Prefab, PrefabId, call_component_deserializer};
+use crate::{BasicPrefab, Error, PrefabId, call_component_deserializer};
 use bevy::prelude::*;
 
 use std::collections::HashMap;
@@ -394,42 +394,27 @@ fn estimate_memory_usage(entities: &[Entity], components_processed: usize) -> us
 ///
 /// # Returns
 ///
-/// Returns a `Prefab` that can be registered with the Factory
+/// Returns a `BasicPrefab` that can be registered with the Factory
 pub fn create_prefab_from_component_map(
     component_map: &ComponentMap,
     _type_registry: &AppTypeRegistry,
-) -> Result<Prefab, Error> {
-    let mut prefab = Prefab::new();
+) -> Result<BasicPrefab, Error> {
+    let mut prefab = BasicPrefab::new();
 
     // Convert each component in the map to a ComponentInit
     for (component_name, component_data) in &component_map.components {
-        let component_init = RegistryComponentInit {
-            component_name: component_name.clone(),
-            component_data: component_data.clone(),
-        };
+        // Convert ron::Value to string for storage
+        let ron_data = ron::to_string(component_data).map_err(|e| {
+            Error::serialization(format!("Failed to serialize component data: {e}"))
+        })?;
 
-        prefab.add_component(Box::new(component_init));
+        prefab.add_component(component_name.clone(), ron_data);
     }
 
     Ok(prefab)
 }
 
-/// Component initializer using the existing component registry
-#[derive(Debug, Clone)]
-struct RegistryComponentInit {
-    component_name: String,
-    component_data: ron::Value,
-}
-
-impl crate::ComponentInit for RegistryComponentInit {
-    fn init(&self, cmd: &mut Commands, entity: Entity) -> Result<(), Error> {
-        call_component_deserializer(&self.component_name, &self.component_data, cmd, entity)
-    }
-
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-}
+// Component initializer removed - now using direct string-based storage
 
 /// Enhanced DSL for loading prefabs from files
 ///
@@ -444,12 +429,12 @@ impl crate::ComponentInit for RegistryComponentInit {
 ///
 /// # Returns
 ///
-/// Returns a `Prefab` loaded from the file
+/// Returns a `BasicPrefab` loaded from the file
 pub fn load_prefab_from_file(
     file_path: &str,
     config: &DslConfig,
     type_registry: &AppTypeRegistry,
-) -> Result<Prefab, Error> {
+) -> Result<BasicPrefab, Error> {
     let ron_content = std::fs::read_to_string(file_path)
         .map_err(|e| Error::resource_load(file_path, format!("Failed to read file: {e}")))?;
 

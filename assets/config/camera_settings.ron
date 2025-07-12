@@ -1,0 +1,63 @@
+(
+    // Camera Configuration
+    camera: (
+        // Chase Camera
+        chase_camera: (
+            distance: 15.0,
+            height: 3.0,
+            lerp_speed: 0.25,
+            look_ahead_distance: 10.0,
+            look_ahead_height: 2.0,
+            min_distance: 5.0,
+            max_distance: 50.0,
+            collision_padding: 1.0,
+        ),
+        
+        // Camera Modes
+        modes: {
+            "player": (
+                distance: 15.0,
+                height: 3.0,
+                offset: (0.0, 0.0, 0.0),
+                fov: 75.0,
+            ),
+            "vehicle": (
+                distance: 20.0,
+                height: 8.0,
+                offset: (0.0, 1.0, 0.0),
+                fov: 80.0,
+            ),
+            "aircraft": (
+                distance: 50.0,
+                height: 20.0,
+                offset: (0.0, 0.0, 0.0),
+                fov: 90.0,
+            ),
+        },
+        
+        // Movement Smoothing
+        smoothing: (
+            position_smoothing: 0.1,
+            rotation_smoothing: 0.2,
+            fov_smoothing: 0.15,
+            shake_intensity: 0.5,
+            shake_duration: 0.3,
+        ),
+        
+        // Collision Detection
+        collision: (
+            enable_collision: true,
+            min_distance: 2.0,
+            collision_layers: ["static", "terrain"],
+            smooth_collision: true,
+        ),
+        
+        // Cinematic Settings
+        cinematic: (
+            transition_speed: 2.0,
+            ease_in_out: true,
+            auto_focus: true,
+            depth_of_field: false,
+        ),
+    ),
+)

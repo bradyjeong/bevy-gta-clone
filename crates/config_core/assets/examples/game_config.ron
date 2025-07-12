@@ -1,0 +1,10 @@
+(
+    window_title: "AMP Game - Example Config",
+    window_width: 1920,
+    window_height: 1080,
+    fullscreen: false,
+    debug_mode: true,
+    log_level: Debug,
+    physics_enabled: true,
+    audio_enabled: true,
+)

@@ -36,10 +36,15 @@ mod factory_dsl_integration;
 pub use factory_dsl_integration::*;
 
 mod assets;
-pub use assets::*;
+pub use assets::{
+    PrefabAsset, PrefabAssetLoader, PrefabAssetPlugin, convert_prefab_asset_to_runtime_prefab,
+};
 
 mod vehicle_factory;
 pub use vehicle_factory::*;
+
+mod prefab_factory;
+pub use prefab_factory::*;
 
 /// Unique identifier for prefab definitions
 ///
@@ -103,12 +108,12 @@ pub fn clear_all_prefab_ids() {
 /// Trait for loading prefab definitions from various sources
 pub trait PrefabSource {
     /// Load a prefab from this source
-    fn load(&self) -> Result<Prefab, Error>;
+    fn load(&self) -> Result<BasicPrefab, Error>;
 }
 
 /// Factory for creating entities from prefab definitions
 pub struct Factory {
-    registry: HashMap<PrefabId, Prefab>,
+    registry: HashMap<PrefabId, BasicPrefab>,
     #[cfg(feature = "hot-reload")]
     hot_reload_sender: Option<HotReloadSender>,
     #[cfg(feature = "hot-reload")]
@@ -128,7 +133,7 @@ impl Factory {
     }
 
     /// Register a prefab with the factory
-    pub fn register(&mut self, id: PrefabId, prefab: Prefab) -> Result<(), Error> {
+    pub fn register(&mut self, id: PrefabId, prefab: BasicPrefab) -> Result<(), Error> {
         // Check for global collision detection first
         if GLOBAL_PREFAB_IDS.contains(&id) {
             return Err(Error::validation(format!("Duplicate PrefabId {id:?}")));
@@ -306,7 +311,7 @@ impl Factory {
 
     /// Load a prefab from a RON file
     #[cfg(feature = "ron")]
-    fn load_prefab_file(&self, path: &std::path::Path) -> Result<Prefab, Error> {
+    fn load_prefab_file(&self, path: &std::path::Path) -> Result<BasicPrefab, Error> {
         let content = std::fs::read_to_string(path).map_err(|e| {
             Error::resource_load(
                 format!("prefab file {}", path.display()),
@@ -392,20 +397,20 @@ mod tests {
 
         // Test successful registration
         let id1 = PrefabId::new(12345);
-        assert!(factory.register(id1, Prefab::new()).is_ok());
+        assert!(factory.register(id1, BasicPrefab::new()).is_ok());
 
         // Test collision detection
         let id2 = PrefabId::new(12345); // Same ID
-        assert!(factory.register(id2, Prefab::new()).is_err());
+        assert!(factory.register(id2, BasicPrefab::new()).is_err());
 
         // Test different factory instances share global registry
         let mut factory2 = Factory::new();
         let id3 = PrefabId::new(12345); // Same ID as id1
-        assert!(factory2.register(id3, Prefab::new()).is_err());
+        assert!(factory2.register(id3, BasicPrefab::new()).is_err());
 
         // Test different ID works
         let id4 = PrefabId::new(54321);
-        assert!(factory2.register(id4, Prefab::new()).is_ok());
+        assert!(factory2.register(id4, BasicPrefab::new()).is_ok());
 
         // Clean up
         clear_all_prefab_ids();
@@ -437,7 +442,7 @@ mod tests {
 
         // Register through factory
         let mut factory = Factory::new();
-        factory.register(id1, Prefab::new()).unwrap();
+        factory.register(id1, BasicPrefab::new()).unwrap();
 
         // Check registration
         assert!(is_prefab_id_registered(id1));
@@ -445,7 +450,7 @@ mod tests {
         assert_eq!(get_all_prefab_ids().len(), 1);
 
         // Register another
-        factory.register(id2, Prefab::new()).unwrap();
+        factory.register(id2, BasicPrefab::new()).unwrap();
         assert!(is_prefab_id_registered(id2));
         assert_eq!(get_all_prefab_ids().len(), 2);
 
@@ -492,7 +497,7 @@ mod tests {
             let id = PrefabId::new(hash);
 
             // Try to register
-            match factory.register(id, Prefab::new()) {
+            match factory.register(id, BasicPrefab::new()) {
                 Ok(()) => {
                     // Should not be a duplicate
                     assert!(

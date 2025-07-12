@@ -1,0 +1,55 @@
+(
+    components: {
+        "Transform": (
+            translation: (x: 0.0, y: 1.0, z: 0.0),
+            rotation: (x: 0.0, y: 0.0, z: 0.0, w: 1.0),
+            scale: (x: 1.0, y: 1.0, z: 1.0),
+        ),
+        "Name": "Sedan",
+        "Visibility": "Visible",
+        "VehicleBundle": (
+            engine: (
+                max_power: 200.0,
+                max_torque: 300.0,
+                max_rpm: 6000.0,
+                idle_rpm: 800.0,
+                redline_rpm: 6500.0,
+            ),
+            transmission: (
+                gear_ratios: [3.5, 2.1, 1.4, 1.0, 0.8],
+                final_drive: 3.73,
+                shift_time: 0.2,
+            ),
+            wheels: [
+                (
+                    position: (x: 1.2, y: -0.3, z: 0.8),
+                    radius: 0.35,
+                    width: 0.25,
+                    is_steered: true,
+                    is_driven: true,
+                ),
+                (
+                    position: (x: 1.2, y: -0.3, z: -0.8),
+                    radius: 0.35,
+                    width: 0.25,
+                    is_steered: true,
+                    is_driven: true,
+                ),
+                (
+                    position: (x: -1.2, y: -0.3, z: 0.8),
+                    radius: 0.35,
+                    width: 0.25,
+                    is_steered: false,
+                    is_driven: true,
+                ),
+                (
+                    position: (x: -1.2, y: -0.3, z: -0.8),
+                    radius: 0.35,
+                    width: 0.25,
+                    is_steered: false,
+                    is_driven: true,
+                ),
+            ],
+        ),
+    }
+)

@@ -1,0 +1,26 @@
+(
+    vehicle_lod: (
+        high_distance: 100.0,
+        medium_distance: 300.0,
+        sleep_distance: 500.0,
+        cull_distance: 800.0,
+    ),
+    vegetation_lod: (
+        full_distance: 50.0,
+        medium_distance: 150.0,
+        billboard_distance: 300.0,
+        cull_distance: 500.0,
+    ),
+    building_lod: (
+        high_distance: 200.0,
+        medium_distance: 500.0,
+        sleep_distance: 1000.0,
+        cull_distance: 1500.0,
+    ),
+    npc_lod: (
+        high_distance: 50.0,
+        medium_distance: 100.0,
+        sleep_distance: 200.0,
+        cull_distance: 300.0,
+    ),
+)

@@ -1,0 +1,90 @@
+(
+    // Visual Effects Configuration
+    visual_effects: (
+        // Particle System
+        particles: (
+            max_particles_per_system: 100,
+            particle_lifetime: 2.0,
+            spawn_rate: 50.0,
+            gravity_factor: -9.81,
+            wind_factor: 1.0,
+        ),
+        
+        // Exhaust Effects
+        exhaust: (
+            max_flames: 20,
+            flame_lifetime: 0.3,
+            flame_size: 0.15,
+            flicker_speed: 10.0,
+            emission_intensity: 2.0,
+            colors: [
+                (1.0, 0.6, 0.2, 0.8),  // Normal flame
+                (0.6, 0.8, 1.0, 0.9),  // Turbo flame
+                (0.3, 0.7, 1.0, 1.0),  // Dual turbo
+                (0.1, 0.4, 1.0, 1.0),  // Quad turbo
+            ],
+        ),
+        
+        // Jet Flames
+        jet_flames: (
+            base_intensity: 0.5,
+            afterburner_boost: 0.8,
+            flame_intensity_threshold: 0.1,
+            flicker_speed: 12.0,
+            scale_multiplier: 1.5,
+            emission_multiplier: 2.0,
+        ),
+        
+        // Vegetation Rendering
+        vegetation: (
+            instancing_enabled: true,
+            max_instances: 1000,
+            lod_bias: 1.0,
+            wind_strength: 0.5,
+            colors: [
+                (0.2, 0.8, 0.3, 1.0),   // Light green
+                (0.15, 0.7, 0.25, 1.0), // Dark green
+                (0.4, 0.25, 0.1, 1.0),  // Brown (trunk)
+            ],
+            scale_variation: (0.8, 1.2),
+            age_variation: (0.0, 100.0),
+        ),
+        
+        // Lighting
+        lighting: (
+            ambient_intensity: 0.3,
+            directional_intensity: 1.0,
+            point_light_radius: 50.0,
+            shadow_distance: 100.0,
+            shadow_quality: 2,
+        ),
+        
+        // Material Properties
+        materials: (
+            water: (
+                base_color: (0.8, 0.9, 1.0, 0.3),
+                metallic: 0.0,
+                roughness: 0.0,
+                reflectance: 0.9,
+            ),
+            road: (
+                base_color: (0.1, 0.1, 0.1, 1.0),
+                metallic: 0.1,
+                roughness: 0.8,
+                reflectance: 0.1,
+            ),
+            concrete: (
+                base_color: (0.3, 0.3, 0.3, 1.0),
+                metallic: 0.0,
+                roughness: 0.9,
+                reflectance: 0.1,
+            ),
+            glass: (
+                base_color: (0.0, 0.3, 0.8, 0.7),
+                metallic: 0.0,
+                roughness: 0.1,
+                reflectance: 0.9,
+            ),
+        ),
+    ),
+)

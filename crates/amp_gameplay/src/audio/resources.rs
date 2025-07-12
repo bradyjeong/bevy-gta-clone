@@ -92,13 +92,28 @@ pub type GameplayAudioSettings = AudioSettings;
 
 impl Default for GameplayAudioSettings {
     fn default() -> Self {
-        Self {
-            master_volume: 1.0,
-            engine_volume: 0.8,
-            music_volume: 0.7,
-            sfx_volume: 0.9,
-            environment_volume: 0.6,
-            ui_volume: 0.8,
+        // Load from config if available, otherwise use fallback values
+        if let Ok(loader) =
+            config_core::ConfigLoader::new().load_with_merge::<config_core::AudioConfig>()
+        {
+            Self {
+                master_volume: loader.master_volume,
+                engine_volume: loader.engine_volume,
+                music_volume: loader.music_volume,
+                sfx_volume: loader.sfx_volume,
+                environment_volume: loader.environment_volume,
+                ui_volume: loader.ui_volume,
+            }
+        } else {
+            // Fallback to hardcoded values if config loading fails
+            Self {
+                master_volume: 1.0,
+                engine_volume: 0.8,
+                music_volume: 0.7,
+                sfx_volume: 0.9,
+                environment_volume: 0.6,
+                ui_volume: 0.8,
+            }
         }
     }
 }

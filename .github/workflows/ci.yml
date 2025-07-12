@@ -156,9 +156,46 @@ jobs:
       - name: Check sources
         run: cargo deny check sources
 
+  benchmark:
+    name: Performance Benchmarks
+    needs: [check]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: benchmark-stable
+          cache-targets: true
+      
+      - name: Run gameplay_factory spawn_100k benchmark
+        run: |
+          cargo bench -p gameplay_factory --bench factory_spawn spawn_100k
+      
+      - name: Check performance gates
+        run: |
+          echo "🎯 Performance Gate: spawn_100k should be ≤3.0ms on release build"
+          # TODO: Add actual performance gate validation once baseline is established
+          # Expected: ≤3.0ms total time, ≤1.2× legacy baseline
+          
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            target/criterion/
+          retention-days: 30
+
   coverage:
     name: Coverage
-    needs: [check, feature-matrix, amp-engine-test, deny]
+    needs: [check, feature-matrix, amp-engine-test, deny, benchmark]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -273,7 +310,7 @@ jobs:
   # Job summary report
   ci-summary:
     name: CI Summary
-    needs: [check, feature-matrix, amp-engine-test, deny, coverage, oracle-guard, build-release]
+    needs: [check, feature-matrix, amp-engine-test, deny, benchmark, coverage, oracle-guard, build-release]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -287,11 +324,12 @@ jobs:
           echo "| Feature Matrix | ${{ needs.feature-matrix.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| amp_engine Test | ${{ needs.amp-engine-test.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Dependency Check | ${{ needs.deny.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Benchmarks | ${{ needs.benchmark.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Coverage | ${{ needs.coverage.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Oracle Guard | ${{ needs.oracle-guard.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Release Build | ${{ needs.build-release.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ needs.check.result }}" != "success" ] || [ "${{ needs.feature-matrix.result }}" != "success" ] || [ "${{ needs.amp-engine-test.result }}" != "success" ] || [ "${{ needs.deny.result }}" != "success" ] || [ "${{ needs.coverage.result }}" != "success" ] || [ "${{ needs.oracle-guard.result }}" != "success" ]; then
+          if [ "${{ needs.check.result }}" != "success" ] || [ "${{ needs.feature-matrix.result }}" != "success" ] || [ "${{ needs.amp-engine-test.result }}" != "success" ] || [ "${{ needs.deny.result }}" != "success" ] || [ "${{ needs.benchmark.result }}" != "success" ] || [ "${{ needs.coverage.result }}" != "success" ] || [ "${{ needs.oracle-guard.result }}" != "success" ]; then
             echo "❌ **CI Failed**: Please check the failed jobs above" >> $GITHUB_STEP_SUMMARY
             exit 1
           else

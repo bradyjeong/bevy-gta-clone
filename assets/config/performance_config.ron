@@ -1,0 +1,32 @@
+(
+    target_fps: 60.0,
+    max_entities: (
+        buildings: 500,
+        vehicles: 50,
+        npcs: 30,
+        vegetation: 1000,
+    ),
+    spawn_rates: (
+        buildings: 0.08,
+        vehicles: 0.04,
+        trees: 0.05,
+        npcs: 0.01,
+    ),
+    culling_distances: (
+        buildings: 300.0,
+        vehicles: 150.0,
+        npcs: 100.0,
+        vegetation: 200.0,
+    ),
+    update_intervals: (
+        road_generation: 0.5,
+        dynamic_content: 2.0,
+        culling: 0.5,
+        lod_update: 0.1,
+    ),
+    cache_settings: (
+        max_entries: 2048,
+        cache_duration: 5.0,
+        cleanup_interval: 10.0,
+    ),
+)

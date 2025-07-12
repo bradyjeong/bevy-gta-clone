@@ -16,6 +16,7 @@ categories = ["game-development", "simulation"]
 amp_physics = { path = "../amp_physics", version = "0.3.0-alpha" }
 amp_core = { path = "../amp_core", version = "0.3.0-alpha" }
 amp_math = { path = "../amp_math", version = "0.3.0-alpha" }
+config_core = { path = "../config_core", version = "0.3.0-alpha" }
 bevy = { workspace = true }
 bevy_rapier3d = { workspace = true }
 bevy_kira_audio = { workspace = true }

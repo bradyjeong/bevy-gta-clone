@@ -33,6 +33,10 @@ impl Default for VehicleConfig {
     }
 }
 
+impl crate::Config for VehicleConfig {
+    const FILE_NAME: &'static str = "vehicle.ron";
+}
+
 /// Engine configuration parameters
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(default)]

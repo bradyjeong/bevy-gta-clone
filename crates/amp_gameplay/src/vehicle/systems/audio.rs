@@ -3,6 +3,7 @@
 use crate::audio::VehicleEngineAudioEvent;
 use crate::vehicle::components::*;
 use bevy::prelude::*;
+use config_core::{AudioConfig, ConfigLoader};
 
 /// Update vehicle audio based on physics state
 pub fn update_vehicle_audio(
@@ -18,12 +19,19 @@ pub fn update_vehicle_audio(
     >,
     mut audio_events: EventWriter<VehicleEngineAudioEvent>,
 ) {
+    // Load audio config for parameter lookup
+    let audio_config = ConfigLoader::new()
+        .load_with_merge::<AudioConfig>()
+        .unwrap_or_default();
     for (entity, mut audio, engine, transform, input) in query.iter_mut() {
         if audio.engine_sound_enabled {
             // Calculate engine volume based on RPM only if engine is running
             if engine.rpm > 0.0 {
                 let rpm_ratio = engine.rpm / engine.max_rpm;
-                audio.engine_volume = (rpm_ratio * 0.8 + 0.2).min(1.0);
+                // Use config values instead of hard-coded constants
+                audio.engine_volume = (rpm_ratio * audio_config.engine.rpm_scaling
+                    + audio_config.engine.min_volume)
+                    .min(audio_config.engine.max_volume);
 
                 // Emit engine audio event
                 audio_events.write(VehicleEngineAudioEvent {
@@ -44,7 +52,9 @@ pub fn update_vehicle_audio(
 
             // Only update tire screech volume if there's actual velocity
             if speed > 0.0 {
-                audio.tire_screech_volume = velocity_ratio * 0.5;
+                // Use config value instead of hard-coded constant
+                audio.tire_screech_volume =
+                    velocity_ratio * audio_config.vehicle.tire_screech_scaling;
             }
         }
     }

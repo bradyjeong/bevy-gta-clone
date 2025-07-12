@@ -27,11 +27,26 @@ pub mod types;
 // Vehicle configuration types
 pub mod vehicle;
 
+// Audio configuration types
+pub mod audio;
+
+// Configuration validation
+pub mod validation;
+
 // Re-export vehicle configuration types for convenience
 pub use vehicle::{
     EngineConfig, SuspensionConfig, TransmissionConfig, TransmissionType, VehicleConfig,
     WheelConfig,
 };
+
+// Re-export audio configuration types for convenience
+pub use audio::{AudioConfig, EngineAudioConfig, VehicleAudioConfig};
+
+// Re-export validation functionality
+pub use validation::ConfigValidator;
+
+#[cfg(test)]
+mod integration_tests;
 
 /// Factory configuration settings for entity and prefab management.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -136,7 +151,7 @@ pub trait Config: DeserializeOwned + Send + Sync + 'static + Default {
 /// 3. Embedded defaults (compile-time fallback)
 pub struct ConfigLoader {
     /// Search paths for configuration files
-    search_paths: Vec<PathBuf>,
+    pub search_paths: Vec<PathBuf>,
 }
 
 impl ConfigLoader {
@@ -265,16 +280,22 @@ mod tests {
         const FILE_NAME: &'static str = "test.ron";
 
         fn merge(self, other: Self) -> Self {
+            // The merge function is called as accumulated.merge(new_config)
+            // We want new_config values to override accumulated values if they're not defaults
+            // Since serde(default) fills in missing values with defaults, we need to check if
+            // the value is a default or an actual config value
             Self {
                 value: if other.value != 0 {
+                    // Non-default value from new config
                     other.value
                 } else {
-                    self.value
+                    self.value // Keep accumulated value
                 },
                 name: if other.name != "default" {
+                    // Non-default name from new config
                     other.name
                 } else {
-                    self.name
+                    self.name // Keep accumulated name
                 },
             }
         }
@@ -424,6 +445,11 @@ mod tests {
 
         fn default_path() -> PathBuf {
             PathBuf::from("custom/path/custom.ron")
+        }
+
+        fn merge(self, other: Self) -> Self {
+            // For CustomPathConfig, just take the new value (other) completely
+            other
         }
     }
 

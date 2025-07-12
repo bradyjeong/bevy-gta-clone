@@ -1,0 +1,23 @@
+// Example audio configuration
+(
+    master_volume: 0.9,
+    engine_volume: 0.8,
+    music_volume: 0.6,
+    sfx_volume: 0.85,
+    environment_volume: 0.5,
+    ui_volume: 0.7,
+    engine: (
+        base_volume: 0.6,
+        rpm_scaling: 0.85,
+        min_volume: 0.15,
+        max_volume: 0.95,
+        smoothing_factor: 0.2,
+    ),
+    vehicle: (
+        engine_sound_enabled: true,
+        default_engine_volume: 0.55,
+        tire_screech_enabled: true,
+        default_tire_screech_volume: 0.3,
+        tire_screech_scaling: 0.5,
+    ),
+)

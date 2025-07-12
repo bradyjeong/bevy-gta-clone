@@ -1,0 +1,17 @@
+(
+    components: {
+        "Transform": (
+            translation: (x: 0.0, y: 0.0, z: 0.0),
+            rotation: (x: 0.0, y: 0.0, z: 0.0, w: 1.0),
+            scale: (x: 10.0, y: 20.0, z: 10.0),
+        ),
+        "Name": "Office Building",
+        "Visibility": "Visible",
+        "Building": (
+            building_type: "Office",
+            floors: 20,
+            height: 60.0,
+            footprint: (x: 20.0, y: 20.0),
+        ),
+    }
+)

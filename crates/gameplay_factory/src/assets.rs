@@ -5,9 +5,9 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use crate::BasicPrefab;
 use crate::Error;
 use crate::dsl::{DslConfig, parse_prefab_ron};
-use crate::prefab::Prefab;
 
 /// Prefab asset that can be loaded through Bevy's asset system
 #[derive(Debug, Clone, Serialize, Deserialize, Asset, TypePath)]
@@ -97,7 +97,7 @@ pub fn convert_prefab_asset_to_runtime_prefab(
     prefab_asset: &PrefabAsset,
     dsl_config: &DslConfig,
     type_registry: &AppTypeRegistry,
-) -> Result<Prefab, Error> {
+) -> Result<BasicPrefab, Error> {
     // Convert the component map to the format expected by the DSL
     let mut component_ron = String::new();
     component_ron.push_str("{\n");

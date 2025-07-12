@@ -1,0 +1,183 @@
+//! Integration tests for the Bevy config system
+//! 
+//! These tests verify the full integration between the config system and Bevy.
+
+use bevy::prelude::*;
+use config_core::assets::{ConfigHandle, RonAssetPlugin};
+use config_core::types::GameConfigAsset;
+use std::sync::Arc;
+
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Asset, TypePath)]
+struct TestConfig {
+    pub value: i32,
+    pub name: String,
+}
+
+impl Default for TestConfig {
+    fn default() -> Self {
+        Self {
+            value: 42,
+            name: "test".to_string(),
+        }
+    }
+}
+
+#[test]
+fn test_config_plugin_registration() {
+    let mut app = App::new();
+    
+    // Add minimal plugins required for asset system
+    app.add_plugins(bevy::asset::AssetPlugin::default());
+    
+    // Add the config plugin
+    app.add_plugins(RonAssetPlugin::<TestConfig>::new("test.ron"));
+    
+    // Verify resources are registered
+    assert!(app.world().contains_resource::<ConfigHandle<TestConfig>>());
+    assert!(app.world().contains_resource::<config_core::assets::ConfigPath>());
+    
+    // Verify asset type is registered
+    assert!(app.world().contains_resource::<Assets<TestConfig>>());
+}
+
+#[test]
+fn test_config_handle_resource_pattern() {
+    let mut app = App::new();
+    
+    // Insert a test config handle
+    let handle = ConfigHandle::<TestConfig> {
+        data: Some(Arc::new(TestConfig {
+            value: 100,
+            name: "integration_test".to_string(),
+        })),
+        version: 1,
+        ..Default::default()
+    };
+    
+    app.world_mut().insert_resource(handle);
+    
+    // Verify we can access the config
+    let config_handle = app.world().resource::<ConfigHandle<TestConfig>>();
+    assert!(config_handle.is_loaded());
+    assert_eq!(config_handle.get().unwrap().value, 100);
+    assert_eq!(config_handle.version(), 1);
+}
+
+#[test]
+fn test_config_change_detection() {
+    let mut app = App::new();
+    
+    // Initial config
+    let mut handle = ConfigHandle::<TestConfig>::default();
+    handle.data = Some(Arc::new(TestConfig {
+        value: 1,
+        name: "initial".to_string(),
+    }));
+    handle.version = 1;
+    
+    app.world_mut().insert_resource(handle);
+    
+    // Test change detection directly
+    let config = app.world().resource::<ConfigHandle<TestConfig>>();
+    assert!(config.has_changed(0)); // Should detect change from version 0 to 1
+    assert!(!config.has_changed(1)); // Should not detect change from version 1 to 1
+    
+    // Update config version
+    {
+        let mut config = app.world_mut().resource_mut::<ConfigHandle<TestConfig>>();
+        config.version += 1;
+    }
+    
+    // Test change detection again
+    let config = app.world().resource::<ConfigHandle<TestConfig>>();
+    assert!(config.has_changed(1)); // Should detect change from version 1 to 2
+    assert!(!config.has_changed(2)); // Should not detect change from version 2 to 2
+}
+
+#[test]
+fn test_multiple_config_types() {
+    let mut app = App::new();
+    
+    // Add minimal plugins required for asset system
+    app.add_plugins(bevy::asset::AssetPlugin::default());
+    
+    // Add multiple config types
+    app.add_plugins((
+        RonAssetPlugin::<TestConfig>::new("test1.ron"),
+        RonAssetPlugin::<GameConfigAsset>::new("test2.ron"),
+    ));
+    
+    // Verify both resource types are registered
+    assert!(app.world().contains_resource::<ConfigHandle<TestConfig>>());
+    assert!(app.world().contains_resource::<ConfigHandle<GameConfigAsset>>());
+    
+    // Verify both asset types are registered
+    assert!(app.world().contains_resource::<Assets<TestConfig>>());
+    assert!(app.world().contains_resource::<Assets<GameConfigAsset>>());
+}
+
+#[test]
+fn test_config_handle_deref_pattern() {
+    let mut app = App::new();
+    
+    let handle = ConfigHandle::<TestConfig> {
+        data: Some(Arc::new(TestConfig {
+            value: 999,
+            name: "deref_test".to_string(),
+        })),
+        version: 1,
+        ..Default::default()
+    };
+    
+    app.world_mut().insert_resource(handle);
+    
+    // Test deref access pattern
+    app.add_systems(Update, |config: Res<ConfigHandle<TestConfig>>| {
+        if let Some(data) = &**config {
+            assert_eq!(data.value, 999);
+            assert_eq!(data.name, "deref_test");
+        }
+    });
+    
+    app.update();
+}
+
+#[test]
+fn test_config_default_fallback() {
+    let mut app = App::new();
+    
+    // Add minimal plugins required for asset system
+    app.add_plugins(bevy::asset::AssetPlugin::default());
+    
+    // Add plugin but don't provide config file
+    app.add_plugins(RonAssetPlugin::<TestConfig>::new("nonexistent.ron"));
+    
+    // Should still have the resource initialized
+    assert!(app.world().contains_resource::<ConfigHandle<TestConfig>>());
+    
+    let config_handle = app.world().resource::<ConfigHandle<TestConfig>>();
+    assert!(!config_handle.is_loaded());
+    assert_eq!(config_handle.version(), 0);
+}
+
+#[test]
+fn test_config_version_tracking() {
+    let mut config = ConfigHandle::<TestConfig>::default();
+    
+    // Initial state
+    assert_eq!(config.version(), 0);
+    assert!(!config.has_changed(0));
+    
+    // Simulate first load
+    config.data = Some(Arc::new(TestConfig::default()));
+    config.version = 1;
+    
+    assert!(config.has_changed(0));
+    assert!(!config.has_changed(1));
+    
+    // Simulate hot-reload
+    config.version = 2;
+    assert!(config.has_changed(1));
+    assert!(!config.has_changed(2));
+}

@@ -38,6 +38,7 @@ use bevy::prelude::*;
 use bevy::window::WindowResolution;
 
 use amp_gameplay::prelude::*;
+use gameplay_factory::{PrefabFactory, PrefabFactoryPlugin, PrefabFactoryResource, PrefabId};
 
 #[cfg(feature = "rapier3d_030")]
 use bevy_rapier3d::prelude::*;
@@ -77,8 +78,9 @@ fn main() {
             LogDiagnosticsPlugin::default(),
         ))
         .add_plugins(GameplayPlugins)
+        .add_plugins(PrefabFactoryPlugin)
         .add_event::<VehicleEngineAudioEvent>()
-        .add_systems(Startup, setup_scene)
+        .add_systems(Startup, (setup_scene, setup_prefabs))
         .add_systems(
             Update,
             (
@@ -126,6 +128,7 @@ fn setup_scene(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut prefab_factory: ResMut<PrefabFactoryResource>,
 ) {
     // Initialize demo state
     commands.insert_resource(DemoState::default());
@@ -150,13 +153,24 @@ fn setup_scene(
             Name::new("Ground Collider"),
         ));
 
-        // Create demo car
-        spawn_demo_car(
-            &mut commands,
-            &mut meshes,
-            &mut materials,
-            Vec3::new(0.0, 2.0, 0.0),
-        );
+        // Create demo car using prefab
+        if let Ok(entity) = prefab_factory
+            .factory
+            .spawn_prefab_named(&mut commands, "demo_car")
+        {
+            commands
+                .entity(entity)
+                .insert(Transform::from_xyz(0.0, 2.0, 0.0));
+            info!("Spawned demo car from prefab: {:?}", entity);
+        } else {
+            warn!("Failed to spawn demo car from prefab, falling back to hard-coded spawn");
+            spawn_demo_car(
+                &mut commands,
+                &mut meshes,
+                &mut materials,
+                Vec3::new(0.0, 2.0, 0.0),
+            );
+        }
     }
 
     #[cfg(not(feature = "rapier3d_030"))]
@@ -205,6 +219,58 @@ fn setup_scene(
 
     // Setup UI
     setup_ui(&mut commands);
+}
+
+fn setup_prefabs(mut prefab_factory: ResMut<PrefabFactoryResource>) {
+    // Create demo car prefab using the PrefabFactory methods
+    let demo_car_prefab = PrefabFactory::create_vehicle_prefab(
+        "Demo Car",
+        Vec3::new(0.0, 2.0, 0.0),
+        Color::srgb(0.0, 0.0, 1.0), // Blue color
+    );
+
+    // Register the prefab
+    let demo_car_id = PrefabId::new(1001);
+    if let Err(e) = prefab_factory
+        .factory
+        .register_prefab(demo_car_id, "demo_car", demo_car_prefab)
+    {
+        error!("Failed to register demo car prefab: {}", e);
+    } else {
+        info!("Registered demo car prefab successfully");
+    }
+
+    // Create additional prefabs using factory helpers
+    let vehicle_prefab = PrefabFactory::create_vehicle_prefab(
+        "Generic Vehicle",
+        Vec3::ZERO,
+        Color::srgb(0.0, 0.0, 1.0), // Blue color
+    );
+
+    let building_prefab = PrefabFactory::create_building_prefab(
+        "Generic Building",
+        Vec3::ZERO,
+        Vec3::new(10.0, 20.0, 10.0),
+    );
+
+    let character_prefab = PrefabFactory::create_character_prefab("Generic Character", Vec3::ZERO);
+
+    // Register helper prefabs
+    let vehicle_id = PrefabId::new(2001);
+    let building_id = PrefabId::new(3001);
+    let character_id = PrefabId::new(4001);
+
+    let _ = prefab_factory
+        .factory
+        .register_prefab(vehicle_id, "vehicle", vehicle_prefab);
+    let _ = prefab_factory
+        .factory
+        .register_prefab(building_id, "building", building_prefab);
+    let _ = prefab_factory
+        .factory
+        .register_prefab(character_id, "character", character_prefab);
+
+    info!("Setup {} prefabs", prefab_factory.factory.prefab_count());
 }
 
 #[cfg(feature = "rapier3d_030")]

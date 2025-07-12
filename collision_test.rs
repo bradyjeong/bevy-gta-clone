@@ -11,12 +11,12 @@ fn main() {
     let mut factory1 = Factory::new();
     let id1 = PrefabId::new(12345);
 
-    match factory1.register(id1, Prefab::new()) {
+    match factory1.register(id1, BasicPrefab::new()) {
         Ok(()) => println!("   ✅ First registration succeeded"),
         Err(e) => println!("   ❌ First registration failed: {e}"),
     }
 
-    match factory1.register(id1, Prefab::new()) {
+    match factory1.register(id1, BasicPrefab::new()) {
         Ok(()) => println!("   ❌ Second registration succeeded (BAD!)"),
         Err(e) => println!("   ✅ Second registration failed: {e}"),
     }
@@ -25,7 +25,7 @@ fn main() {
     println!("\n2. Testing different factories, same IDs:");
     let mut factory2 = Factory::new();
 
-    match factory2.register(id1, Prefab::new()) {
+    match factory2.register(id1, BasicPrefab::new()) {
         Ok(()) => println!("   ❌ Cross-factory registration succeeded (BAD!)"),
         Err(e) => println!("   ✅ Cross-factory registration failed: {e}"),
     }

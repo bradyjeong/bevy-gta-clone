@@ -1,0 +1,10 @@
+(
+    window_title: "AMP Game - Hot-Reload Demo",
+    window_width: 1920,
+    window_height: 1080,
+    fullscreen: false,
+    debug_mode: true,
+    log_level: Info,
+    physics_enabled: true,
+    audio_enabled: true,
+)

@@ -11,6 +11,9 @@ pub mod config;
 pub mod resources;
 pub mod systems;
 
+#[cfg(test)]
+pub mod tests;
+
 pub use components::*;
 pub use resources::*;
 pub use systems::*;

@@ -1,0 +1,34 @@
+(
+    vehicle_configs: {
+        "SuperCar": (
+            engine_power: 850.0,
+            max_speed: 200.0,
+            acceleration: 8.5,
+            braking_force: 11.0,
+            turning_radius: 5.0,
+            mass: 1200.0,
+            fuel_capacity: 60.0,
+            fuel_consumption: 0.16,
+        ),
+        "RegularCar": (
+            engine_power: 150.0,
+            max_speed: 120.0,
+            acceleration: 4.0,
+            braking_force: 6.0,
+            turning_radius: 8.0,
+            mass: 1500.0,
+            fuel_capacity: 50.0,
+            fuel_consumption: 0.12,
+        ),
+        "Motorcycle": (
+            engine_power: 100.0,
+            max_speed: 140.0,
+            acceleration: 7.0,
+            braking_force: 4.0,
+            turning_radius: 3.0,
+            mass: 200.0,
+            fuel_capacity: 20.0,
+            fuel_consumption: 0.08,
+        ),
+    }
+)
