@@ -98,7 +98,7 @@ fn update_instances(
     }
 
     // Log performance metrics every second
-    if elapsed as u32 % 1 == 0 && elapsed.fract() < 0.016 {
+    if elapsed as u32 > 0 && (elapsed as u32) != ((elapsed - time.delta_secs()) as u32) {
         if let Some(batch_manager) = batch_manager {
             println!(
                 "📊 BatchManager: {} batches, {} instances",

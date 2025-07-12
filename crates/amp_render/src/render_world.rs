@@ -6,7 +6,7 @@
 use bevy::{
     prelude::*,
     render::{
-        Render, RenderApp, RenderSet,
+        Extract, Render, RenderApp, RenderSet,
         render_resource::*,
         renderer::{RenderDevice, RenderQueue},
     },
@@ -333,15 +333,27 @@ impl InstanceMeta {
 
 /// Extract instances from main world for rendering
 pub fn extract_instances(
-    // TODO: Add actual main world queries for entities with renderable components
     mut extracted: ResMut<ExtractedInstances>,
+    query: Extract<Query<(&GlobalTransform, &BatchKey, &Visibility)>>,
+    camera_q: Extract<Query<&GlobalTransform, With<Camera>>>,
 ) {
-    // Clear previous frame
-    extracted.clear();
+    let Ok(camera_transform) = camera_q.get_single() else {
+        return; // No camera found, skip extraction
+    };
+    let cam_pos = camera_transform.translation();
 
-    // TODO: Query main world for entities with Transform + BatchKey + Visibility
-    // For now, this is a stub - real implementation would extract from:
-    // Query<(&Transform, &BatchKey, &Visibility), With<Renderable>>
+    extracted.clear();
+    for (gt, key, vis) in &query {
+        // Check if entity is visible (either explicitly visible or inherited)
+        if *vis == Visibility::Hidden {
+            continue;
+        }
+        extracted.add_instance(ExtractedInstance::new(
+            gt.compute_matrix(),
+            key.clone(),
+            cam_pos,
+        ));
+    }
 }
 
 /// Prepare GPU buffers for instances (Phase 2: Prepare)

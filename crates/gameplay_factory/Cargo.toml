@@ -9,6 +9,9 @@ repository.workspace = true
 categories = ["game-development", "game-engines"]
 keywords = ["gamedev", "bevy", "entity", "factory", "prefab"]
 
+[lib]
+doctest = false  # Disabled due to macOS dylib issues with Bevy doctests
+
 [dependencies]
 bevy = { workspace = true }
 amp_core = { path = "../amp_core" }

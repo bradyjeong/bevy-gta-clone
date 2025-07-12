@@ -60,7 +60,7 @@ fn setup(
 }
 
 fn move_camera(time: Res<Time>, mut cameras: Query<&mut Transform, With<Camera3d>>) {
-    let Ok(mut camera_transform) = cameras.get_single_mut() else {
+    let Ok(mut camera_transform) = cameras.single_mut() else {
         return;
     };
 

@@ -163,7 +163,7 @@ fn camera_controller(
     mut mouse_motion: EventReader<MouseMotion>,
     mut cameras: Query<&mut Transform, With<Camera3d>>,
 ) {
-    let Ok(mut camera_transform) = cameras.get_single_mut() else {
+    let Ok(mut camera_transform) = cameras.single_mut() else {
         return;
     };
     let dt = time.delta_secs();
@@ -244,7 +244,7 @@ fn display_lod_info(
         }
     }
 
-    let Ok(mut text) = ui_query.get_single_mut() else {
+    let Ok(mut text) = ui_query.single_mut() else {
         return;
     };
 
@@ -256,7 +256,7 @@ fn display_lod_info(
         }
     }
 
-    let Ok(camera_transform) = cameras.get_single() else {
+    let Ok(camera_transform) = cameras.single() else {
         return;
     };
     let camera_pos = camera_transform.translation;
@@ -264,7 +264,7 @@ fn display_lod_info(
     let mut cross_fading = 0;
 
     for (transform, lod_group) in lod_objects.iter() {
-        let distance = camera_pos.distance(transform.translation);
+        let _distance = camera_pos.distance(transform.translation);
         let lod_index = lod_group.current_lod.min(3);
         lod_counts[lod_index] += 1;
 

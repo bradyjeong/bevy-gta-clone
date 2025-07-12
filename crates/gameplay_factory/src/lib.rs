@@ -436,6 +436,7 @@ mod tests {
         let id2 = PrefabId::new(222);
 
         // Initially empty
+        clear_all_prefab_ids(); // Ensure clean state
         assert!(!is_prefab_id_registered(id1));
         assert!(!is_prefab_id_registered(id2));
         assert!(get_all_prefab_ids().is_empty());

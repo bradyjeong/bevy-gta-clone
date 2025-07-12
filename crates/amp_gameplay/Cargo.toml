@@ -11,6 +11,9 @@ readme = "README.md"
 keywords = ["bevy", "game", "physics", "audio", "vehicle"]
 categories = ["game-development", "simulation"]
 
+[lib]
+doctest = false  # Disabled due to macOS dylib issues with Bevy doctests
+
 [dependencies]
 # Workspace dependencies
 amp_physics = { path = "../amp_physics", version = "0.3.0-alpha" }

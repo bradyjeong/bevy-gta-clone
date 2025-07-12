@@ -65,8 +65,8 @@ fn setup_scene(
     info!("Setting up GPU culling demo with 10K instance target");
 
     // Create shared mesh and material
-    let cube_mesh = meshes.add(Cuboid::new(1.0, 1.0, 1.0));
-    let material = materials.add(Color::srgb(0.8, 0.4, 0.2));
+    let _cube_mesh = meshes.add(Cuboid::new(1.0, 1.0, 1.0));
+    let _material = materials.add(Color::srgb(0.8, 0.4, 0.2));
 
     // Spawn camera
     commands.spawn((
