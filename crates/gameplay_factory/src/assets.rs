@@ -5,9 +5,9 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::BasicPrefab;
 use crate::Error;
 use crate::dsl::{DslConfig, parse_prefab_ron};
+use crate::{BasicPrefab, PrefabMetadata};
 
 /// Prefab asset that can be loaded through Bevy's asset system
 #[derive(Debug, Clone, Serialize, Deserialize, Asset, TypePath)]
@@ -16,27 +16,6 @@ pub struct PrefabAsset {
     pub components: HashMap<String, ron::Value>,
     /// Metadata about the prefab
     pub metadata: PrefabMetadata,
-}
-
-/// Metadata for prefab assets
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PrefabMetadata {
-    /// Human-readable name for the prefab
-    pub name: String,
-    /// Version identifier for asset compatibility
-    pub version: String,
-    /// Tags for categorization
-    pub tags: Vec<String>,
-}
-
-impl Default for PrefabMetadata {
-    fn default() -> Self {
-        Self {
-            name: "Unnamed Prefab".to_string(),
-            version: "1.0.0".to_string(),
-            tags: Vec::new(),
-        }
-    }
 }
 
 /// Asset loader for prefab RON files
@@ -130,8 +109,11 @@ mod tests {
             components,
             metadata: PrefabMetadata {
                 name: "Test Prefab".to_string(),
+                type_id: "test".to_string(),
                 version: "1.0.0".to_string(),
                 tags: vec!["test".to_string()],
+                asset_paths: Vec::new(),
+                component_count: 0,
             },
         };
 

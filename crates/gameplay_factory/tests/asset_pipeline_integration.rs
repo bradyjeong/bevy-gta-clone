@@ -22,8 +22,11 @@ fn test_prefab_asset_pipeline_integration() {
         components,
         metadata: PrefabMetadata {
             name: "Test Asset Pipeline".to_string(),
+            type_id: "test_asset".to_string(),
             version: "1.0.0".to_string(),
             tags: vec!["test".to_string()],
+            asset_paths: Vec::new(),
+            component_count: 0,
         },
     };
 
@@ -56,8 +59,11 @@ fn test_prefab_asset_loader_extensions() {
 fn test_prefab_asset_metadata() {
     let metadata = PrefabMetadata {
         name: "Vehicle Prefab".to_string(),
+        type_id: "vehicle".to_string(),
         version: "2.0.0".to_string(),
         tags: vec!["vehicle".to_string(), "physics".to_string()],
+        asset_paths: Vec::new(),
+        component_count: 0,
     };
 
     assert_eq!(metadata.name, "Vehicle Prefab");
@@ -75,8 +81,11 @@ fn test_factory_with_prefab_asset() {
         components,
         metadata: PrefabMetadata {
             name: "Factory Test".to_string(),
+            type_id: "factory_test".to_string(),
             version: "1.0.0".to_string(),
             tags: vec!["factory".to_string()],
+            asset_paths: Vec::new(),
+            component_count: 0,
         },
     };
 

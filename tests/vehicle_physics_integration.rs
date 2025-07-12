@@ -2,6 +2,8 @@
 
 use amp_gameplay::prelude::*;
 use bevy::prelude::*;
+
+#[cfg(feature = "rapier3d_030")]
 use bevy_rapier3d::prelude::*;
 
 /// Test app builder with all necessary plugins
@@ -183,6 +185,7 @@ fn test_vehicle_engine_audio_events() {
 
 /// Test Rapier rigid-body synchronization
 #[test]
+#[cfg(feature = "rapier3d_030")]
 fn test_rapier_rigid_body_sync() {
     let mut app = test_app();
 
@@ -775,6 +778,7 @@ fn test_event_system_integration() {
 
 /// Test bevy_rapier3d integration
 #[test]
+#[cfg(feature = "rapier3d_030")]
 fn test_bevy_rapier3d_integration() {
     let mut app = test_app();
 

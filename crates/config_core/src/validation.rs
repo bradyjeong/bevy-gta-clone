@@ -3,7 +3,9 @@
 //! This module provides validation capabilities for configuration files
 //! using schemars to generate JSON schemas and validate config values.
 
-use crate::{Config, Result};
+#[cfg(feature = "schemars")]
+use crate::Config;
+use crate::Result;
 use amp_core::{ConfigError, Error};
 #[cfg(feature = "schemars")]
 use schemars::{JsonSchema, schema_for};

@@ -454,6 +454,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_default_path_override() {
         // Test that default_path() is respected instead of hard-coded FILE_NAME
         let temp_dir = TempDir::new().unwrap();
@@ -590,6 +591,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_amp_config_env_override() {
         // Helper struct to ensure cleanup
         struct EnvGuard;
@@ -635,6 +637,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_amp_config_env_override_nonexistent() {
         // Helper struct to ensure cleanup
         struct EnvGuard;
@@ -898,6 +901,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_load_with_merge_hierarchical() {
         let temp_dir1 = TempDir::new().unwrap();
         let temp_dir2 = TempDir::new().unwrap();
@@ -937,6 +941,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_load_with_merge_override_defaults() {
         let temp_dir = TempDir::new().unwrap();
         let config_path = temp_dir.path().join("test.ron");

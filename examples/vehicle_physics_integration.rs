@@ -15,15 +15,20 @@ use bevy::{
 };
 
 fn main() {
-    App::new()
-        .add_plugins((
-            DefaultPlugins,
-            LogDiagnosticsPlugin::default(),
-            FrameTimeDiagnosticsPlugin::default(),
-        ))
-        .add_plugins(GameplayPlugins)
-        .add_plugins(bevy_rapier3d::render::RapierDebugRenderPlugin::default())
-        .add_systems(Startup, setup_scene)
+    let mut app = App::new();
+    app.add_plugins((
+        DefaultPlugins,
+        LogDiagnosticsPlugin::default(),
+        FrameTimeDiagnosticsPlugin::default(),
+    ))
+    .add_plugins(GameplayPlugins);
+
+    #[cfg(feature = "rapier3d_030")]
+    {
+        app.add_plugins(bevy_rapier3d::render::RapierDebugRenderPlugin::default());
+    }
+
+    app.add_systems(Startup, setup_scene)
         .add_systems(
             Update,
             (
@@ -68,6 +73,7 @@ fn setup_scene(
     ));
 
     // Ground collider
+    #[cfg(feature = "rapier3d_030")]
     commands.spawn((
         bevy_rapier3d::geometry::Collider::cuboid(50.0, 0.1, 50.0),
         Transform::from_xyz(0.0, -0.1, 0.0),
@@ -79,15 +85,26 @@ fn setup_scene(
         let x = (i as f32 - 5.0) * 8.0;
         let z = 10.0;
 
-        commands.spawn((
+        let obstacle_bundle = (
             Mesh3d(meshes.add(Mesh::from(Cuboid::new(2.0, 2.0, 2.0)))),
             MeshMaterial3d(materials.add(StandardMaterial {
                 base_color: Color::srgb(0.8, 0.7, 0.6),
                 ..default()
             })),
             Transform::from_xyz(x, 1.0, z),
-            bevy_rapier3d::geometry::Collider::cuboid(1.0, 1.0, 1.0),
-        ));
+        );
+
+        #[cfg(feature = "rapier3d_030")]
+        {
+            commands.spawn((
+                obstacle_bundle,
+                bevy_rapier3d::geometry::Collider::cuboid(1.0, 1.0, 1.0),
+            ));
+        }
+        #[cfg(not(feature = "rapier3d_030"))]
+        {
+            commands.spawn(obstacle_bundle);
+        }
     }
 
     // Spawn initial vehicle
@@ -186,24 +203,37 @@ fn spawn_vehicle(
     };
 
     // Add visual representation
-    let vehicle_entity = commands
-        .spawn((
-            vehicle_bundle,
-            Mesh3d(meshes.add(Mesh::from(Cuboid::new(2.0, 1.0, 4.0)))),
-            MeshMaterial3d(materials.add(StandardMaterial {
-                base_color: if is_player {
-                    Color::srgb(0.8, 0.2, 0.2)
-                } else {
-                    Color::srgb(0.2, 0.8, 0.2)
-                },
-                ..default()
-            })),
-            bevy_rapier3d::geometry::Collider::cuboid(1.0, 0.5, 2.0),
-            bevy_rapier3d::dynamics::RigidBody::Dynamic,
-            bevy_rapier3d::dynamics::Velocity::default(),
-            Name::new("Vehicle"),
-        ))
-        .id();
+    let base_bundle = (
+        vehicle_bundle,
+        Mesh3d(meshes.add(Mesh::from(Cuboid::new(2.0, 1.0, 4.0)))),
+        MeshMaterial3d(materials.add(StandardMaterial {
+            base_color: if is_player {
+                Color::srgb(0.8, 0.2, 0.2)
+            } else {
+                Color::srgb(0.2, 0.8, 0.2)
+            },
+            ..default()
+        })),
+        Name::new("Vehicle"),
+    );
+
+    let vehicle_entity = {
+        #[cfg(feature = "rapier3d_030")]
+        {
+            commands
+                .spawn((
+                    base_bundle,
+                    bevy_rapier3d::geometry::Collider::cuboid(1.0, 0.5, 2.0),
+                    bevy_rapier3d::dynamics::RigidBody::Dynamic,
+                    bevy_rapier3d::dynamics::Velocity::default(),
+                ))
+                .id()
+        }
+        #[cfg(not(feature = "rapier3d_030"))]
+        {
+            commands.spawn(base_bundle).id()
+        }
+    };
 
     if is_player {
         commands.entity(vehicle_entity).insert(PlayerVehicle);
@@ -263,6 +293,7 @@ fn update_camera(
     }
 }
 
+#[cfg(feature = "rapier3d_030")]
 fn display_vehicle_info(
     mut text_query: Query<&mut Text, With<VehicleInfoText>>,
     vehicle_query: Query<
@@ -290,6 +321,39 @@ fn display_vehicle_info(
                 Mass: {:.0} kg",
                 speed_kmh,
                 speed_mph,
+                engine.rpm,
+                engine.max_rpm,
+                input.throttle * 100.0,
+                input.brake * 100.0,
+                input.steering * 30.0, // Convert to degrees
+                vehicle.mass
+            );
+        }
+    }
+}
+
+#[cfg(not(feature = "rapier3d_030"))]
+fn display_vehicle_info(
+    mut text_query: Query<&mut Text, With<VehicleInfoText>>,
+    vehicle_query: Query<
+        (
+            &Engine,
+            &VehicleInput,
+            &amp_gameplay::vehicle::components::Vehicle,
+        ),
+        With<PlayerVehicle>,
+    >,
+) {
+    if let Ok(mut text) = text_query.single_mut() {
+        if let Ok((engine, input, vehicle)) = vehicle_query.single() {
+            **text = format!(
+                "Vehicle Info:\n\
+                Speed: N/A (no Rapier3D)\n\
+                Engine RPM: {:.0}/{:.0}\n\
+                Throttle: {:.1}%\n\
+                Brake: {:.1}%\n\
+                Steering: {:.1}°\n\
+                Mass: {:.1} kg",
                 engine.rpm,
                 engine.max_rpm,
                 input.throttle * 100.0,

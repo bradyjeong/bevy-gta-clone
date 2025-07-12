@@ -51,7 +51,7 @@ fn test_basic_entity_spawning() {
     let prefab_id = PrefabId::new(12345);
 
     // Register a simple prefab
-    let result = factory.register(prefab_id, Prefab::new());
+    let result = factory.register(prefab_id, BasicPrefab::new());
     assert!(result.is_ok());
 
     // Try to spawn an entity
@@ -144,7 +144,7 @@ fn test_prefab_contains_check() {
     assert!(!factory.contains(prefab_id));
 
     // After registration, should contain it
-    factory.register(prefab_id, Prefab::new()).unwrap();
+    factory.register(prefab_id, BasicPrefab::new()).unwrap();
     assert!(factory.contains(prefab_id));
 }
 
@@ -158,7 +158,7 @@ fn test_prefab_id_global_tracking() {
 
     // After registering in a factory, it should be globally tracked
     let mut factory = Factory::new();
-    factory.register(prefab_id, Prefab::new()).unwrap();
+    factory.register(prefab_id, BasicPrefab::new()).unwrap();
     assert!(is_prefab_id_registered(prefab_id));
 
     // Verify it's in the global list

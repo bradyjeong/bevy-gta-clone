@@ -3,6 +3,7 @@
 use super::*;
 use crate::audio::*;
 use crate::validation::ConfigValidator;
+use serial_test::serial;
 use tempfile::TempDir;
 
 #[test]
@@ -71,6 +72,7 @@ fn test_audio_config_full_workflow() {
 }
 
 #[test]
+#[serial]
 fn test_vehicle_config_full_workflow() {
     let temp_dir = TempDir::new().unwrap();
     let config_path = temp_dir.path().join("vehicle.ron");
@@ -81,16 +83,25 @@ fn test_vehicle_config_full_workflow() {
         r#"(
             mass: 1200.0,
             engine: (
-                max_rpm: 6500.0,
                 max_power: 280.0,
+                power_curve_rpm: [1000.0, 2000.0, 4000.0, 6000.0],
+                power_curve_power: [100.0, 200.0, 280.0, 250.0],
+                torque_curve_rpm: [1000.0, 2000.0, 3000.0, 4000.0],
+                torque_curve_torque: [200.0, 350.0, 400.0, 350.0],
                 idle_rpm: 900.0,
-                fuel_consumption: 12.0,
+                max_rpm: 6500.0,
                 engine_braking: 0.35,
+                fuel_consumption: 12.0,
             ),
             transmission: (
                 gear_ratios: [-3.2, 0.0, 3.8, 2.3, 1.5, 1.1, 0.9],
                 final_drive_ratio: 3.9,
-                transmission_type: "Manual",
+                clutch_engagement_rpm: 1200.0,
+                shift_up_rpm: 6000.0,
+                shift_down_rpm: 2000.0,
+                shift_time: 0.3,
+                efficiency: 0.95,
+                transmission_type: Manual,
             ),
             suspension: (
                 spring_stiffness: 40000.0,
@@ -99,61 +110,12 @@ fn test_vehicle_config_full_workflow() {
                 max_extension: 0.18,
                 rest_length: 0.45,
                 anti_roll_bar_stiffness: 12000.0,
+                travel: 0.3,
+                camber: 0.0,
+                caster: 6.0,
+                toe: 0.0,
             ),
-            wheels: [
-                (
-                    radius: 0.32,
-                    width: 0.22,
-                    mass: 25.0,
-                    grip: 0.85,
-                    rolling_resistance: 0.02,
-                    lateral_friction: 0.9,
-                    longitudinal_friction: 0.8,
-                    stiffness: 50000.0,
-                    damping: 1000.0,
-                    position: (1.2, -0.3, 0.8),
-                    rotation: (0.0, 0.0, 0.0),
-                ),
-                (
-                    radius: 0.32,
-                    width: 0.22,
-                    mass: 25.0,
-                    grip: 0.85,
-                    rolling_resistance: 0.02,
-                    lateral_friction: 0.9,
-                    longitudinal_friction: 0.8,
-                    stiffness: 50000.0,
-                    damping: 1000.0,
-                    position: (-1.2, -0.3, 0.8),
-                    rotation: (0.0, 0.0, 0.0),
-                ),
-                (
-                    radius: 0.32,
-                    width: 0.22,
-                    mass: 25.0,
-                    grip: 0.85,
-                    rolling_resistance: 0.02,
-                    lateral_friction: 0.9,
-                    longitudinal_friction: 0.8,
-                    stiffness: 50000.0,
-                    damping: 1000.0,
-                    position: (1.2, -0.3, -0.8),
-                    rotation: (0.0, 0.0, 0.0),
-                ),
-                (
-                    radius: 0.32,
-                    width: 0.22,
-                    mass: 25.0,
-                    grip: 0.85,
-                    rolling_resistance: 0.02,
-                    lateral_friction: 0.9,
-                    longitudinal_friction: 0.8,
-                    stiffness: 50000.0,
-                    damping: 1000.0,
-                    position: (-1.2, -0.3, -0.8),
-                    rotation: (0.0, 0.0, 0.0),
-                ),
-            ],
+            wheels: ((radius: 0.32, width: 0.22, mass: 25.0, grip: 0.85, rolling_resistance: 0.02, lateral_friction: 0.9, longitudinal_friction: 0.8, stiffness: 50000.0, damping: 1000.0), (radius: 0.32, width: 0.22, mass: 25.0, grip: 0.85, rolling_resistance: 0.02, lateral_friction: 0.9, longitudinal_friction: 0.8, stiffness: 50000.0, damping: 1000.0), (radius: 0.32, width: 0.22, mass: 25.0, grip: 0.85, rolling_resistance: 0.02, lateral_friction: 0.9, longitudinal_friction: 0.8, stiffness: 50000.0, damping: 1000.0), (radius: 0.32, width: 0.22, mass: 25.0, grip: 0.85, rolling_resistance: 0.02, lateral_friction: 0.9, longitudinal_friction: 0.8, stiffness: 50000.0, damping: 1000.0)),
         )"#,
     )
     .unwrap();
@@ -325,6 +287,7 @@ fn test_config_serialization_roundtrip() {
 }
 
 #[test]
+#[serial]
 fn test_config_env_override() {
     let temp_dir = TempDir::new().unwrap();
     let config_path = temp_dir.path().join("custom_audio.ron");
@@ -423,9 +386,39 @@ fn test_config_loader_multiple_configs() {
         r#"(
             mass: 1800.0,
             engine: (
+                max_power: 350.0,
+                power_curve_rpm: [1000.0, 3000.0, 5500.0],
+                power_curve_power: [150.0, 300.0, 350.0],
+                torque_curve_rpm: [1000.0, 3000.0, 5500.0],
+                torque_curve_torque: [250.0, 400.0, 380.0],
+                idle_rpm: 800.0,
                 max_rpm: 5500.0,
-                max_torque: 350.0,
+                engine_braking: 0.3,
+                fuel_consumption: 12.0,
             ),
+            transmission: (
+                gear_ratios: [-2.8, 0.0, 3.5, 2.1, 1.4, 1.0],
+                final_drive_ratio: 3.5,
+                clutch_engagement_rpm: 1100.0,
+                shift_up_rpm: 5000.0,
+                shift_down_rpm: 2200.0,
+                shift_time: 0.25,
+                efficiency: 0.94,
+                transmission_type: Automatic,
+            ),
+            suspension: (
+                spring_stiffness: 35000.0,
+                damper_damping: 3500.0,
+                max_compression: 0.15,
+                max_extension: 0.15,
+                rest_length: 0.5,
+                anti_roll_bar_stiffness: 15000.0,
+                travel: 0.3,
+                camber: 0.0,
+                caster: 6.0,
+                toe: 0.0,
+            ),
+            wheels: ((radius: 0.33, width: 0.225, mass: 25.0, grip: 1.0, rolling_resistance: 0.015, lateral_friction: 1.2, longitudinal_friction: 1.0, stiffness: 50000.0, damping: 2500.0), (radius: 0.33, width: 0.225, mass: 25.0, grip: 1.0, rolling_resistance: 0.015, lateral_friction: 1.2, longitudinal_friction: 1.0, stiffness: 50000.0, damping: 2500.0), (radius: 0.33, width: 0.225, mass: 25.0, grip: 1.0, rolling_resistance: 0.015, lateral_friction: 1.2, longitudinal_friction: 1.0, stiffness: 50000.0, damping: 2500.0), (radius: 0.33, width: 0.225, mass: 25.0, grip: 1.0, rolling_resistance: 0.015, lateral_friction: 1.2, longitudinal_friction: 1.0, stiffness: 50000.0, damping: 2500.0)),
         )"#,
     )
     .unwrap();
@@ -443,6 +436,7 @@ fn test_config_loader_multiple_configs() {
 }
 
 #[test]
+#[serial]
 fn test_config_error_handling() {
     let temp_dir = TempDir::new().unwrap();
     let invalid_path = temp_dir.path().join("audio.ron");

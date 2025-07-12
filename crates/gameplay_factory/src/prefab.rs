@@ -17,7 +17,7 @@ pub trait ComponentInit: Send + Sync {
 }
 
 /// Concrete prefab definition that avoids generic issues
-#[derive(Asset, Reflect, Clone)]
+#[derive(Debug, Asset, Reflect, Clone)]
 pub struct BasicPrefab {
     /// Component data stored as (component_name, ron_data) pairs
     #[reflect(ignore)]
@@ -29,23 +29,32 @@ pub struct BasicPrefab {
 }
 
 /// Child prefab configuration
-#[derive(Debug, Clone, Reflect)]
+#[derive(Debug, Clone, Reflect, serde::Serialize, serde::Deserialize)]
 pub struct PrefabChild {
     /// The child prefab data
     pub component_data: Vec<(String, String)>,
+    /// Optional prefab definition for complex children
+    #[reflect(ignore)]
+    #[serde(skip)]
+    pub prefab: Option<BasicPrefab>,
     /// Transform relative to parent
+    #[serde(skip)]
     pub transform: Transform,
     /// Child name
     pub name: String,
 }
 
 /// Metadata for prefabs
-#[derive(Debug, Clone, Reflect)]
+#[derive(Debug, Clone, Reflect, serde::Serialize, serde::Deserialize)]
 pub struct PrefabMetadata {
     /// Prefab name
     pub name: String,
     /// Prefab type identifier
     pub type_id: String,
+    /// Version identifier for asset compatibility
+    pub version: String,
+    /// Tags for categorization
+    pub tags: Vec<String>,
     /// Asset paths referenced by this prefab
     pub asset_paths: Vec<String>,
     /// Component count
@@ -57,6 +66,8 @@ impl Default for PrefabMetadata {
         Self {
             name: "Unnamed".to_string(),
             type_id: "generic".to_string(),
+            version: "1.0.0".to_string(),
+            tags: Vec::new(),
             asset_paths: Vec::new(),
             component_count: 0,
         }
@@ -87,6 +98,8 @@ impl BasicPrefab {
             metadata: PrefabMetadata {
                 name,
                 type_id,
+                version: "1.0.0".to_string(),
+                tags: Vec::new(),
                 asset_paths: Vec::new(),
                 component_count: 0,
             },
@@ -185,6 +198,43 @@ impl BasicPrefab {
         self.metadata = metadata;
         self
     }
+
+    /// Get the number of components in this prefab
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.component_data.len()
+    }
+
+    /// Check if the prefab has no components
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.component_data.is_empty()
+    }
+
+    /// Get an iterator over the component data
+    #[inline]
+    pub fn components(&self) -> impl Iterator<Item = &(String, String)> {
+        self.component_data.iter()
+    }
+
+    /// Builder method to add an asset path
+    #[inline]
+    pub fn with_asset(mut self, path: &str) -> Self {
+        self.metadata.asset_paths.push(path.to_string());
+        self
+    }
+
+    /// Constructor with name (static method)
+    #[inline]
+    pub fn with_name(name: &str) -> Self {
+        Self::with_metadata(name.to_string(), "generic".to_string())
+    }
+
+    /// Get reference to children
+    #[inline]
+    pub fn children(&self) -> &[PrefabChild] {
+        &self.children
+    }
 }
 
 /// Macro to simplify component initialization
@@ -192,13 +242,13 @@ impl BasicPrefab {
 macro_rules! component_init {
     ($component:expr) => {{
         (
-            std::any::type_name::<$component>()
+            std::any::type_name::<_>()
                 .split("::")
                 .last()
                 .unwrap_or("Unknown")
                 .to_string(),
             ron::to_string(&$component).map_err(|e| {
-                Error::serialization(format!("Failed to serialize component: {}", e))
+                amp_core::Error::serialization(format!("Failed to serialize component: {}", e))
             })?,
         )
     }};
@@ -207,11 +257,23 @@ macro_rules! component_init {
 /// Macro to create a prefab with components
 #[macro_export]
 macro_rules! prefab {
+    // Terse form: prefab!(TestEntity => { ... })
+    ($name:ident => { $($field:ident : $val:expr),* $(,)? }) => {{
+        let mut prefab = $crate::BasicPrefab::with_metadata(stringify!($name).to_string(), stringify!($name).to_string());
+        $(
+            let serialized = ron::to_string(&$val)
+                .map_err(|e| amp_core::Error::serialization(format!("Failed to serialize component: {}", e)))?;
+            prefab.add_component(stringify!($field).to_string(), serialized);
+        )*
+        prefab
+    }};
+
+    // Existing form: prefab!("name", "type", { ... })
     ($name:expr, $type_id:expr, { $($component_name:expr => $component:expr),* $(,)? }) => {{
-        let mut prefab = BasicPrefab::with_metadata($name.to_string(), $type_id.to_string());
+        let mut prefab = $crate::BasicPrefab::with_metadata($name.to_string(), $type_id.to_string());
         $(
             let serialized = ron::to_string(&$component)
-                .map_err(|e| Error::serialization(format!("Failed to serialize component: {}", e)))?;
+                .map_err(|e| amp_core::Error::serialization(format!("Failed to serialize component: {}", e)))?;
             prefab.add_component($component_name.to_string(), serialized);
         )*
         prefab
@@ -251,6 +313,7 @@ mod tests {
     fn test_prefab_child() {
         let child = PrefabChild {
             component_data: vec![("Transform".to_string(), "()".to_string())],
+            prefab: None,
             transform: Transform::default(),
             name: "TestChild".to_string(),
         };

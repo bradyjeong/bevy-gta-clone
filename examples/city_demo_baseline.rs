@@ -128,7 +128,7 @@ fn setup_scene(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut prefab_factory: ResMut<PrefabFactoryResource>,
+    prefab_factory: ResMut<PrefabFactoryResource>,
 ) {
     // Initialize demo state
     commands.insert_resource(DemoState::default());

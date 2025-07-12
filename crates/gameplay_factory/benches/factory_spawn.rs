@@ -143,13 +143,13 @@ fn create_vehicle_prefab(index: usize) -> ComponentMap {
     // Vehicle-specific components (simplified)
     components.insert(
         "Name".to_string(),
-        ron::Value::String(format!("Vehicle_{}", index)),
+        ron::Value::String(format!("Vehicle_{index}")),
     );
 
     ComponentMap {
         components,
         metadata: ComponentMapMetadata {
-            source_path: Some(format!("prefabs/vehicles/vehicle_{}.ron", index)),
+            source_path: Some(format!("prefabs/vehicles/vehicle_{index}.ron")),
             validation_status: ValidationStatus::Valid,
             component_count: 2,
         },
@@ -192,13 +192,13 @@ fn create_npc_prefab(index: usize) -> ComponentMap {
     // NPC-specific components
     components.insert(
         "Name".to_string(),
-        ron::Value::String(format!("NPC_{}", index)),
+        ron::Value::String(format!("NPC_{index}")),
     );
 
     ComponentMap {
         components,
         metadata: ComponentMapMetadata {
-            source_path: Some(format!("prefabs/npcs/npc_{}.ron", index)),
+            source_path: Some(format!("prefabs/npcs/npc_{index}.ron")),
             validation_status: ValidationStatus::Valid,
             component_count: 2,
         },
@@ -241,13 +241,13 @@ fn create_building_prefab(index: usize) -> ComponentMap {
     // Building-specific components
     components.insert(
         "Name".to_string(),
-        ron::Value::String(format!("Building_{}", index)),
+        ron::Value::String(format!("Building_{index}")),
     );
 
     ComponentMap {
         components,
         metadata: ComponentMapMetadata {
-            source_path: Some(format!("prefabs/buildings/building_{}.ron", index)),
+            source_path: Some(format!("prefabs/buildings/building_{index}.ron")),
             validation_status: ValidationStatus::Valid,
             component_count: 2,
         },
@@ -290,13 +290,13 @@ fn create_prop_prefab(index: usize) -> ComponentMap {
     // Prop-specific components
     components.insert(
         "Name".to_string(),
-        ron::Value::String(format!("Prop_{}", index)),
+        ron::Value::String(format!("Prop_{index}")),
     );
 
     ComponentMap {
         components,
         metadata: ComponentMapMetadata {
-            source_path: Some(format!("prefabs/props/prop_{}.ron", index)),
+            source_path: Some(format!("prefabs/props/prop_{index}.ron")),
             validation_status: ValidationStatus::Valid,
             component_count: 2,
         },

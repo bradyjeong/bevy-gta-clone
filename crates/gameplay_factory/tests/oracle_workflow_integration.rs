@@ -56,7 +56,7 @@ fn test_oracle_complete_workflow() {
     }
 
     impl PrefabSource for TestPrefabSource {
-        fn load(&self) -> Result<Prefab, Error> {
+        fn load(&self) -> Result<BasicPrefab, Error> {
             let content = std::fs::read_to_string(&self.file_path).map_err(|e| {
                 Error::resource_load(
                     format!("prefab file {}", self.file_path.display()),
@@ -242,7 +242,7 @@ fn test_multiple_prefabs_workflow() {
         }
 
         impl PrefabSource for TestPrefabSource {
-            fn load(&self) -> Result<Prefab, Error> {
+            fn load(&self) -> Result<BasicPrefab, Error> {
                 let content = std::fs::read_to_string(&self.file_path).map_err(|e| {
                     Error::resource_load(
                         format!("prefab file {}", self.file_path.display()),
@@ -382,7 +382,7 @@ fn test_workflow_error_handling() {
     struct BadPrefabSource;
 
     impl PrefabSource for BadPrefabSource {
-        fn load(&self) -> Result<Prefab, Error> {
+        fn load(&self) -> Result<BasicPrefab, Error> {
             Err(Error::resource_load("test file", "File not found"))
         }
     }
@@ -393,12 +393,12 @@ fn test_workflow_error_handling() {
 
     // Test 3: Duplicate prefab ID registration
     let duplicate_id = PrefabId::new(777);
-    let empty_prefab = Prefab::new();
+    let empty_prefab = BasicPrefab::new();
 
     let first_register = factory.register(duplicate_id, empty_prefab);
     assert!(first_register.is_ok(), "First registration should succeed");
 
-    let second_register = factory.register(duplicate_id, Prefab::new());
+    let second_register = factory.register(duplicate_id, BasicPrefab::new());
     assert!(
         second_register.is_err(),
         "Second registration with same ID should fail"
@@ -443,7 +443,7 @@ fn test_oracle_critical_bugs_fixed() {
     }
 
     impl PrefabSource for BugTestSource {
-        fn load(&self) -> Result<Prefab, Error> {
+        fn load(&self) -> Result<BasicPrefab, Error> {
             let content = std::fs::read_to_string(&self.file_path).map_err(|e| {
                 Error::resource_load(
                     format!("prefab file {}", self.file_path.display()),
