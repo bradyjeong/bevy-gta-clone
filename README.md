@@ -8,13 +8,13 @@
 
 A professional AAA-level open world game built with Bevy 0.16.1 and Rust 2024, featuring comprehensive game systems and optimized for Amp development workflows.
 
-## ✅ ADR-0007 COMPLETE → 🎯 AAA-RESTORATION PHASE ACTIVE
+## 🎯 SPRINT 7 ACTIVE → Professional Integration & GPU Pipeline Activation
 
-**Oracle-guided architecture migration from bevy_ecs 0.13 + micro-crates to Bevy 0.16.1 + strategic modularity + version consistency.**
+**Oracle-guided AAA restoration progressing through strategic sprints with Bevy 0.16.1 ecosystem alignment.**
 
-**Current Status**: 122 tests passing, Oracle version consistency guards active, foundation ready for feature restoration.
+**Current Status**: 320+ tests passing, Sprint 6 technical debt resolved, GPU culling foundation established.
 
-**Now Active**: **12-Week AAA Restoration Plan** to restore f430bc6 "REVOLUTIONARY TRANSFORMATION" features to current Bevy 0.16.1 architecture.
+**Now Active**: **Sprint 7** - GPU Culling Phase 2 + AAAPlugin Architecture implementation.
 
 ### 🚀 Target Feature Set (f430bc6 → Bevy 0.16.1)
 - **12 RON Configuration System**: Data-driven game tuning with hot-reload
@@ -56,6 +56,9 @@ Oracle's strategic crate structure for ecosystem alignment:
 │   ├─ amp_core/          # Pure Rust utilities, error handling (no Bevy deps)
 │   ├─ amp_math/          # glam re-exports, Morton, AABB (no Bevy deps)  
 │   ├─ amp_engine/        # Bevy 0.16.1 dependency, engine plugins
+│   ├─ amp_physics/       # Vehicle physics and Rapier3D integration
+│   ├─ amp_render/        # Rendering systems, GPU culling, LOD management
+│   ├─ amp_gameplay/      # Game systems, components, vehicle integration
 │   ├─ config_core/       # Configuration loading and management
 │   ├─ gameplay_factory/  # Entity factory for prefab-based systems
 │   └─ tools/xtask/       # Build pipeline helpers
@@ -78,6 +81,9 @@ Oracle's strategic crate structure for ecosystem alignment:
 - 📈 **Performance Benchmarks** - Criterion.rs-based profiling with CI integration
 - 🎵 **Advanced Audio** - Spatial audio system with bevy_kira_audio integration
 - 🚗 **Vehicle Physics** - Professional-grade drivetrain and suspension simulation
+- 🎨 **GPU Culling Pipeline** - Compute shader instance culling with ADR-0009 architecture
+- 📊 **LOD System** - Distance-based level-of-detail with hysteresis and cross-fade
+- 🔧 **Memory Leak Prevention** - Automated CI testing and TransientBufferPool management
 
 ## Development
 
@@ -117,36 +123,30 @@ cargo test -p amp_math
 
 ## Current Status
 
-**ADR-0007 Migration Complete:**
-- ✅ Oracle consultation complete
-- ✅ Strategic 6-crate architecture implemented  
-- ✅ Bevy 0.16.1 ecosystem alignment
-- ✅ Version consistency guards active
-- ✅ 180+ tests passing across all crates
-- ✅ Foundation ready for feature restoration
+**Sprint 6 Complete - Professional Integration & GPU Pipeline Activation:**
+- ✅ All Oracle's conditional approval requirements resolved
+- ✅ GPU Pipeline Foundation: ADR-0009 documented + feature-flagged infrastructure
+- ✅ Bevy Integration Enhancement: InheritedVisibility checks added to render pipeline
+- ✅ CI Infrastructure: Weekly memory leak prevention + doctest stability
+- ✅ Config System Stability: Field-level merge hierarchy working correctly
+- ✅ Quality Gates: All 320+ tests passing, zero clippy warnings, Oracle gate criteria met
 
-**Sprint 2 Complete - Vehicle Physics Foundation:**
-- ✅ Professional-grade vehicle physics system implemented
-- ✅ amp_physics crate with comprehensive physics simulation
-- ✅ Rapier3D integration for collision detection
-- ✅ city_demo_baseline example with drivable car
-- ✅ 60+ FPS stable with vehicle simulation
+**Sprint 7 Active - GPU Culling Phase 2 + AAAPlugin Architecture:**
+- 🔄 **P1**: GPU Culling Phase 2 (ADR-0009) - Implement compute shader + bind-group layout
+- 🔄 **P1**: AAAPlugin Architecture - Introduce amp_engine::AAAPlugins PluginGroup
+- 🔄 **P2**: xtask & Tooling - cargo xtask bench, demo, ci refactor
+- 🔄 **P2**: Service-Elimination / Legacy Cleanup - Remove last service container patterns
+- 🔄 **P2**: Documentation & Gates - Update README, AGENT.md, ADR index
+- 🔄 **P3**: Render-World Hardening - Replace placeholder entity-spawn queue with real PhaseItems
+- 🔄 **P3**: Config System Concurrency - Make ConfigLoader thread-safe (Send + Sync)
 
-**Sprint 3 Complete - Core Gameplay & Physics Integration:**
-- ✅ Port vehicle physics to amp_gameplay crate
-- ✅ Advanced audio system with bevy_kira_audio integration
-- ✅ Complete physics integration with bevy_rapier3d 0.30
-- ✅ Enhanced city_demo with audio and integrated physics
+**Previous Sprints Complete:**
+- ✅ Sprint 1-2: Data-driven foundations with config system and entity factory
+- ✅ Sprint 3: Core gameplay & physics integration with vehicle simulation
+- ✅ Sprint 4: Performance benchmarks and config file porting
+- ✅ Sprint 5: Rendering & performance optimization with batch processing and LOD
 
-**Sprint 4 Complete - Performance & Config System:**
-- ✅ Criterion-based performance benchmarking system
-- ✅ Complete config file porting (14 RON files from f430bc6)
-- ✅ Hot-reload latency testing and validation
-- ✅ CI pipeline integration with automated performance gates
-- ✅ Data-driven configuration foundation complete
-
-**Phase-1 COMPLETE** - Data-driven foundations established for AAA feature restoration
-- 📋 Strategic plan: [STRATEGIC_RESTORATION_PLAN.md](docs/STRATEGIC_RESTORATION_PLAN.md)
+**Strategic Plan**: [STRATEGIC_RESTORATION_PLAN.md](docs/STRATEGIC_RESTORATION_PLAN.md)
 
 ## Performance Targets
 

@@ -100,12 +100,11 @@
 - 2 unit tests for world creation
 
 ## Current Status
-✅ **ADR-0007 MIGRATION COMPLETE** - Oracle-Guided Architecture Change
-- **Migration**: Successfully moved from bevy_ecs 0.13 + micro-crates to Bevy 0.16.1 + strategic modularity
-- **Architecture**: 6-crate structure with full Bevy 0.16.1 ecosystem alignment
-- **Active Crates**: amp_core, amp_math, amp_engine, amp_physics, config_core, gameplay_factory
-- **Deprecated**: amp_spatial, amp_gpu, amp_world (consolidated into amp_engine)
-- **Test Status**: 180+ tests passing across all crates
+✅ **SPRINT 7 ACTIVE** - Professional Integration & GPU Pipeline Activation
+- **Current Focus**: GPU Culling Phase 2 + AAAPlugin Architecture implementation
+- **Architecture**: 8-crate structure with Bevy 0.16.1 ecosystem alignment + rendering pipeline
+- **Active Crates**: amp_core, amp_math, amp_engine, amp_physics, amp_render, amp_gameplay, config_core, gameplay_factory
+- **Test Status**: 320+ tests passing across all crates + comprehensive integration tests
 
 ✅ **SPRINT 2 COMPLETED** - Vehicle Physics Foundation
 - **Objective**: Implement professional-grade vehicle physics system
@@ -207,6 +206,29 @@
   - ✅ LOD Performance: Efficient with proper hysteresis behavior
   - ✅ Memory: Zero leaks, flat memory profile verified
 - **Quality Gates**: All 291+ tests passing, memory leak tests, PhaseItem validation, Oracle gate criteria met
+
+✅ **SPRINT 7 ACTIVE** - Professional Integration & GPU Pipeline Activation
+- **Objective**: Implement GPU Culling Phase 2, AAAPlugin Architecture, and complete professional integration
+- **Status**: **IN PROGRESS** - Ready to proceed after Sprint 6 completion and Oracle approval
+- **Oracle Priority Items**:
+  - **P1**: GPU Culling Phase 2 (ADR-0009) - Implement compute shader + bind-group layout
+  - **P1**: AAAPlugin Architecture - Introduce amp_engine::AAAPlugins PluginGroup
+  - **P2**: xtask & Tooling - cargo xtask bench, demo, ci refactor
+  - **P2**: Service-Elimination / Legacy Cleanup - Remove last service container patterns
+  - **P2**: Documentation & Gates - Update README, AGENT.md, ADR index, STRATEGIC_RESTORATION_PLAN.md
+  - **P3**: Render-World Hardening - Replace placeholder entity-spawn queue with real PhaseItems
+  - **P3**: Config System Concurrency - Make ConfigLoader thread-safe (Send + Sync)
+- **Key Deliverables**:
+  - **GPU Culling Infrastructure**: Compute shader (WGSL) + readback path integration
+  - **Plugin Architecture**: Top-level PluginGroup wiring all subsystems (physics, audio, render, config)
+  - **Tooling Enhancement**: xtask perf, bench, demo commands with new plugin group
+  - **Legacy Cleanup**: Remove deprecated service containers, delete dead crates references
+  - **Documentation**: Complete update of all project documentation to reflect plugin architecture
+- **Performance Targets**:
+  - GPU culling <0.25ms @ 400k synthetic cases
+  - Plugin group integration maintaining 60+ FPS
+  - xtask commands execution under CI performance gates
+- **Quality Gates**: All existing tests + new GPU culling CI job, comprehensive plugin integration tests
 
 ## Oracle Guidance
 - **Strategic Decisions**: Documented in [Oracle Consultations](docs/oracle-consultations.md)
