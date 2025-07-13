@@ -97,11 +97,12 @@
 - Plugin-based architecture ready for Sprint 7
 
 ## Current Status
-✅ **SPRINT 8 COMPLETED** - Integration Hardening & Performance Baseline
-- **Completed**: AAAPlugins rollout, GPU Culling Phase 2, xtask perf JSON output, baseline CI
+🚀 **SPRINT 9 ACTIVE** - Optimization & Polishing Phase
+- **Objective**: Final optimization, performance tuning, and polish for AAA-grade release
 - **Architecture**: 8-crate structure with Bevy 0.16.1 ecosystem alignment + rendering pipeline
 - **Active Crates**: amp_core, amp_math, amp_engine, amp_physics, amp_render, amp_gameplay, config_core, gameplay_factory
-- **Test Status**: 320+ tests passing across all crates + comprehensive integration tests
+- **Test Status**: 370+ tests passing across all crates + comprehensive integration tests
+- **Performance Baseline**: Established with 60 FPS gates, GPU culling infrastructure ready
 
 ✅ **SPRINT 2 COMPLETED** - Vehicle Physics Foundation
 - **Objective**: Implement professional-grade vehicle physics system
@@ -207,25 +208,27 @@
 ✅ **SPRINT 8 COMPLETED** - Integration Hardening & Performance Baseline
 - **Objective**: Lock-in Professional Integration, GPU Culling Phase 2, Performance CI, AAAPlugins rollout
 - **Status**: **COMPLETED** - All P1 deliverables finished, Oracle conditionally approved, ready for Sprint 9
+
+🚀 **SPRINT 9 ACTIVE** - Optimization & Polishing Phase
+- **Objective**: Final optimization, performance tuning, and polish for AAA-grade release
+- **Status**: **ACTIVE** - Ready to proceed after Sprint 8 completion and established performance baseline
 - **Oracle Priority Items**:
-  - ✅ **P1**: GPU Culling Phase 2 (ADR-0009) - Implement compute shader + bind-group layout
-  - ✅ **P1**: AAAPlugin Architecture - Introduce amp_engine::AAAPlugins PluginGroup
-  - ✅ **P2**: xtask & Tooling - cargo xtask bench, demo, ci refactor
-  - ✅ **P2**: Service-Elimination / Legacy Cleanup - Remove last service container patterns
-  - ✅ **P2**: Documentation & Gates - Update README, AGENT.md, ADR index, STRATEGIC_RESTORATION_PLAN.md
-  - ✅ **P3**: Render-World Hardening - Replace placeholder entity-spawn queue with real PhaseItems
-  - ✅ **P3**: Config System Concurrency - Make ConfigLoader thread-safe (Send + Sync)
+  - **P1**: Performance Optimization - Achieve stable 60+ FPS @1080p, optimize memory usage
+  - **P1**: GPU Culling Phase 3 - Real compute shader implementation, sub-0.25ms target
+  - **P2**: Large-scale performance optimization - 100k entities spawn ≤3ms (37× improvement)
+  - **P2**: Memory optimization - Object pools, per-frame arenas, minimal allocations
+  - **P3**: Final polish - Documentation, examples, release preparation
 - **Key Deliverables**:
-  - ✅ **GPU Culling Infrastructure**: Compute shader (WGSL) + readback path integration
-  - ✅ **Plugin Architecture**: Top-level PluginGroup wiring all subsystems (physics, audio, render, config)
-  - ✅ **Tooling Enhancement**: xtask perf, bench, demo commands with new plugin group
-  - ✅ **Legacy Cleanup**: Remove deprecated service containers, delete dead crates references
-  - ✅ **Documentation**: Complete update of all project documentation to reflect plugin architecture
+  - **Performance Gates**: Stable 60+ FPS @1080p with city_demo
+  - **GPU Compute Shader**: Real WGSL implementation replacing simulation
+  - **Memory Management**: Optimized allocation patterns for AAA performance
+  - **Release Readiness**: v0.4.0-alpha tag, crates.io pre-release preparation
 - **Performance Targets**:
-  - ✅ GPU culling <0.25ms @ 400k synthetic cases
-  - ✅ Plugin group integration maintaining 60+ FPS
-  - ✅ xtask commands execution under CI performance gates
-- **Quality Gates**: All existing tests + new GPU culling CI job, comprehensive plugin integration tests
+  - city_demo: 60+ FPS stable @1080p
+  - spawn_100k: ≤3ms (current ~111ms needs 37× improvement)
+  - gpu_culling: ≤0.25ms actual compute shader time
+  - Memory: Flat memory profile under sustained load
+- **Quality Gates**: All 370+ tests + new optimization tests, ≥80% coverage, comprehensive performance validation
 
 ## Oracle Guidance
 - **Strategic Decisions**: Documented in [Oracle Consultations](docs/oracle-consultations.md)

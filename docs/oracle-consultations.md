@@ -13,6 +13,25 @@ Each consultation should include:
 
 ## Consultations
 
+### 2025-07-13: Sprint 8 Completion and Sprint 9 Planning
+**Context**: Sprint 8 "Integration Hardening & Performance Baseline" completed with Oracle conditional approval, need Sprint 9 strategy
+
+**Key Insights**:
+- Sprint 8 successfully completed all P1 deliverables (AAAPlugins rollout, GPU Culling Phase 2, xtask perf JSON, baseline CI)
+- Oracle provided CONDITIONALLY APPROVED status with all requirements addressed
+- Performance baseline established with 60 FPS gates, ready for optimization phase
+- Sprint 9 should focus on final optimization and polish for AAA-grade release
+- Real compute shader implementation needed for GPU Culling Phase 3
+- Large-scale performance optimization requires 37× improvement for 100k entities
+
+**Actions Taken**:
+- Updated all documentation (AGENT.md, STRATEGIC_RESTORATION_PLAN.md, README.md) for Sprint 9
+- Established Sprint 9 priorities: P1 Performance Optimization, P1 GPU Culling Phase 3, P2 Memory optimization
+- Set performance targets: city_demo 60+ FPS @1080p, spawn_100k ≤3ms, gpu_culling ≤0.25ms
+- Updated quality gates for 370+ tests and comprehensive performance validation
+
+**ADR Reference**: Continuing with ADR-0009 (GPU Culling) and ADR-0010 (AAAPlugin Architecture)
+
 ### 2025-01-10: Version Consistency Strategy
 **Context**: Need for consistent versioning strategy across all dependencies with Rust 2024 edition and Bevy 0.16.1 migration
 
