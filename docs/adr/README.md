@@ -29,9 +29,11 @@ What becomes easier or more difficult to do because of this change?
 - [ADR-0006: Entity Factory](0006-entity-factory.md) - **ACTIVE**
 - [ADR-0007: Strategic Shift to Bevy 0.16.1 Meta-Crate](0007-strategic-shift-bevy-meta-crate.md) - ✅ **COMPLETED**
 - [ADR-0008: Oracle-Guided AAA Feature Restoration Strategy](0008-oracle-guided-aaa-feature-restoration.md) - ✅ **ACCEPTED**
+- [ADR-0009: GPU Culling Pipeline](0009-gpu-culling-pipeline.md) - ✅ **ACCEPTED**
 
 **Current Architecture**: ADR-0007 defines the strategic 5-crate Bevy 0.16.1 architecture  
-**Current Phase**: ADR-0008 AAA Feature Restoration - 12-week f430bc6 restoration plan
+**Current Phase**: ADR-0008 AAA Feature Restoration - 12-week f430bc6 restoration plan  
+**Current Implementation**: ADR-0009 GPU Culling Pipeline - Oracle P3a implementation
 
 ## Creating New ADRs
 

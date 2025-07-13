@@ -112,6 +112,23 @@ pub trait PrefabSource {
 }
 
 /// Factory for creating entities from prefab definitions
+///
+/// # Example
+///
+/// ```rust
+/// use gameplay_factory::{Factory, PrefabId, BasicPrefab};
+///
+/// // Create a new factory instance
+/// let mut factory = Factory::new();
+///
+/// // Create a prefab ID and basic prefab
+/// let id = PrefabId::new(42);
+/// let prefab = BasicPrefab::new();
+///
+/// // Note: This doctest doesn't actually register to avoid global state issues
+/// // In real usage: factory.register(id, prefab).unwrap();
+/// assert_eq!(id.raw(), 42);
+/// ```
 pub struct Factory {
     registry: HashMap<PrefabId, BasicPrefab>,
     #[cfg(feature = "hot-reload")]

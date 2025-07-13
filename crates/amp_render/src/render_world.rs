@@ -334,7 +334,14 @@ impl InstanceMeta {
 /// Extract instances from main world for rendering
 pub fn extract_instances(
     mut extracted: ResMut<ExtractedInstances>,
-    query: Extract<Query<(&GlobalTransform, &BatchKey, &Visibility)>>,
+    query: Extract<
+        Query<(
+            &GlobalTransform,
+            &BatchKey,
+            &Visibility,
+            &InheritedVisibility,
+        )>,
+    >,
     camera_q: Extract<Query<&GlobalTransform, With<Camera>>>,
 ) {
     let Ok(camera_transform) = camera_q.get_single() else {
@@ -343,9 +350,9 @@ pub fn extract_instances(
     let cam_pos = camera_transform.translation();
 
     extracted.clear();
-    for (gt, key, vis) in &query {
-        // Check if entity is visible (either explicitly visible or inherited)
-        if *vis == Visibility::Hidden {
+    for (gt, key, vis, inherited) in &query {
+        // Check if entity is visible (both explicit visibility and inherited visibility)
+        if *vis == Visibility::Hidden || !inherited.get() {
             continue;
         }
         extracted.add_instance(ExtractedInstance::new(
@@ -644,5 +651,96 @@ mod tests {
         assert_eq!(meta.batch_count(), 1);
         assert_eq!(meta.instance_count(), 1);
         assert!(meta.batches.contains_key(&key));
+    }
+
+    #[test]
+    fn test_extract_instances_visibility_filtering() {
+        // Create a minimal world for testing the extraction system
+        let mut world = World::new();
+
+        // Add required resources
+        world.insert_resource(ExtractedInstances::default());
+
+        // Spawn camera
+        world.spawn((GlobalTransform::from_xyz(0.0, 0.0, 5.0), Camera::default()));
+
+        // Spawn entities with different visibility states
+        let mesh_handle = Handle::weak_from_u128(123);
+        let material_handle = Handle::weak_from_u128(456);
+        let key = BatchKey::new(&mesh_handle, &material_handle);
+
+        // Visible entity (should be extracted)
+        world.spawn((
+            GlobalTransform::from_xyz(0.0, 0.0, 0.0),
+            key.clone(),
+            Visibility::Visible,
+            InheritedVisibility::VISIBLE,
+        ));
+
+        // Hidden entity (should NOT be extracted)
+        world.spawn((
+            GlobalTransform::from_xyz(1.0, 0.0, 0.0),
+            key.clone(),
+            Visibility::Hidden,
+            InheritedVisibility::VISIBLE,
+        ));
+
+        // Entity with inherited hidden (should NOT be extracted)
+        world.spawn((
+            GlobalTransform::from_xyz(2.0, 0.0, 0.0),
+            key.clone(),
+            Visibility::Visible,
+            InheritedVisibility::HIDDEN,
+        ));
+
+        // Both hidden (should NOT be extracted)
+        world.spawn((
+            GlobalTransform::from_xyz(3.0, 0.0, 0.0),
+            key.clone(),
+            Visibility::Hidden,
+            InheritedVisibility::HIDDEN,
+        ));
+
+        // Manually run the extraction logic
+        let mut camera_query = world.query_filtered::<&GlobalTransform, With<Camera>>();
+        let Ok(camera_transform) = camera_query.get_single(&world) else {
+            panic!("No camera found");
+        };
+        let cam_pos = camera_transform.translation();
+
+        // Collect instances to add first, then modify the resource
+        let mut instances_to_add = Vec::new();
+        let mut query = world.query::<(
+            &GlobalTransform,
+            &BatchKey,
+            &Visibility,
+            &InheritedVisibility,
+        )>();
+        for (gt, key, vis, inherited) in query.iter(&world) {
+            // Apply the same visibility filtering logic as in extract_instances
+            if *vis == Visibility::Hidden || !inherited.get() {
+                continue;
+            }
+            instances_to_add.push(ExtractedInstance::new(
+                gt.compute_matrix(),
+                key.clone(),
+                cam_pos,
+            ));
+        }
+
+        // Now modify the resource
+        let mut extracted = world.resource_mut::<ExtractedInstances>();
+        extracted.clear();
+        for instance in instances_to_add {
+            extracted.add_instance(instance);
+        }
+        let extracted_count = extracted.len();
+        // extracted is automatically dropped here
+
+        // Check that only the visible entity was extracted
+        assert_eq!(
+            extracted_count, 1,
+            "Only the visible entity should be extracted"
+        );
     }
 }

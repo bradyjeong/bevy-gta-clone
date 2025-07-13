@@ -1,6 +1,7 @@
 # Amp Game Engine
 
 ![CI Status](https://github.com/bradyjeong/bevy-gta-clone/workflows/CI/badge.svg)
+![Memory Leak Prevention](https://github.com/bradyjeong/bevy-gta-clone/workflows/Memory%20Leak%20Prevention/badge.svg)
 ![Test Coverage](https://codecov.io/gh/bradyjeong/bevy-gta-clone/branch/main/graph/badge.svg)
 ![Rust Version](https://img.shields.io/badge/rust-1.85+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)

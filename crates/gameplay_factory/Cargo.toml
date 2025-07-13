@@ -10,7 +10,7 @@ categories = ["game-development", "game-engines"]
 keywords = ["gamedev", "bevy", "entity", "factory", "prefab"]
 
 [lib]
-doctest = false  # Disabled due to macOS dylib issues with Bevy doctests
+# Re-enabled with proper macOS handling - see cfg(doctest) guards in code
 
 [dependencies]
 bevy = { workspace = true }

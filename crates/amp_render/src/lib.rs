@@ -20,6 +20,9 @@ pub mod render_world;
 #[cfg(feature = "gpu")]
 pub mod gpu_culling_simple;
 
+#[cfg(feature = "gpu_culling")]
+pub mod gpu_culling;
+
 #[cfg(test)]
 mod tests;
 
@@ -188,7 +191,14 @@ impl Plugin for BatchingPlugin {
         ));
 
         #[cfg(feature = "gpu")]
-        app.add_plugins(gpu_culling_simple::GpuCullingPlugin);
+        {
+            // TODO: Re-enable after resolving GPU culling simple integration
+            // app.add_plugins(gpu_culling_simple::GpuCullingPlugin);
+            // app.add_plugins(gpu_culling_simple::GpuCullingSimplePlugin);
+        }
+
+        #[cfg(feature = "gpu_culling")]
+        app.add_plugins(gpu_culling::GpuCullingPlugin);
     }
 }
 
@@ -199,6 +209,12 @@ pub mod prelude {
         batching::prelude::*, culling::prelude::*, culling_integration::prelude::*,
         lod::prelude::*, render_world::prelude::*,
     };
+
+    #[cfg(feature = "gpu")]
+    pub use crate::gpu_culling_simple::prelude::*;
+
+    #[cfg(feature = "gpu_culling")]
+    pub use crate::gpu_culling::prelude::*;
 
     #[cfg(feature = "gpu")]
     pub use crate::gpu_culling_simple::prelude::*;

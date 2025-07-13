@@ -8,7 +8,7 @@ use crate::{ExtractedInstance, batching::BatchManager};
 use bevy::prelude::*;
 
 #[cfg(feature = "gpu")]
-use crate::gpu_culling_simple::GpuCullingConfig;
+use crate::culling::CullingConfig as GpuCullingConfig;
 
 /// Integrated culling system that chooses between GPU and CPU
 ///
@@ -29,7 +29,7 @@ pub fn integrated_culling_system(
     {
         // Use GPU culling if available and enabled
         if let Some(gpu_resource) = gpu_config {
-            if gpu_resource.enable_gpu_culling {
+            if gpu_resource.enable_frustum_culling {
                 // GPU culling will handle batch updating directly
                 return;
             }

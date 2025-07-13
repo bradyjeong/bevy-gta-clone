@@ -177,12 +177,11 @@ fn test_config_merge_hierarchy() {
     let config: AudioConfig = loader.load_with_merge().unwrap();
 
     // Should use higher priority value for master_volume
-    // TODO: Fix config merge hierarchy ordering issue - temporarily disabled for Sprint 5
-    // assert_eq!(config.master_volume, 0.8);
+    assert_eq!(config.master_volume, 0.8);
     // Should use higher priority value for music_volume
-    // assert_eq!(config.music_volume, 0.3);
-    // Should use default for engine_volume (from higher priority config default)
-    assert_eq!(config.engine_volume, 0.8); // Default value
+    assert_eq!(config.music_volume, 0.3);
+    // Should fall back to lower priority value for engine_volume
+    assert_eq!(config.engine_volume, 0.4);
 }
 
 #[test]
@@ -437,6 +436,143 @@ fn test_config_loader_multiple_configs() {
 }
 
 #[test]
+fn test_config_merge_priority_properties() {
+    // Property: Higher priority config values override lower priority ones
+    let temp_dir1 = TempDir::new().unwrap();
+    let temp_dir2 = TempDir::new().unwrap();
+
+    let config_path1 = temp_dir1.path().join("audio.ron");
+    let config_path2 = temp_dir2.path().join("audio.ron");
+
+    // Create configs with different values
+    std::fs::write(
+        &config_path1,
+        r#"(
+            master_volume: 0.1,
+            engine_volume: 0.2,
+            music_volume: 0.3,
+        )"#,
+    )
+    .unwrap();
+
+    std::fs::write(
+        &config_path2,
+        r#"(
+            master_volume: 0.9,
+            sfx_volume: 0.8,
+        )"#,
+    )
+    .unwrap();
+
+    let loader = ConfigLoader {
+        search_paths: vec![
+            temp_dir2.path().to_path_buf(), // Higher priority
+            temp_dir1.path().to_path_buf(), // Lower priority
+        ],
+    };
+
+    let config: AudioConfig = loader.load_with_merge().unwrap();
+
+    // Property 1: Values specified in higher priority should override
+    assert_eq!(
+        config.master_volume, 0.9,
+        "Higher priority master_volume should override"
+    );
+    assert_eq!(
+        config.sfx_volume, 0.8,
+        "Higher priority sfx_volume should be used"
+    );
+
+    // Property 2: Values only in lower priority should be preserved
+    assert_eq!(
+        config.engine_volume, 0.2,
+        "Lower priority engine_volume should be preserved"
+    );
+    assert_eq!(
+        config.music_volume, 0.3,
+        "Lower priority music_volume should be preserved"
+    );
+
+    // Property 3: Values not specified in either should use defaults
+    assert_eq!(
+        config.environment_volume,
+        AudioConfig::default().environment_volume,
+        "Unspecified values should use defaults"
+    );
+    assert_eq!(
+        config.ui_volume,
+        AudioConfig::default().ui_volume,
+        "Unspecified values should use defaults"
+    );
+}
+
+#[test]
+fn test_config_merge_nested_properties() {
+    // Property: Nested configs should merge independently
+    let temp_dir1 = TempDir::new().unwrap();
+    let temp_dir2 = TempDir::new().unwrap();
+
+    let config_path1 = temp_dir1.path().join("audio.ron");
+    let config_path2 = temp_dir2.path().join("audio.ron");
+
+    // Lower priority has engine settings
+    std::fs::write(
+        &config_path1,
+        r#"(
+            engine: (
+                base_volume: 0.3,
+                rpm_scaling: 0.7,
+            ),
+        )"#,
+    )
+    .unwrap();
+
+    // Higher priority has different engine settings
+    std::fs::write(
+        &config_path2,
+        r#"(
+            engine: (
+                base_volume: 0.6,
+                min_volume: 0.1,
+            ),
+        )"#,
+    )
+    .unwrap();
+
+    let loader = ConfigLoader {
+        search_paths: vec![
+            temp_dir2.path().to_path_buf(), // Higher priority
+            temp_dir1.path().to_path_buf(), // Lower priority
+        ],
+    };
+
+    let config: AudioConfig = loader.load_with_merge().unwrap();
+
+    // Property: Higher priority nested values should override
+    assert_eq!(
+        config.engine.base_volume, 0.6,
+        "Higher priority engine.base_volume should override"
+    );
+    assert_eq!(
+        config.engine.min_volume, 0.1,
+        "Higher priority engine.min_volume should be used"
+    );
+
+    // Property: Lower priority nested values should be preserved when not overridden
+    assert_eq!(
+        config.engine.rpm_scaling, 0.7,
+        "Lower priority engine.rpm_scaling should be preserved"
+    );
+
+    // Property: Default nested values should be used when not specified
+    assert_eq!(
+        config.engine.max_volume,
+        EngineAudioConfig::default().max_volume,
+        "Unspecified nested values should use defaults"
+    );
+}
+
+#[test]
 #[serial]
 fn test_config_error_handling() {
     let temp_dir = TempDir::new().unwrap();
@@ -483,6 +619,12 @@ fn test_config_merge_behavior() {
 
     let merged = base_config.merge(override_config.clone());
 
-    // Should return the override config (default merge behavior)
-    assert_eq!(merged, override_config);
+    // Should perform field-level merge: use override values when specified, keep base values otherwise
+    let expected = AudioConfig {
+        master_volume: 0.8,   // from override (non-default)
+        engine_volume: 0.4,   // from base (override uses default)
+        music_volume: 0.3,    // from override (non-default)
+        ..Default::default()  // other fields use defaults
+    };
+    assert_eq!(merged, expected);
 }

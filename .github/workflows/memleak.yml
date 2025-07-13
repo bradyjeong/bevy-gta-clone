@@ -1,0 +1,76 @@
+name: Memory Leak Prevention
+
+on:
+  schedule:
+    # Every Friday at 03:00 UTC
+    - cron: '0 3 * * 5'
+  workflow_dispatch: # Allow manual runs
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  memory-leak-tests:
+    name: Memory Leak Prevention Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        
+    - name: Cache dependencies
+      uses: Swatinem/rust-cache@v2
+      with:
+        key: memleak-${{ runner.os }}
+        
+    - name: Install Valgrind
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y valgrind
+        
+    - name: Build in release mode
+      run: cargo build --workspace --all-features --release
+      
+    - name: Run memory leak tests (basic)
+      run: cargo test --workspace --all-features --release -- --ignored long_memory
+      
+    - name: Run memory leak tests (with Valgrind - Massif)
+      run: |
+        # Run a subset of critical tests with Valgrind Massif for detailed analysis
+        valgrind --tool=massif --massif-out-file=massif.out \
+          cargo test --workspace --all-features --release \
+          -- --ignored long_memory --test-threads=1 memory_leak_gpu_buffers
+        
+        # Parse massif output for memory usage
+        ms_print massif.out > memory_report.txt
+        
+        # Check peak memory usage (fail if > 110 MB)
+        PEAK_MB=$(grep -o '[0-9,]*MB' memory_report.txt | head -1 | tr -d ',MB')
+        if [ "$PEAK_MB" -gt 110 ]; then
+          echo "❌ Memory leak detected: Peak usage ${PEAK_MB}MB exceeds 110MB threshold"
+          cat memory_report.txt
+          exit 1
+        fi
+        
+        echo "✅ Memory usage OK: Peak ${PEAK_MB}MB (threshold: 110MB)"
+        
+    - name: Upload memory reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: memory-leak-reports
+        path: |
+          massif.out
+          memory_report.txt
+        retention-days: 7
+        
+    - name: Update status badge
+      if: failure()
+      run: |
+        echo "Memory leak tests failed - badge will show failing status"

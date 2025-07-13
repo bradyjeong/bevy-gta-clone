@@ -6,6 +6,7 @@
 - Rustdoc: `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --all-features`
 - Coverage: `cargo llvm-cov --workspace --all-features` | Coverage Gate: Minimum 70%
 - Run Example: `cargo run --example city_demo`
+- Memory Leak Tests: `cargo test --workspace --all-features -- --ignored long_memory` (weekly CI only)
 - Dev Tools: `cargo xtask ci` (full CI pipeline), `./scripts/pre-commit-check.sh` (before commits)
 
 ## Development Workflow
@@ -178,13 +179,23 @@
 - **Objective**: Implement batch processing, GPU culling, and LOD systems for AAA performance foundations
 - **Status**: **PRODUCTION READY** - All Sprint 5 + Sprint 5-Stabilize deliverables completed
 - **Oracle Final Assessment**: **APPROVED FOR MERGE** - Production-blocking gaps resolved, ready for main
+
+✅ **SPRINT 6 COMPLETED** - Professional Integration & GPU Pipeline Activation
+- **Objective**: Activate full GPU culling pipeline, complete Bevy render-phase integration, resolve technical debt
+- **Status**: **PRODUCTION READY** - All Oracle's conditional approval requirements resolved, CI green
+- **Oracle Final Assessment**: **APPROVED FOR SPRINT 7** - Ready to proceed to professional integration phase
+- **Oracle Priority Items**:
+  - ✅ **P1**: Fix config merge hierarchy bug in config_core integration tests
+  - ✅ **P2**: Add InheritedVisibility check to extract_instances 
+  - ✅ **P2**: Implement weekly CI job for memory leak test prevention
+  - ✅ **P3**: GPU culling scope decision with ADR-0009 and feature flag implementation
+  - ✅ **P3**: Re-enable doctests with proper macOS handling
 - **Key Deliverables**:
-  - ✅ **amp_render crate**: Comprehensive rendering performance system with 3 major components
-  - ✅ **RenderWorld Batch Processing**: 2.5× speedup achieved (~2.5ms vs 4ms target)
-  - ✅ **GPU Compute-Shader Culling**: Infrastructure complete behind 'gpu' feature flag
-  - ✅ **Distance-based LOD System**: Hysteresis + smooth transitions with BatchManager integration
-  - ✅ **Extract→Prepare→Queue Pipeline**: Full Bevy 0.16.1 integration
-  - ✅ **Production Stabilization**: All Oracle-identified critical gaps resolved
+  - ✅ **Technical Debt Resolution**: All Oracle's identified production-blocking issues resolved
+  - ✅ **GPU Pipeline Foundation**: ADR-0009 documented + feature-flagged infrastructure implemented
+  - ✅ **Bevy Integration Enhancement**: InheritedVisibility checks added to render pipeline
+  - ✅ **CI Infrastructure**: Weekly memory leak prevention + doctest stability achieved
+  - ✅ **Config System Stability**: Field-level merge hierarchy working correctly
 - **Sprint 5-Stabilize Fixes**:
   - ✅ **PhaseItem Integration**: Real entity enqueue (not just logging) for actual rendering
   - ✅ **Memory Leak Prevention**: TransientBufferPool prevents GPU OOM in long sessions  

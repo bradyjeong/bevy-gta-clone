@@ -48,6 +48,47 @@ impl Default for AudioConfig {
 
 impl Config for AudioConfig {
     const FILE_NAME: &'static str = "audio.ron";
+
+    fn merge(self, other: Self) -> Self {
+        // Field-level merge: use other's values when they differ from default,
+        // otherwise keep self's values. Since serde(default) fills missing fields
+        // with defaults, a default value means the field wasn't explicitly specified.
+        let defaults = Self::default();
+        Self {
+            master_volume: if other.master_volume != defaults.master_volume {
+                other.master_volume
+            } else {
+                self.master_volume
+            },
+            engine_volume: if other.engine_volume != defaults.engine_volume {
+                other.engine_volume
+            } else {
+                self.engine_volume
+            },
+            music_volume: if other.music_volume != defaults.music_volume {
+                other.music_volume
+            } else {
+                self.music_volume
+            },
+            sfx_volume: if other.sfx_volume != defaults.sfx_volume {
+                other.sfx_volume
+            } else {
+                self.sfx_volume
+            },
+            environment_volume: if other.environment_volume != defaults.environment_volume {
+                other.environment_volume
+            } else {
+                self.environment_volume
+            },
+            ui_volume: if other.ui_volume != defaults.ui_volume {
+                other.ui_volume
+            } else {
+                self.ui_volume
+            },
+            engine: self.engine.merge(other.engine),
+            vehicle: self.vehicle.merge(other.vehicle),
+        }
+    }
 }
 
 /// Engine-specific audio configuration
@@ -79,6 +120,40 @@ impl Default for EngineAudioConfig {
     }
 }
 
+impl EngineAudioConfig {
+    /// Merge two EngineAudioConfig instances with field-level precedence
+    pub fn merge(self, other: Self) -> Self {
+        let defaults = Self::default();
+        Self {
+            base_volume: if other.base_volume != defaults.base_volume {
+                other.base_volume
+            } else {
+                self.base_volume
+            },
+            rpm_scaling: if other.rpm_scaling != defaults.rpm_scaling {
+                other.rpm_scaling
+            } else {
+                self.rpm_scaling
+            },
+            min_volume: if other.min_volume != defaults.min_volume {
+                other.min_volume
+            } else {
+                self.min_volume
+            },
+            max_volume: if other.max_volume != defaults.max_volume {
+                other.max_volume
+            } else {
+                self.max_volume
+            },
+            smoothing_factor: if other.smoothing_factor != defaults.smoothing_factor {
+                other.smoothing_factor
+            } else {
+                self.smoothing_factor
+            },
+        }
+    }
+}
+
 /// Vehicle-specific audio configuration
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[cfg_attr(feature = "schemars", derive(JsonSchema))]
@@ -104,6 +179,43 @@ impl Default for VehicleAudioConfig {
             tire_screech_enabled: true,
             default_tire_screech_volume: 0.3,
             tire_screech_scaling: 0.5,
+        }
+    }
+}
+
+impl VehicleAudioConfig {
+    /// Merge two VehicleAudioConfig instances with field-level precedence
+    pub fn merge(self, other: Self) -> Self {
+        let defaults = Self::default();
+        Self {
+            engine_sound_enabled: if other.engine_sound_enabled != defaults.engine_sound_enabled {
+                other.engine_sound_enabled
+            } else {
+                self.engine_sound_enabled
+            },
+            default_engine_volume: if other.default_engine_volume != defaults.default_engine_volume
+            {
+                other.default_engine_volume
+            } else {
+                self.default_engine_volume
+            },
+            tire_screech_enabled: if other.tire_screech_enabled != defaults.tire_screech_enabled {
+                other.tire_screech_enabled
+            } else {
+                self.tire_screech_enabled
+            },
+            default_tire_screech_volume: if other.default_tire_screech_volume
+                != defaults.default_tire_screech_volume
+            {
+                other.default_tire_screech_volume
+            } else {
+                self.default_tire_screech_volume
+            },
+            tire_screech_scaling: if other.tire_screech_scaling != defaults.tire_screech_scaling {
+                other.tire_screech_scaling
+            } else {
+                self.tire_screech_scaling
+            },
         }
     }
 }
@@ -244,8 +356,8 @@ mod tests {
         };
 
         let merged = base.merge(override_config);
-        assert_eq!(merged.master_volume, 0.8); // Should use override value
-        assert_eq!(merged.music_volume, 0.4); // Should use override value
-        assert_eq!(merged.engine_volume, 0.8); // Should use default from override (not base)
+        assert_eq!(merged.master_volume, 0.8); // Should use override value (non-default)
+        assert_eq!(merged.music_volume, 0.4); // Should use override value (non-default)
+        assert_eq!(merged.engine_volume, 0.6); // Should keep base value (override uses default)
     }
 }

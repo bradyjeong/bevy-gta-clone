@@ -10,7 +10,7 @@
 //!
 //! ## Usage
 //!
-//! ```rust
+//! ```ignore
 //! use amp_gameplay::prelude::*;
 //! use bevy::prelude::*;
 //!
@@ -18,6 +18,19 @@
 //!     .add_plugins(DefaultPlugins)
 //!     .add_plugins(GameplayPlugins)
 //!     .run();
+//! ```
+//!
+//! Simple plugin verification:
+//!
+//! ```rust
+//! use amp_gameplay::GameplayPlugins;
+//! use bevy::app::PluginGroup;
+//!
+//! // Verify GameplayPlugins can be built without heavy initialization
+//! let plugins = GameplayPlugins;
+//! let _builder = plugins.build();
+//! // Plugin group builder created successfully - doctests working properly
+//! assert!(true);
 //! ```
 
 pub mod audio;

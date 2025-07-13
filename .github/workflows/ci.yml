@@ -98,6 +98,9 @@ jobs:
       - name: Test with ${{ matrix.features }}
         run: cargo test --workspace ${{ matrix.features }}
       
+      - name: Test doctests with ${{ matrix.features }}
+        run: cargo test --workspace --doc ${{ matrix.features }}
+      
       - name: Clippy with ${{ matrix.features }}
         run: cargo clippy --workspace --all-targets ${{ matrix.features }} -- -D warnings
 

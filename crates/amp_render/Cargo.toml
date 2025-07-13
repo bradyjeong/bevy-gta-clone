@@ -12,6 +12,7 @@ description = "High-performance batch rendering and GPU culling for Amp"
 default = ["instancing"]
 instancing = []
 gpu = ["wgpu"]
+gpu_culling = ["wgpu"]
 
 [dependencies]
 # Core Bevy (use workspace version with all features)

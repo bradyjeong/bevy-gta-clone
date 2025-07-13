@@ -22,6 +22,10 @@ authors = ["Brady Jeong <bradyjeong@Mac.attlocal.net>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bradyjeong/bevy-gta-clone"
 
+[workspace.metadata.docs.rs]
+all-features = true
+rustc-args = ["--cfg", "doctest"]
+
 [workspace.dependencies]
 # ORACLE'S VERSION-CONSISTENCY STRATEGY: Single source of truth for all versions
 # ---------- Bevy core ----------
@@ -105,6 +109,7 @@ path = "examples/batch_processing_test.rs"
 default = []
 ron = ["gameplay_factory/ron"]
 rapier3d_030 = ["gameplay_factory/rapier3d_030", "amp_physics", "bevy_rapier3d"]
+gpu_culling = ["amp_render/gpu_culling"]
 
 [dependencies]
 gameplay_factory = { path = "crates/gameplay_factory" }
@@ -145,3 +150,7 @@ path = "examples/lod_system_demo.rs"
 [[example]]
 name = "simple_lod_demo"
 path = "examples/simple_lod_demo.rs"
+
+[[example]]
+name = "gpu_culling_feature_demo"
+path = "examples/gpu_culling_feature_demo.rs"

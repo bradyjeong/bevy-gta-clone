@@ -86,6 +86,23 @@ impl FactorySettings {
             Ok(expanded_str)
         }
     }
+
+    /// Merge two FactorySettings instances with field-level precedence
+    pub fn merge(self, other: Self) -> Self {
+        let defaults = Self::default();
+        Self {
+            prefab_path: if other.prefab_path != defaults.prefab_path {
+                other.prefab_path
+            } else {
+                self.prefab_path
+            },
+            hot_reload: if other.hot_reload != defaults.hot_reload {
+                other.hot_reload
+            } else {
+                self.hot_reload
+            },
+        }
+    }
 }
 
 /// Main game configuration structure.
@@ -105,6 +122,13 @@ impl GameConfig {
 
 impl Config for GameConfig {
     const FILE_NAME: &'static str = "game.ron";
+
+    fn merge(self, other: Self) -> Self {
+        // Field-level merge: merge nested structures properly
+        Self {
+            factory: self.factory.merge(other.factory),
+        }
+    }
 }
 
 /// Trait for configuration types that can be loaded from RON files.
@@ -207,7 +231,7 @@ impl ConfigLoader {
         let mut final_config = T::embedded_defaults();
 
         // Hierarchical merge: collect configs from all search paths
-        // Iterate in reverse order so higher priority paths (CWD) override lower priority (XDG)
+        // Iterate in reverse order so earlier paths (higher priority) are processed last and override lower priority
         for dir in self.search_paths.iter().rev() {
             let path = dir.join(T::default_path());
             if !path.exists() {
@@ -221,7 +245,7 @@ impl ConfigLoader {
                 .map_err(|e| Error::from(ConfigError::parse_error(e.to_string())))?;
 
             // Merge this config into the final result
-            // Since we iterate in reverse, earlier configs (lower priority) merge into later ones (higher priority)
+            // Since we iterate in reverse, higher priority configs are processed last and override lower priority
             final_config = final_config.merge(cfg);
         }
 
