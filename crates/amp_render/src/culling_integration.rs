@@ -7,31 +7,39 @@ use crate::culling::{CameraProjectionConfig, Cullable, CullingConfig};
 use crate::{ExtractedInstance, batching::BatchManager};
 use bevy::prelude::*;
 
-#[cfg(feature = "gpu")]
-use crate::culling::CullingConfig as GpuCullingConfig;
+#[cfg(feature = "gpu_culling")]
+use crate::gpu_culling::GpuCullingConfig;
 
 /// Integrated culling system that chooses between GPU and CPU
 ///
 /// Automatically falls back to CPU culling when GPU is unavailable
 /// or disabled, ensuring consistent behavior across all platforms.
 pub fn integrated_culling_system(
-    #[cfg(feature = "gpu")] gpu_config: Option<Res<GpuCullingConfig>>,
+    #[cfg(feature = "gpu_culling")] gpu_config: Option<Res<GpuCullingConfig>>,
     culling_config: Res<CullingConfig>,
     projection_config: Res<CameraProjectionConfig>,
     cameras: Query<(&Camera, &GlobalTransform, Option<&Projection>)>,
     instances: Query<(&mut ExtractedInstance, &Cullable)>,
     mut batch_manager: ResMut<BatchManager>,
+    #[cfg(feature = "gpu_culling")] gpu_resources: Option<
+        Res<crate::gpu_culling::GpuCullingResources>,
+    >,
 ) {
     // Clear previous batches
     batch_manager.clear();
 
-    #[cfg(feature = "gpu")]
+    #[cfg(feature = "gpu_culling")]
     {
-        // Use GPU culling if available and enabled
-        if let Some(gpu_resource) = gpu_config {
-            if gpu_resource.enable_frustum_culling {
-                // GPU culling will handle batch updating directly
-                return;
+        // Check if GPU culling pipeline plugin is available
+        if let Some(gpu_res) = gpu_resources {
+            if gpu_res.pipeline.is_some() {
+                // Use GPU culling if available and enabled
+                if let Some(gpu_resource) = gpu_config {
+                    if gpu_resource.enable_frustum_culling {
+                        // GPU culling will handle batch updating directly via render graph
+                        return;
+                    }
+                }
             }
         }
     }

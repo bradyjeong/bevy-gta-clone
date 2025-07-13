@@ -4,6 +4,8 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::process::Command;
 
+mod util;
+
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
@@ -37,6 +39,20 @@ enum Commands {
     },
     /// Validate configuration files
     ValidateConfigs,
+    /// Run benchmarks
+    Bench {
+        /// Benchmark name pattern (optional)
+        #[arg(short, long)]
+        name: Option<String>,
+        /// Enable GPU culling benchmarks
+        #[arg(long)]
+        gpu_culling: bool,
+        /// Output format (default: terminal)
+        #[arg(long, default_value = "terminal")]
+        output: String,
+    },
+    /// Clean up compiled shader artifacts (SPIR-V, cache dirs)
+    ShaderCache,
 }
 
 #[derive(clap::ValueEnum, Clone)]
@@ -60,6 +76,12 @@ fn main() -> Result<()> {
         Commands::Coverage => run_coverage(),
         Commands::BumpVersion { version_type } => bump_version(version_type),
         Commands::ValidateConfigs => validate_configs(),
+        Commands::Bench {
+            name,
+            gpu_culling,
+            output,
+        } => run_bench(name, gpu_culling, output),
+        Commands::ShaderCache => clean_shader_cache(),
     }
 }
 
@@ -81,39 +103,51 @@ fn run_ci() -> Result<()> {
 fn run_fmt() -> Result<()> {
     println!("Formatting code...");
 
-    let output = Command::new("cargo")
-        .args(["fmt", "--all", "--", "--check"])
-        .output()?;
+    let output = util::run_cargo_output(&["fmt", "--all", "--", "--check"])?;
 
     if !output.status.success() {
         println!("Running cargo fmt to fix formatting issues...");
-        Command::new("cargo").args(["fmt", "--all"]).status()?;
+        util::run_cargo(&["fmt", "--all"])?;
     }
 
-    println!("✅ Code formatted");
+    util::success("Code formatted");
     Ok(())
 }
 
 fn run_lint() -> Result<()> {
     println!("Running clippy...");
+    util::run_cargo(&[
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings",
+    ])?;
 
-    let status = Command::new("cargo")
-        .args([
-            "clippy",
-            "--workspace",
-            "--all-targets",
-            "--all-features",
-            "--",
-            "-D",
-            "warnings",
-        ])
-        .status()?;
+    // Run cargo udeps to check for unused dependencies (non-blocking)
+    println!("Checking for unused dependencies...");
+    let udeps_result =
+        util::run_cargo_output(&["udeps", "--workspace", "--all-targets", "--all-features"]);
 
-    if !status.success() {
-        anyhow::bail!("Clippy found issues");
+    match udeps_result {
+        Ok(output) => {
+            if !output.status.success() {
+                println!("⚠️  Unused dependencies found (non-blocking):");
+                println!("{}", String::from_utf8_lossy(&output.stdout));
+                println!("{}", String::from_utf8_lossy(&output.stderr));
+            } else {
+                println!("✅ No unused dependencies found");
+            }
+        }
+        Err(e) => {
+            println!("⚠️  cargo udeps not available or failed (non-blocking): {e}");
+            println!("   Install with: cargo install cargo-udeps");
+        }
     }
 
-    println!("✅ Linting passed");
+    util::success("Linting passed");
     Ok(())
 }
 
@@ -204,35 +238,20 @@ fn run_check() -> Result<()> {
 
 fn run_coverage() -> Result<()> {
     println!("Running coverage analysis...");
+    util::ensure_cargo_tool("llvm-cov")?;
 
-    // Install cargo-llvm-cov if not available
-    let install_status = Command::new("cargo")
-        .args(["install", "cargo-llvm-cov"])
-        .status()?;
+    util::run_cargo(&[
+        "llvm-cov",
+        "--workspace",
+        "--all-features",
+        "--lcov",
+        "--output-path",
+        "lcov.info",
+        "--fail-under-lines",
+        "70",
+    ])?;
 
-    if !install_status.success() {
-        println!("cargo-llvm-cov already installed or installation failed");
-    }
-
-    // Run coverage with 70% threshold
-    let status = Command::new("cargo")
-        .args([
-            "llvm-cov",
-            "--workspace",
-            "--all-features",
-            "--lcov",
-            "--output-path",
-            "lcov.info",
-            "--fail-under-lines",
-            "70",
-        ])
-        .status()?;
-
-    if !status.success() {
-        anyhow::bail!("Coverage below 70% threshold");
-    }
-
-    println!("✅ Coverage analysis passed (≥70%)");
+    util::success("Coverage analysis passed (≥70%)");
     Ok(())
 }
 
@@ -346,5 +365,62 @@ fn validate_typed_configs(validation_errors: &mut Vec<String>) -> Result<()> {
         ));
     }
 
+    Ok(())
+}
+
+fn run_bench(name: Option<String>, gpu_culling: bool, output: String) -> Result<()> {
+    println!("Running benchmarks...");
+
+    let mut args = vec!["bench"];
+
+    if gpu_culling {
+        args.extend(["--features", "gpu_culling"]);
+        util::info("GPU culling benchmarks enabled");
+    }
+
+    if let Some(ref pattern) = name {
+        args.push(pattern);
+        util::info(&format!("Filtering benchmarks: {pattern}"));
+    }
+
+    if output != "terminal" {
+        unsafe {
+            std::env::set_var("CARGO_PROFILE_BENCH_DEBUG", "true");
+        }
+        util::info(&format!("Output format: {output}"));
+    }
+
+    util::run_cargo(&args)?;
+
+    if gpu_culling {
+        util::info("GPU vs CPU culling benchmarks completed - should be ≥2x faster than CPU");
+    }
+
+    util::info("Results saved to: target/criterion/");
+    util::success("Benchmark execution completed successfully!");
+    Ok(())
+}
+
+fn clean_shader_cache() -> Result<()> {
+    println!("Cleaning shader cache and SPIR-V artifacts...");
+
+    let (shader_dirs, spv_files) = util::find_gpu_artifacts()?;
+
+    util::info(&format!("Found {} shader directories", shader_dirs.len()));
+    util::info(&format!("Found {} SPIR-V files", spv_files.len()));
+
+    let dirs_removed = util::remove_dirs(&shader_dirs)?;
+    let files_removed = util::remove_files(&spv_files)?;
+
+    // Also clean common target/shader_cache if it exists
+    let shader_cache_path = std::path::PathBuf::from("target/shader_cache");
+    if shader_cache_path.exists() {
+        std::fs::remove_dir_all(&shader_cache_path)?;
+        util::info("Removed target/shader_cache directory");
+    }
+
+    util::success(&format!(
+        "Shader cache cleanup: {dirs_removed} directories, {files_removed} files removed"
+    ));
     Ok(())
 }

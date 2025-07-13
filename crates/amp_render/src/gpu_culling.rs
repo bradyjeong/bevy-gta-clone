@@ -9,12 +9,24 @@
 pub mod compute;
 
 #[cfg(feature = "gpu_culling")]
+pub mod render_graph_minimal;
+
+#[cfg(feature = "gpu_culling")]
+mod integration_test_simple;
+
+#[cfg(feature = "gpu_culling")]
 pub use compute::*;
+
+#[cfg(feature = "gpu_culling")]
+pub use render_graph_minimal as render_graph;
+
+#[cfg(feature = "gpu_culling")]
+pub use render_graph_minimal::*;
 
 use bevy::prelude::*;
 
 /// GPU culling configuration and parameters
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Resource)]
 pub struct GpuCullingConfig {
     /// Maximum instances per compute shader dispatch
     pub max_instances_per_dispatch: u32,
@@ -22,6 +34,8 @@ pub struct GpuCullingConfig {
     pub workgroup_size: u32,
     /// Enable debug output from GPU culling
     pub debug_output: bool,
+    /// Enable frustum culling
+    pub enable_frustum_culling: bool,
 }
 
 impl Default for GpuCullingConfig {
@@ -30,6 +44,7 @@ impl Default for GpuCullingConfig {
             max_instances_per_dispatch: 100_000,
             workgroup_size: 64,
             debug_output: false,
+            enable_frustum_culling: true,
         }
     }
 }
@@ -88,8 +103,8 @@ impl Plugin for GpuCullingPlugin {
 
         #[cfg(feature = "gpu_culling")]
         {
+            app.init_resource::<GpuCullingConfig>();
             app.add_systems(Startup, compute::setup_gpu_culling);
-
             app.add_systems(PostUpdate, compute::run_gpu_culling);
         }
 
@@ -110,6 +125,11 @@ pub mod prelude {
     #[cfg(feature = "gpu_culling")]
     pub use crate::gpu_culling::compute::{
         GpuCameraData, GpuCullingParams, GpuCullingPipeline, GpuCullingResources, GpuInstanceData,
+    };
+
+    #[cfg(feature = "gpu_culling")]
+    pub use crate::gpu_culling::render_graph_minimal::{
+        GpuCullNode, GpuCullingLabel, GpuCullingPipelinePlugin, is_gpu_culling_pipeline_available,
     };
 }
 

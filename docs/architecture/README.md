@@ -11,9 +11,7 @@ amp_game/
 ├── crates/
 │   ├── amp_core/           # Core error handling and utilities
 │   ├── amp_math/           # Spatial mathematics and Morton encoding
-│   ├── amp_spatial/        # Hierarchical spatial partitioning
-│   ├── amp_gpu/            # GPU abstraction over wgpu
-│   ├── amp_world/          # ECS world management (Future)
+│   ├── amp_engine/         # Bevy-integrated engine systems
 │   ├── amp_physics/        # Physics integration (Future)
 │   ├── amp_ai/             # AI systems (Future)
 │   └── amp_render/         # Rendering pipeline (Future)
@@ -29,16 +27,14 @@ amp_core
   ↑
 amp_math
   ↑
-amp_spatial
-  ↑
-amp_gpu ← amp_world ← amp_physics ← amp_ai ← amp_render
+amp_engine ← amp_physics ← amp_ai ← amp_render
 ```
 
 ## Key Principles
 
 ### 1. Domain Boundaries
-- **Engine Layer**: Pure Rust, no Bevy dependencies (amp_core, amp_math, amp_spatial)
-- **Adapter Layer**: Thin wrappers around Bevy (amp_world, amp_gpu)
+- **Engine Layer**: Pure Rust, no Bevy dependencies (amp_core, amp_math)
+- **Adapter Layer**: Bevy-integrated engine systems (amp_engine)
 - **Game Layer**: High-level game systems (amp_physics, amp_ai, amp_render)
 
 ### 2. Performance Focus
@@ -55,15 +51,11 @@ amp_gpu ← amp_world ← amp_physics ← amp_ai ← amp_render
 
 ## Technical Systems
 
-### Spatial Systems (amp_spatial)
-- **RegionId**: Morton-encoded spatial identifiers
-- **Hierarchical Clipmap**: Multi-level detail management
-- **Streaming Provider**: Async region loading interface
-
-### GPU Systems (amp_gpu)
-- **Context Management**: wgpu device and queue abstraction
-- **Surface Management**: Swapchain and render pass handling
-- **Shader Pipeline**: Future compute shader support
+### Engine Systems (amp_engine)
+- **Bevy Integration**: Plugin-based architecture
+- **Spatial Systems**: Morton-encoded spatial identifiers and hierarchical clipmap
+- **GPU Systems**: wgpu device and context management
+- **World Management**: ECS world abstraction
 
 ### Mathematics (amp_math)
 - **Morton Encoding**: 3D spatial indexing
@@ -118,11 +110,8 @@ Core error handling and shared utilities used across all crates.
 ### amp_math
 High-performance spatial mathematics with SIMD support and Morton encoding for efficient spatial indexing.
 
-### amp_spatial
-Hierarchical spatial partitioning system with async streaming capabilities for large open worlds.
-
-### amp_gpu
-Low-level GPU abstraction providing a clean interface over wgpu with support for modern rendering techniques.
+### amp_engine
+Bevy-integrated engine systems providing spatial partitioning, GPU abstraction, and world management.
 
 ### config_core
 Configuration loading and management system with hierarchical file search and RON deserialization.

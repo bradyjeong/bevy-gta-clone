@@ -35,3 +35,12 @@ amp_math = { path = "../amp_math" }
 
 [dev-dependencies]
 bevy = { workspace = true, features = ["dynamic_linking"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+pollster = { workspace = true }
+criterion = { workspace = true, features = ["html_reports"] }
+
+[[bench]]
+name = "gpu_vs_cpu_culling"
+harness = false
+required-features = ["gpu_culling"]

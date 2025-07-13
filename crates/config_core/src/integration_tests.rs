@@ -140,6 +140,7 @@ fn test_vehicle_config_full_workflow() {
 }
 
 #[test]
+#[serial]
 fn test_config_merge_hierarchy() {
     let temp_dir1 = TempDir::new().unwrap();
     let temp_dir2 = TempDir::new().unwrap();

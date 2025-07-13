@@ -3,6 +3,9 @@ pub mod spatial;
 pub mod world;
 
 #[cfg(feature = "bevy16")]
+pub mod plugins;
+
+#[cfg(feature = "bevy16")]
 pub mod gpu;
 
 #[cfg(feature = "bevy16")]

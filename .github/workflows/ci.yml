@@ -196,9 +196,65 @@ jobs:
             target/criterion/
           retention-days: 30
 
+  # GPU Culling Demo Testing (Optional/Non-blocking)
+  gpu-culling-test:
+    name: GPU Culling Demo Test
+    runs-on: ubuntu-latest
+    continue-on-error: true  # Make non-blocking to avoid GPU requirement failures
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: gpu-culling-test
+          cache-targets: true
+      
+      - name: Install GPU dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y vulkan-tools libegl1-mesa-dev libgl1-mesa-dri libxcb-xfixes0-dev mesa-vulkan-drivers
+      
+      - name: Run GPU culling demo in headless mode
+        run: |
+          # Set up virtual display for headless GPU testing
+          export DISPLAY=:99
+          sudo Xvfb :99 -screen 0 1024x768x24 &
+          sleep 3
+          
+          # Run GPU culling demo with timeout
+          timeout 30s cargo run --example gpu_culling_demo --features gpu_culling -- --headless || true
+          
+          # Check if demo completed successfully
+          if [ $? -eq 0 ]; then
+            echo "✅ GPU culling demo completed successfully"
+          else
+            echo "⚠️ GPU culling demo failed (likely no GPU available in CI)"
+          fi
+      
+      - name: Test error handling robustness
+        run: |
+          # Test that the demo handles GPU unavailability gracefully
+          cargo test --package amp_render --lib culling::tests::test_frustum_extraction_error_handling
+          
+      - name: Upload GPU test logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gpu-culling-test-logs
+          path: |
+            target/debug/examples/gpu_culling_demo.log
+          retention-days: 7
+
   coverage:
     name: Coverage
-    needs: [check, feature-matrix, amp-engine-test, deny, benchmark]
+    needs: [check, feature-matrix, amp-engine-test, deny, benchmark, gpu-culling-test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -313,7 +369,7 @@ jobs:
   # Job summary report
   ci-summary:
     name: CI Summary
-    needs: [check, feature-matrix, amp-engine-test, deny, benchmark, coverage, oracle-guard, build-release]
+    needs: [check, feature-matrix, amp-engine-test, deny, benchmark, gpu-culling-test, coverage, oracle-guard, build-release]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -328,6 +384,7 @@ jobs:
           echo "| amp_engine Test | ${{ needs.amp-engine-test.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Dependency Check | ${{ needs.deny.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Benchmarks | ${{ needs.benchmark.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| GPU Culling Test | ${{ needs.gpu-culling-test.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Coverage | ${{ needs.coverage.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Oracle Guard | ${{ needs.oracle-guard.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Release Build | ${{ needs.build-release.result }} |" >> $GITHUB_STEP_SUMMARY

@@ -198,7 +198,11 @@ impl Plugin for BatchingPlugin {
         }
 
         #[cfg(feature = "gpu_culling")]
-        app.add_plugins(gpu_culling::GpuCullingPlugin);
+        app.add_plugins((
+            gpu_culling::GpuCullingPlugin,
+            culling::GpuCullingResourcePlugin,
+            gpu_culling::GpuCullingPipelinePlugin,
+        ));
     }
 }
 

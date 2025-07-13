@@ -24,9 +24,7 @@ crates/config_core/ @bradyjeong
 crates/gameplay_factory/ @bradyjeong
 
 # Deprecated crates (Phase 5A exclusion)
-crates/amp_spatial/ @bradyjeong
-crates/amp_gpu/ @bradyjeong
-crates/amp_world/ @bradyjeong
+
 
 # Build and CI
 Cargo.toml @bradyjeong

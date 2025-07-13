@@ -30,10 +30,11 @@ What becomes easier or more difficult to do because of this change?
 - [ADR-0007: Strategic Shift to Bevy 0.16.1 Meta-Crate](0007-strategic-shift-bevy-meta-crate.md) - ✅ **COMPLETED**
 - [ADR-0008: Oracle-Guided AAA Feature Restoration Strategy](0008-oracle-guided-aaa-feature-restoration.md) - ✅ **ACCEPTED**
 - [ADR-0009: GPU Culling Pipeline](0009-gpu-culling-pipeline.md) - ✅ **ACCEPTED**
+- [ADR-0010: AAAPlugin Architecture Design](adr-0010-aaa-plugin-architecture.md) - ✅ **ACCEPTED**
 
 **Current Architecture**: ADR-0007 defines the strategic 8-crate Bevy 0.16.1 architecture  
 **Current Phase**: ADR-0008 AAA Feature Restoration - Sprint 7 (Professional Integration)  
-**Current Implementation**: ADR-0009 GPU Culling Pipeline - Phase 2 compute shader implementation
+**Current Implementation**: ADR-0010 AAAPlugin Architecture - Professional plugin system implementation
 
 ## Creating New ADRs
 

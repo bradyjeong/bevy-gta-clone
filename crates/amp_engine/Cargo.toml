@@ -9,6 +9,10 @@ repository.workspace = true
 [features]
 default = []
 bevy16 = ["bevy", "wgpu", "winit", "pollster", "thiserror", "anyhow", "ron", "serde"]
+config = []
+physics = []
+audio = []
+render = []
 
 [dependencies]
 bevy = { workspace = true, optional = true }

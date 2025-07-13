@@ -5,6 +5,9 @@ pub use crate::spatial::*;
 pub use crate::world::WorldManager;
 
 #[cfg(feature = "bevy16")]
+pub use crate::plugins::{AAAPlugin, AAAPlugins, PluginStage};
+
+#[cfg(feature = "bevy16")]
 pub use crate::assets::*;
 
 #[cfg(feature = "bevy16")]

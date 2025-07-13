@@ -30,7 +30,7 @@ rustc-args = ["--cfg", "doctest"]
 # ORACLE'S VERSION-CONSISTENCY STRATEGY: Single source of truth for all versions
 # ---------- Bevy core ----------
 bevy = "=0.16.1"                          # Full engine, patch-locked
-bevy_ecs = "=0.16.1"                      # ECS crate (for deprecated amp_world)
+
 bevy_rapier3d = { version = "=0.30.0", default-features = false, features = ["dim3", "enhanced-determinism", "debug-render"] }
 # ---------- Audio ----------
 bevy_kira_audio = "=0.23.0"               # Audio integration for Bevy

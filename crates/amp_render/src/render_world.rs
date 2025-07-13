@@ -20,7 +20,7 @@ use crate::{BatchKey, ExtractedInstance};
 ///
 /// CRITICAL: Prevents the memory leak where smaller buffers were discarded
 /// when allocating larger ones, causing GPU OOM in long sessions.
-#[derive(Debug)]
+#[derive(Debug, Resource)]
 pub struct TransientBufferPool {
     /// Buffers organized by size buckets for efficient reuse
     buckets: HashMap<u64, Vec<Buffer>>,
@@ -66,6 +66,50 @@ impl TransientBufferPool {
             label: Some("transient_instance_buffer"),
             size: bucket_size,
             usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
+
+        self.total_allocated_bytes += bucket_size;
+        self.peak_allocated_bytes = self.peak_allocated_bytes.max(self.total_allocated_bytes);
+
+        buffer
+    }
+
+    /// Allocate buffer for GPU culling results
+    ///
+    /// This method allocates a buffer for storing GPU culling visibility results.
+    /// Each instance requires 4 bytes (u32) for visibility flags, packed efficiently
+    /// for compute shader readback.
+    ///
+    /// Double-buffering optimization will be implemented in Sprint-8 to eliminate
+    /// GPU→CPU sync stalls by maintaining two result buffers and swapping between frames.
+    ///
+    /// # Arguments
+    /// * `capacity` - Number of instances to allocate visibility storage for
+    ///
+    /// # Returns
+    /// Buffer suitable for GPU culling compute shaders with STORAGE | COPY_DST | COPY_SRC usage
+    #[cfg(feature = "gpu_culling")]
+    pub fn alloc_cull_result(&mut self, capacity: usize, render_device: &RenderDevice) -> Buffer {
+        self.allocations_this_frame += 1;
+
+        // Each instance requires 4 bytes for visibility flags (u32)
+        let buffer_size = (capacity * std::mem::size_of::<u32>()) as u64;
+        let bucket_size = buffer_size.next_power_of_two();
+
+        // Check if we can reuse an existing buffer
+        if let Some(buffers) = self.buckets.get_mut(&bucket_size) {
+            if let Some(buffer) = buffers.pop() {
+                self.reuses_this_frame += 1;
+                return buffer;
+            }
+        }
+
+        // Create new GPU culling result buffer
+        let buffer = render_device.create_buffer(&BufferDescriptor {
+            label: Some("gpu_culling_result_buffer"),
+            size: bucket_size,
+            usage: BufferUsages::STORAGE | BufferUsages::COPY_DST | BufferUsages::COPY_SRC,
             mapped_at_creation: false,
         });
 
@@ -742,5 +786,83 @@ mod tests {
             extracted_count, 1,
             "Only the visible entity should be extracted"
         );
+    }
+
+    #[test]
+    #[cfg(feature = "gpu_culling")]
+    fn test_transient_buffer_pool_gpu_culling() {
+        use wgpu::*;
+
+        // Create a mock render device for testing
+        let instance = wgpu::Instance::new(&InstanceDescriptor {
+            backends: wgpu::Backends::PRIMARY,
+            ..Default::default()
+        });
+
+        let adapter = pollster::block_on(instance.request_adapter(&RequestAdapterOptions {
+            power_preference: PowerPreference::default(),
+            compatible_surface: None,
+            force_fallback_adapter: false,
+        }));
+
+        let adapter = if let Some(adapter) = adapter {
+            adapter
+        } else {
+            // Skip test if no GPU adapter available
+            return;
+        };
+
+        let (device, _queue) = pollster::block_on(adapter.request_device(
+            &DeviceDescriptor {
+                label: None,
+                required_features: Features::empty(),
+                required_limits: Limits::downlevel_webgl2_defaults(),
+                memory_hints: MemoryHints::default(),
+            },
+            None,
+        ))
+        .unwrap();
+
+        let render_device = RenderDevice::from(device);
+        let mut pool = TransientBufferPool::default();
+
+        // Test GPU culling buffer allocation
+        let capacity = 1000;
+        let buffer = pool.alloc_cull_result(capacity, &render_device);
+
+        // Verify buffer properties (buffer size is rounded up to next power of 2)
+        let expected_size = (capacity * std::mem::size_of::<u32>()) as u64;
+        let bucket_size = expected_size.next_power_of_two();
+        assert_eq!(buffer.size(), bucket_size);
+        assert!(buffer.usage().contains(BufferUsages::STORAGE));
+        assert!(buffer.usage().contains(BufferUsages::COPY_DST));
+        assert!(buffer.usage().contains(BufferUsages::COPY_SRC));
+
+        // Test buffer reuse
+        pool.return_buffer(buffer);
+        let reused_buffer = pool.alloc_cull_result(capacity, &render_device);
+        assert_eq!(reused_buffer.size(), bucket_size);
+
+        // Verify statistics
+        let stats = pool.get_stats();
+        assert_eq!(stats.allocations_this_frame, 2);
+        assert_eq!(stats.reuses_this_frame, 1);
+        assert_eq!(stats.reuse_ratio, 0.5);
+    }
+
+    #[test]
+    #[cfg(feature = "gpu_culling")]
+    fn test_gpu_culling_buffer_size_calculation() {
+        // Test that buffer size calculation is correct for various capacities
+        let test_capacities = [1, 100, 1000, 10000, 100000];
+
+        for capacity in test_capacities {
+            let expected_size = (capacity * std::mem::size_of::<u32>()) as u64;
+            let bucket_size = expected_size.next_power_of_two();
+
+            // Verify our calculation matches what the pool would use
+            assert!(bucket_size >= expected_size);
+            assert!(bucket_size.is_power_of_two());
+        }
     }
 }

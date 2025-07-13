@@ -36,6 +36,10 @@ path = "city_demo_baseline.rs"
 name = "buffer_pool_demo"
 path = "buffer_pool_demo.rs"
 
+[[bin]]
+name = "aaa_plugin_example"
+path = "aaa_plugin_example.rs"
+
 [dependencies]
 amp_core = { path = "../crates/amp_core" }
 amp_engine = { path = "../crates/amp_engine", features = ["bevy16"] }

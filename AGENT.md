@@ -82,22 +82,11 @@
 - Transform utilities with builder patterns
 - 40 unit tests with comprehensive coverage
 
-### amp_spatial  
-- RegionId with Morton-encoded spatial identifiers
-- Hierarchical clipmap for multi-level detail management
-- Async streaming provider interface
-- 22 unit tests covering all functionality
-
-### amp_gpu
-- wgpu context and surface management
-- GPU abstraction with error handling
-- Purple screen rendering example
-- 3 unit tests for core functionality
-
-### amp_world
-- Basic ECS world management wrapper
-- Future integration point for Bevy systems
-- 2 unit tests for world creation
+### amp_engine
+- Bevy-integrated engine systems
+- Spatial partitioning with Morton encoding
+- GPU abstraction and world management
+- Plugin-based architecture ready for Sprint 7
 
 ## Current Status
 ✅ **SPRINT 7 ACTIVE** - Professional Integration & GPU Pipeline Activation
@@ -284,7 +273,7 @@ These files must be kept current and reviewed during every strategic change:
 
 ### Dead Weight Prevention
 **Red Flags for Cleanup:**
-- Documentation referencing removed crates (amp_spatial, amp_gpu, amp_world)
+- Documentation referencing removed crates (deprecated crates removed)
 - Cargo.toml dependencies not used by any crate
 - Examples that don't compile or run
 - CI workflows testing non-existent targets
