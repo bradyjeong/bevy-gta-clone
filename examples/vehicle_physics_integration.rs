@@ -6,6 +6,7 @@
 //! - Real-time performance monitoring
 //! - Interactive vehicle controls
 
+use amp_engine::prelude::*;
 use amp_gameplay::prelude::*;
 use amp_gameplay::vehicle::components::{Engine, Steering, Suspension};
 use bevy::{
@@ -21,7 +22,7 @@ fn main() {
         LogDiagnosticsPlugin::default(),
         FrameTimeDiagnosticsPlugin::default(),
     ))
-    .add_plugins(GameplayPlugins);
+    .add_plugins(AAAPlugins::default());
 
     #[cfg(feature = "rapier3d_030")]
     {

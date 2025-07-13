@@ -121,17 +121,15 @@ fn setup_demo(mut commands: Commands) {
 fn main() {
     let mut app = App::new();
     
-    app.add_plugins((
-        DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "Buffer Pool Memory Leak Prevention Demo".to_string(),
-                resolution: (1024.0, 768.0).into(),
-                ..default()
-            }),
+    app.add_plugins(DefaultPlugins.set(WindowPlugin {
+        primary_window: Some(Window {
+            title: "Buffer Pool Memory Leak Prevention Demo".to_string(),
+            resolution: (1024.0, 768.0).into(),
             ..default()
         }),
-        RenderWorldPlugin,
-    ));
+        ..default()
+    }))
+    .add_plugins(RenderWorldPlugin);
     
     // Add demo systems
     app.add_systems(Startup, setup_demo);

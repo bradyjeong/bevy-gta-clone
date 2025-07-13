@@ -1,0 +1,231 @@
+name: Performance Baseline
+
+on:
+  schedule:
+    # Run nightly at 2 AM UTC to avoid peak usage times
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    # Allow manual triggering for testing/debugging
+    inputs:
+      frames:
+        description: 'Number of frames to run (default: 1000)'
+        required: false
+        default: '1000'
+        type: string
+      gpu_culling:
+        description: 'Enable GPU culling features'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-Dwarnings"
+  RUST_BACKTRACE: 1
+  # Headless rendering configuration
+  VK_ICD_FILENAMES: /usr/share/vulkan/icd.d/lvp_icd.x86_64.json
+  MESA_LOADER_DRIVER_OVERRIDE: llvmpipe
+
+jobs:
+  perf-baseline:
+    name: Performance Baseline Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: perf-baseline
+          cache-targets: true
+          cache-all-crates: true
+      
+      - name: Install GPU and audio dependencies for headless testing
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            vulkan-tools \
+            libegl1-mesa-dev \
+            libgl1-mesa-dri \
+            libxcb-xfixes0-dev \
+            mesa-vulkan-drivers \
+            libasound2-dev \
+            libudev-dev \
+            xvfb \
+            pulseaudio
+      
+      - name: Setup virtual display and audio
+        run: |
+          # Start virtual framebuffer for headless rendering
+          export DISPLAY=:99
+          sudo Xvfb :99 -screen 0 1920x1080x24 &
+          sleep 3
+          
+          # Start pulseaudio for headless audio
+          pulseaudio --start --exit-idle-time=-1
+          
+          # Verify display setup
+          xdpyinfo -display :99 | grep dimensions || echo "Display setup may have issues"
+      
+      - name: Build with release optimizations and GPU features
+        run: |
+          # Build with GPU culling and all performance features enabled
+          if [ "${{ github.event.inputs.gpu_culling }}" != "false" ]; then
+            echo "Building with GPU culling features enabled"
+            cargo build --release --all-features
+          else
+            echo "Building without GPU culling features"
+            cargo build --release --features bevy16
+          fi
+      
+      - name: Run performance baseline test
+        id: perf_test
+        env:
+          DISPLAY: :99
+          FRAMES: ${{ github.event.inputs.frames || '1000' }}
+        run: |
+          echo "Starting performance baseline test with $FRAMES frames..."
+          
+          # Ensure xtask is built
+          cargo build --release -p xtask
+          
+          # Run performance test with JSON output
+          if [ "${{ github.event.inputs.gpu_culling }}" != "false" ]; then
+            echo "Running with GPU culling enabled"
+            timeout 600s cargo xtask perf --gpu-culling --frames $FRAMES --format json > perf_results.json
+          else
+            echo "Running without GPU culling"
+            timeout 600s cargo xtask perf --frames $FRAMES --format json > perf_results.json
+          fi
+          
+          # Verify JSON output was created
+          if [ ! -f "perf_results.json" ]; then
+            echo "❌ Performance test failed to generate JSON output"
+            exit 1
+          fi
+          
+          echo "✅ Performance test completed successfully"
+          cat perf_results.json
+      
+      - name: Parse performance results and check gates
+        id: check_gates
+        run: |
+          # Extract key metrics from JSON output using jq
+          if ! command -v jq &> /dev/null; then
+            sudo apt-get install -y jq
+          fi
+          
+          # Parse frame time statistics
+          FRAME_TIME_P95=$(jq -r '.frame_times.p95_ms // "null"' perf_results.json)
+          FRAME_TIME_P99=$(jq -r '.frame_times.p99_ms // "null"' perf_results.json)
+          FRAME_TIME_AVG=$(jq -r '.frame_times.avg_ms // "null"' perf_results.json)
+          FRAME_TIME_MAX=$(jq -r '.frame_times.max_ms // "null"' perf_results.json)
+          
+          # Parse render metrics if available
+          RENDER_TIME_AVG=$(jq -r '.render_metrics.avg_ms // "null"' perf_results.json)
+          GPU_CULLING_TIME=$(jq -r '.gpu_culling.avg_time_ms // "null"' perf_results.json)
+          
+          echo "## Performance Baseline Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value | Gate | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Frame Time P95 | ${FRAME_TIME_P95}ms | ≤16.6ms | $(if (( $(echo "$FRAME_TIME_P95 <= 16.6" | bc -l 2>/dev/null) )); then echo "✅ PASS"; else echo "❌ FAIL"; fi) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frame Time P99 | ${FRAME_TIME_P99}ms | ≤33.3ms | $(if (( $(echo "$FRAME_TIME_P99 <= 33.3" | bc -l 2>/dev/null) )); then echo "✅ PASS"; else echo "❌ FAIL"; fi) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frame Time Avg | ${FRAME_TIME_AVG}ms | ≤8.3ms | $(if (( $(echo "$FRAME_TIME_AVG <= 8.3" | bc -l 2>/dev/null) )); then echo "✅ PASS"; else echo "❌ FAIL"; fi) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frame Time Max | ${FRAME_TIME_MAX}ms | ≤50ms | $(if (( $(echo "$FRAME_TIME_MAX <= 50" | bc -l 2>/dev/null) )); then echo "✅ PASS"; else echo "❌ FAIL"; fi) |" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "$RENDER_TIME_AVG" != "null" ]; then
+            echo "| Render Time Avg | ${RENDER_TIME_AVG}ms | ≤4ms | $(if (( $(echo "$RENDER_TIME_AVG <= 4" | bc -l 2>/dev/null) )); then echo "✅ PASS"; else echo "❌ FAIL"; fi) |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "$GPU_CULLING_TIME" != "null" ]; then
+            echo "| GPU Culling | ${GPU_CULLING_TIME}ms | ≤0.25ms | $(if (( $(echo "$GPU_CULLING_TIME <= 0.25" | bc -l 2>/dev/null) )); then echo "✅ PASS"; else echo "❌ FAIL"; fi) |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check primary performance gate: P95 frame time ≤ 16.6ms (60 FPS)
+          if [ "$FRAME_TIME_P95" != "null" ] && (( $(echo "$FRAME_TIME_P95 > 16.6" | bc -l) )); then
+            echo "❌ PERFORMANCE GATE FAILURE: P95 frame time ${FRAME_TIME_P95}ms exceeds 16.6ms (60 FPS gate)" >> $GITHUB_STEP_SUMMARY
+            echo "PERF_GATE_FAILED=true" >> $GITHUB_ENV
+            exit 1
+          else
+            echo "✅ Performance gate passed: P95 frame time ${FRAME_TIME_P95}ms meets 60 FPS requirement" >> $GITHUB_STEP_SUMMARY
+            echo "PERF_GATE_FAILED=false" >> $GITHUB_ENV
+          fi
+          
+          # Set outputs for artifact naming
+          echo "frame_time_p95=${FRAME_TIME_P95}" >> $GITHUB_OUTPUT
+          echo "frame_time_avg=${FRAME_TIME_AVG}" >> $GITHUB_OUTPUT
+          echo "test_date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+      
+      - name: Upload performance results artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: perf-baseline-${{ steps.check_gates.outputs.test_date }}-p95-${{ steps.check_gates.outputs.frame_time_p95 }}ms
+          path: |
+            perf_results.json
+            target/release/examples/city_demo.log
+          retention-days: 90
+      
+      - name: Download previous baseline for comparison
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: perf-baseline-latest
+          path: previous_baseline/
+      
+      - name: Compare with previous baseline
+        if: hashFiles('previous_baseline/perf_results.json') != ''
+        run: |
+          if command -v jq &> /dev/null; then
+            # Compare current vs previous performance
+            CURRENT_P95=$(jq -r '.frame_times.p95_ms // "null"' perf_results.json)
+            PREVIOUS_P95=$(jq -r '.frame_times.p95_ms // "null"' previous_baseline/perf_results.json)
+            
+            if [ "$CURRENT_P95" != "null" ] && [ "$PREVIOUS_P95" != "null" ]; then
+              REGRESSION_PERCENT=$(echo "scale=2; ($CURRENT_P95 - $PREVIOUS_P95) / $PREVIOUS_P95 * 100" | bc -l)
+              
+              echo "## Baseline Comparison" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "| Metric | Previous | Current | Change |" >> $GITHUB_STEP_SUMMARY
+              echo "|--------|----------|---------|--------|" >> $GITHUB_STEP_SUMMARY
+              echo "| P95 Frame Time | ${PREVIOUS_P95}ms | ${CURRENT_P95}ms | ${REGRESSION_PERCENT}% |" >> $GITHUB_STEP_SUMMARY
+              
+              # Flag significant regressions (>5%)
+              if (( $(echo "$REGRESSION_PERCENT > 5" | bc -l) )); then
+                echo "⚠️ **Performance regression detected**: ${REGRESSION_PERCENT}% slower than previous baseline" >> $GITHUB_STEP_SUMMARY
+              elif (( $(echo "$REGRESSION_PERCENT < -5" | bc -l) )); then
+                echo "🚀 **Performance improvement**: ${REGRESSION_PERCENT}% faster than previous baseline" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "✅ Performance stable: within 5% of previous baseline" >> $GITHUB_STEP_SUMMARY
+              fi
+            fi
+          fi
+      
+      - name: Upload latest baseline for future comparisons
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: perf-baseline-latest
+          path: perf_results.json
+          retention-days: 90
+      
+      - name: Performance test summary
+        if: always()
+        run: |
+          if [ "${{ env.PERF_GATE_FAILED }}" = "true" ]; then
+            echo "❌ Performance baseline test FAILED - P95 frame time exceeds 60 FPS gate"
+            exit 1
+          else
+            echo "✅ Performance baseline test PASSED - All gates met"
+          fi

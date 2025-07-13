@@ -13,6 +13,7 @@
 //! - F1: Toggle debug info
 //! - ESC: Exit
 
+use amp_engine::prelude::*;
 use amp_gameplay::prelude::*;
 use amp_gameplay::vehicle::components::Engine;
 use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
@@ -27,7 +28,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(FrameTimeDiagnosticsPlugin::default())
-        .add_plugins(GameplayPlugins)
+        .add_plugins(AAAPlugins::default())
         .add_systems(Startup, setup_sprint3_demo)
         .add_systems(
             Update,

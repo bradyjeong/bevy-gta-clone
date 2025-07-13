@@ -8,6 +8,7 @@
 - Run Example: `cargo run --example city_demo`
 - Memory Leak Tests: `cargo test --workspace --all-features -- --ignored long_memory` (weekly CI only)
 - Dev Tools: `cargo xtask ci` (full CI pipeline), `./scripts/pre-commit-check.sh` (before commits)
+- Performance: `cargo xtask perf` (JSON output), `cargo xtask perf --gpu-culling` (with GPU features)
 
 ## Development Workflow
 - **During Development**: `cargo watch -c` (continuous compilation)
@@ -64,11 +65,18 @@
 - Safety: Validate physics values, clamp positions/dimensions, use collision groups
 - Comments: `//` style, 4-space indent, trailing commas
 
-## Performance Targets
+## Performance Targets & Gates
 - **Target**: 60+ FPS on desktop, stable frame times
+- **Performance Gates** (enforced in nightly CI):
+  - P95 frame time ≤ 16.6ms (60 FPS gate)
+  - P99 frame time ≤ 33.3ms 
+  - Average frame time ≤ 8.3ms
+  - GPU culling time ≤ 0.25ms (when enabled)
+  - Coverage threshold: ≥80% line coverage (aligned between xtask and CI)
 - **Culling**: Distance-based (buildings 300m, vehicles 150m, NPCs 100m)
 - **Memory**: Object pools, per-frame arenas, minimal allocations
 - **Profiling**: Built-in counters, frame analysis, bottleneck detection
+- **Performance Testing**: `cargo xtask perf --format json` outputs structured metrics for CI gates
 
 ## Technical Systems Implemented
 ### amp_core
@@ -89,8 +97,8 @@
 - Plugin-based architecture ready for Sprint 7
 
 ## Current Status
-✅ **SPRINT 7 ACTIVE** - Professional Integration & GPU Pipeline Activation
-- **Current Focus**: GPU Culling Phase 2 + AAAPlugin Architecture implementation
+✅ **SPRINT 8 COMPLETED** - Integration Hardening & Performance Baseline
+- **Completed**: AAAPlugins rollout, GPU Culling Phase 2, xtask perf JSON output, baseline CI
 - **Architecture**: 8-crate structure with Bevy 0.16.1 ecosystem alignment + rendering pipeline
 - **Active Crates**: amp_core, amp_math, amp_engine, amp_physics, amp_render, amp_gameplay, config_core, gameplay_factory
 - **Test Status**: 320+ tests passing across all crates + comprehensive integration tests
@@ -196,27 +204,27 @@
   - ✅ Memory: Zero leaks, flat memory profile verified
 - **Quality Gates**: All 291+ tests passing, memory leak tests, PhaseItem validation, Oracle gate criteria met
 
-✅ **SPRINT 7 ACTIVE** - Professional Integration & GPU Pipeline Activation
-- **Objective**: Implement GPU Culling Phase 2, AAAPlugin Architecture, and complete professional integration
-- **Status**: **IN PROGRESS** - Ready to proceed after Sprint 6 completion and Oracle approval
+✅ **SPRINT 8 COMPLETED** - Integration Hardening & Performance Baseline
+- **Objective**: Lock-in Professional Integration, GPU Culling Phase 2, Performance CI, AAAPlugins rollout
+- **Status**: **COMPLETED** - All P1 deliverables finished, Oracle conditionally approved, ready for Sprint 9
 - **Oracle Priority Items**:
-  - **P1**: GPU Culling Phase 2 (ADR-0009) - Implement compute shader + bind-group layout
-  - **P1**: AAAPlugin Architecture - Introduce amp_engine::AAAPlugins PluginGroup
-  - **P2**: xtask & Tooling - cargo xtask bench, demo, ci refactor
-  - **P2**: Service-Elimination / Legacy Cleanup - Remove last service container patterns
-  - **P2**: Documentation & Gates - Update README, AGENT.md, ADR index, STRATEGIC_RESTORATION_PLAN.md
-  - **P3**: Render-World Hardening - Replace placeholder entity-spawn queue with real PhaseItems
-  - **P3**: Config System Concurrency - Make ConfigLoader thread-safe (Send + Sync)
+  - ✅ **P1**: GPU Culling Phase 2 (ADR-0009) - Implement compute shader + bind-group layout
+  - ✅ **P1**: AAAPlugin Architecture - Introduce amp_engine::AAAPlugins PluginGroup
+  - ✅ **P2**: xtask & Tooling - cargo xtask bench, demo, ci refactor
+  - ✅ **P2**: Service-Elimination / Legacy Cleanup - Remove last service container patterns
+  - ✅ **P2**: Documentation & Gates - Update README, AGENT.md, ADR index, STRATEGIC_RESTORATION_PLAN.md
+  - ✅ **P3**: Render-World Hardening - Replace placeholder entity-spawn queue with real PhaseItems
+  - ✅ **P3**: Config System Concurrency - Make ConfigLoader thread-safe (Send + Sync)
 - **Key Deliverables**:
-  - **GPU Culling Infrastructure**: Compute shader (WGSL) + readback path integration
-  - **Plugin Architecture**: Top-level PluginGroup wiring all subsystems (physics, audio, render, config)
-  - **Tooling Enhancement**: xtask perf, bench, demo commands with new plugin group
-  - **Legacy Cleanup**: Remove deprecated service containers, delete dead crates references
-  - **Documentation**: Complete update of all project documentation to reflect plugin architecture
+  - ✅ **GPU Culling Infrastructure**: Compute shader (WGSL) + readback path integration
+  - ✅ **Plugin Architecture**: Top-level PluginGroup wiring all subsystems (physics, audio, render, config)
+  - ✅ **Tooling Enhancement**: xtask perf, bench, demo commands with new plugin group
+  - ✅ **Legacy Cleanup**: Remove deprecated service containers, delete dead crates references
+  - ✅ **Documentation**: Complete update of all project documentation to reflect plugin architecture
 - **Performance Targets**:
-  - GPU culling <0.25ms @ 400k synthetic cases
-  - Plugin group integration maintaining 60+ FPS
-  - xtask commands execution under CI performance gates
+  - ✅ GPU culling <0.25ms @ 400k synthetic cases
+  - ✅ Plugin group integration maintaining 60+ FPS
+  - ✅ xtask commands execution under CI performance gates
 - **Quality Gates**: All existing tests + new GPU culling CI job, comprehensive plugin integration tests
 
 ## Oracle Guidance

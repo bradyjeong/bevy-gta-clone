@@ -10,7 +10,8 @@ fn main() {
     println!("🚀 Testing RenderWorld Batch Processing System");
 
     App::new()
-        .add_plugins((DefaultPlugins, BatchingPlugin))
+        .add_plugins(DefaultPlugins)
+        .add_plugins(BatchingPlugin)
         .add_systems(Startup, setup_test_scene)
         .add_systems(Update, update_instances)
         .run();

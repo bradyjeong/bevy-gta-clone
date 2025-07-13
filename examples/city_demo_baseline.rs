@@ -37,6 +37,8 @@ use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 
+use amp_engine::prelude::*;
+
 use amp_gameplay::prelude::*;
 use gameplay_factory::{PrefabFactory, PrefabFactoryPlugin, PrefabFactoryResource, PrefabId};
 
@@ -77,7 +79,7 @@ fn main() {
             FrameTimeDiagnosticsPlugin::default(),
             LogDiagnosticsPlugin::default(),
         ))
-        .add_plugins(GameplayPlugins)
+        .add_plugins(AAAPlugins::default())
         .add_plugins(PrefabFactoryPlugin)
         .add_event::<VehicleEngineAudioEvent>()
         .add_systems(Startup, (setup_scene, setup_prefabs))

@@ -17,8 +17,13 @@ fn test_app() -> App {
     app.add_plugins(bevy::audio::AudioPlugin::default());
     app.add_plugins(bevy::input::InputPlugin);
 
-    // Gameplay plugins (includes physics)
-    app.add_plugins(GameplayPlugins);
+    // Add gameplay plugins manually since AAAPlugins are not fully implemented yet
+    app.add_plugins(amp_gameplay::audio::AudioPlugin);
+    app.add_plugins(amp_gameplay::vehicle::VehiclePlugin);
+
+    // Add physics plugin for Rapier integration
+    #[cfg(feature = "rapier3d_030")]
+    app.add_plugins(bevy_rapier3d::plugin::RapierPhysicsPlugin::<()>::default());
 
     // Fixed timestep for deterministic physics
     app.insert_resource(Time::<Fixed>::from_hz(60.0));
@@ -506,10 +511,14 @@ fn test_deterministic_physics() {
     let mut app1 = test_app();
     let mut app2 = test_app();
 
-    // Create identical vehicles in both apps
+    // Create identical vehicles in both apps with explicit engine state
     let vehicle1 = app1
         .world_mut()
         .spawn(VehicleBundle {
+            engine: Engine {
+                rpm: 800.0, // Explicitly set initial RPM
+                ..default()
+            },
             physics_input: PhysicsVehicleInput {
                 throttle: 0.6,
                 ..default()
@@ -521,6 +530,10 @@ fn test_deterministic_physics() {
     let vehicle2 = app2
         .world_mut()
         .spawn(VehicleBundle {
+            engine: Engine {
+                rpm: 800.0, // Explicitly set initial RPM
+                ..default()
+            },
             physics_input: PhysicsVehicleInput {
                 throttle: 0.6,
                 ..default()

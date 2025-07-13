@@ -33,6 +33,7 @@ tempfile = { workspace = true }
 criterion = { workspace = true, features = ["html_reports"] }
 bevy_rapier3d = { workspace = true }
 serde_json = { workspace = true }
+amp_engine = { path = "../amp_engine", version = "0.3.0-alpha" }
 
 [features]
 default = []

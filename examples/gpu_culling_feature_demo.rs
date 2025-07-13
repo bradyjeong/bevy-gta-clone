@@ -9,7 +9,7 @@
 //! cargo run --example gpu_culling_feature_demo  # CPU fallback
 //! ```
 
-use amp_gameplay::prelude::*;
+use amp_engine::prelude::*;
 use amp_render::prelude::*;
 use bevy::prelude::*;
 
@@ -17,8 +17,8 @@ fn main() {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
-        .add_plugins(BatchingPlugin)
-        .add_plugins(GameplayPlugins);
+        .add_plugins(AAAPlugins::default())
+        .add_plugins(BatchingPlugin);
 
     // Setup camera
     app.add_systems(Startup, setup_scene);

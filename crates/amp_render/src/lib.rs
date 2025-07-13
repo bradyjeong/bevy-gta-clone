@@ -14,6 +14,7 @@
 pub mod batching;
 pub mod culling;
 pub mod culling_integration;
+pub mod gpu_culling_integration;
 pub mod lod;
 pub mod render_world;
 
@@ -186,6 +187,7 @@ impl Plugin for BatchingPlugin {
             batching::BatchingSystemPlugin,
             culling::CullingSystemPlugin,
             culling_integration::CullingIntegrationPlugin,
+            gpu_culling_integration::GpuCullingIntegrationPlugin,
             lod::LodSystemPlugin,
             render_world::RenderWorldPlugin,
         ));
@@ -211,7 +213,7 @@ pub mod prelude {
     pub use crate::{
         ALPHA_FLAG, Batch, BatchKey, BatchingPlugin, ExtractedInstance, SHADOW_FLAG,
         batching::prelude::*, culling::prelude::*, culling_integration::prelude::*,
-        lod::prelude::*, render_world::prelude::*,
+        gpu_culling_integration::prelude::*, lod::prelude::*, render_world::prelude::*,
     };
 
     #[cfg(feature = "gpu")]

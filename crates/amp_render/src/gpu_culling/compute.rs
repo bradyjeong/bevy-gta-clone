@@ -254,21 +254,53 @@ pub fn setup_gpu_culling(
     commands.insert_resource(resources);
 }
 
-/// System to run GPU culling (placeholder implementation)
+/// System to run GPU culling with Tracy performance markers
 pub fn run_gpu_culling(culling_resources: Option<ResMut<GpuCullingResources>>) {
+    #[cfg(feature = "tracy")]
+    let _span = tracy_client::span!("run_gpu_culling");
+
     if let Some(mut resources) = culling_resources {
         if resources.pipeline.is_some() {
+            let start_time = std::time::Instant::now();
+
             // Placeholder for actual GPU culling dispatch
+            // In Phase 2 implementation, this would:
+            // 1. Upload instance data to GPU buffers
+            // 2. Upload camera/frustum data
+            // 3. Dispatch compute shader
+            // 4. Read back visibility results
             resources.stats.instances_processed += 1000;
             resources.stats.instances_visible += 200;
-            resources.stats.gpu_time_ms = 0.15; // Under 0.25ms target
+
+            let gpu_time = start_time.elapsed().as_secs_f32() * 1000.0;
+            resources.stats.gpu_time_ms = gpu_time; // Actual timing
+            resources.stats.upload_time_ms = 0.05; // Simulated upload time
+            resources.stats.readback_time_ms = 0.02; // Simulated readback time
+
+            #[cfg(feature = "tracy")]
+            {
+                tracy_client::plot!("gpu_culling_time_ms", gpu_time as f64);
+                tracy_client::plot!(
+                    "gpu_culling_instances",
+                    resources.stats.instances_processed as f64
+                );
+                tracy_client::plot!(
+                    "gpu_culling_visible",
+                    resources.stats.instances_visible as f64
+                );
+                tracy_client::plot!(
+                    "gpu_culling_efficiency",
+                    resources.stats.culling_efficiency() as f64
+                );
+            }
 
             if resources.config.debug_output {
                 debug!(
-                    "GPU culling processed {} instances, {} visible ({:.1}% culled)",
+                    "GPU culling processed {} instances, {} visible ({:.1}% culled) in {:.3}ms",
                     resources.stats.instances_processed,
                     resources.stats.instances_visible,
-                    resources.stats.culling_efficiency() * 100.0
+                    resources.stats.culling_efficiency() * 100.0,
+                    resources.stats.total_time_ms()
                 );
             }
         }

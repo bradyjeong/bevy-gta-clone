@@ -21,34 +21,32 @@ fn main() {
     // Configure plugins based on headless mode
     if headless {
         info!("Running in headless mode for GPU culling testing");
-        app.add_plugins((
-            DefaultPlugins.set(RenderPlugin {
-                render_creation: bevy::render::settings::RenderCreation::Automatic(
-                    bevy::render::settings::WgpuSettings {
-                        features: bevy::render::settings::WgpuFeatures::PUSH_CONSTANTS,
-                        backends: Some(bevy::render::settings::Backends::VULKAN),
-                        ..default()
-                    },
-                ),
-                ..default()
-            }),
-            #[cfg(not(target_arch = "wasm32"))]
-            BatchingPlugin,
-        ));
+        app.add_plugins(DefaultPlugins.set(RenderPlugin {
+            render_creation: bevy::render::settings::RenderCreation::Automatic(
+                bevy::render::settings::WgpuSettings {
+                    features: bevy::render::settings::WgpuFeatures::PUSH_CONSTANTS,
+                    backends: Some(bevy::render::settings::Backends::VULKAN),
+                    ..default()
+                },
+            ),
+            ..default()
+        }));
+
+        #[cfg(not(target_arch = "wasm32"))]
+        app.add_plugins(BatchingPlugin);
     } else {
-        app.add_plugins((
-            DefaultPlugins.set(RenderPlugin {
-                render_creation: bevy::render::settings::RenderCreation::Automatic(
-                    bevy::render::settings::WgpuSettings {
-                        features: bevy::render::settings::WgpuFeatures::PUSH_CONSTANTS,
-                        ..default()
-                    },
-                ),
-                ..default()
-            }),
-            #[cfg(not(target_arch = "wasm32"))]
-            BatchingPlugin,
-        ));
+        app.add_plugins(DefaultPlugins.set(RenderPlugin {
+            render_creation: bevy::render::settings::RenderCreation::Automatic(
+                bevy::render::settings::WgpuSettings {
+                    features: bevy::render::settings::WgpuFeatures::PUSH_CONSTANTS,
+                    ..default()
+                },
+            ),
+            ..default()
+        }));
+
+        #[cfg(not(target_arch = "wasm32"))]
+        app.add_plugins(BatchingPlugin);
     }
 
     app.add_systems(Startup, setup_scene)

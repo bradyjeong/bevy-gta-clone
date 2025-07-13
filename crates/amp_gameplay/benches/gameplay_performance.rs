@@ -1,5 +1,6 @@
 //! Performance benchmarks for gameplay systems
 
+use amp_engine::prelude::*;
 use amp_gameplay::prelude::*;
 use amp_gameplay::vehicle::components::Engine;
 use bevy::prelude::*;
@@ -13,7 +14,7 @@ fn create_benchmark_app() -> App {
         .add_plugins(AssetPlugin::default())
         .add_plugins(TransformPlugin)
         .add_plugins(bevy::input::InputPlugin)
-        .add_plugins(GameplayPlugins)
+        .add_plugins(AAAPlugins::default())
         .insert_resource(Time::<Fixed>::from_hz(60.0));
 
     app

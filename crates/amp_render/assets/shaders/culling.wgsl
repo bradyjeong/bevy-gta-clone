@@ -1,9 +1,8 @@
-// GPU Culling Compute Shader - Phase 2 Stub
-// Implementation: Sprint 7 Phase 2 - functional stub that returns early
-// Full implementation: Sprint 8 - actual frustum culling logic
+// GPU Culling Compute Shader - Phase 2 Implementation
+// Implementation: Sprint 8 - Full frustum culling with distance LOD
 //
-// This shader performs GPU-based frustum culling of instances.
-// Current implementation is a stub that outputs all instances as visible.
+// This shader performs GPU-based frustum culling of instances with proper
+// 6-plane frustum intersection testing and distance-based LOD selection.
 
 // Bind Group 0: Instance Data (read-only storage buffer)
 @group(0) @binding(0)
@@ -38,6 +37,36 @@ struct CullingParams {
     _padding: vec3<f32>,
 }
 
+// Test sphere against frustum plane
+fn test_sphere_plane(center: vec3<f32>, radius: f32, plane: vec4<f32>) -> bool {
+    let distance = dot(center, plane.xyz) + plane.w;
+    return distance >= -radius;
+}
+
+// Test sphere against all 6 frustum planes
+fn test_sphere_frustum(center: vec3<f32>, radius: f32, frustum: array<vec4<f32>, 6>) -> bool {
+    for (var i = 0u; i < 6u; i++) {
+        if (!test_sphere_plane(center, radius, frustum[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Calculate LOD level based on distance from camera
+fn calculate_lod_level(distance: f32) -> u32 {
+    // LOD thresholds: 0-50m = LOD 0, 50-150m = LOD 1, 150-400m = LOD 2, 400m+ = LOD 3
+    if (distance < 50.0) {
+        return 0u;
+    } else if (distance < 150.0) {
+        return 1u;
+    } else if (distance < 400.0) {
+        return 2u;
+    } else {
+        return 3u;
+    }
+}
+
 // Compute shader entry point
 // Workgroup size: 64 threads per group (optimal for most GPUs)
 @compute @workgroup_size(64, 1, 1)
@@ -49,13 +78,30 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
         return;
     }
     
-    // PHASE 2 STUB: Output all instances as visible
-    // In Sprint 8, this will be replaced with actual frustum culling:
-    // 1. Transform instance bounds to world space
-    // 2. Test against 6 frustum planes
-    // 3. Apply distance-based LOD selection
-    // 4. Write visibility bit and LOD level to output buffer
+    let instance = instance_data[instance_index];
     
-    // For now, mark all instances as visible (bit = 1)
-    visibility_output[instance_index] = 1u;
+    // Transform instance bounds center to world space
+    let world_center = (instance.transform_matrix * vec4<f32>(instance.bounds_center, 1.0)).xyz;
+    let world_radius = instance.bounds_radius; // Assume uniform scaling for simplicity
+    
+    // Calculate distance from camera
+    let distance = length(world_center - culling_params.camera_position);
+    
+    // Distance culling - reject instances beyond far plane
+    if (distance > culling_params.far_plane) {
+        visibility_output[instance_index] = 0u;
+        return;
+    }
+    
+    // Frustum culling - test world-space bounding sphere against frustum planes
+    let visible = test_sphere_frustum(world_center, world_radius, culling_params.frustum_planes);
+    
+    if (visible) {
+        // Calculate LOD level and pack with visibility
+        let lod_level = calculate_lod_level(distance);
+        // Pack visibility (bit 0) and LOD level (bits 1-2) into u32
+        visibility_output[instance_index] = 1u | (lod_level << 1u);
+    } else {
+        visibility_output[instance_index] = 0u;
+    }
 }
