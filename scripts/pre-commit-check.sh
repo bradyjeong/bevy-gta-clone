@@ -64,6 +64,20 @@ else
     exit 1
 fi
 
+# Step 4a: Doctests (skipped on macOS due to dynamic library issues)
+if [[ $(uname) == "Darwin" ]]; then
+    print_status "info" "Skipping doctests on macOS (known dynamic library issue)"
+    print_status "ok" "Doctests skipped (macOS limitation)"
+else
+    print_status "info" "Running doctests..."
+    if cargo test --doc --workspace --all-features; then
+        print_status "ok" "Doctests passed"
+    else
+        print_status "error" "Doctests failed"
+        exit 1
+    fi
+fi
+
 print_status "info" "Step 5/6: Checking documentation..."
 if RUSTFLAGS="-Dwarnings" cargo doc --workspace --no-deps --all-features; then
     print_status "ok" "Documentation build passed"
@@ -80,8 +94,9 @@ else
     exit 1
 fi
 
-# Note: Doctests are skipped due to macOS dynamic library issues
-# They can be run manually with: cargo test --doc
+# Note: Doctests are skipped on macOS due to dynamic library loading issues
+# This is a known limitation with complex dependency graphs including bevy_dylib
+# See: https://github.com/rust-lang/cargo/issues/11046
 
 print_status "ok" "All pre-commit checks passed! 🎉"
 echo ""

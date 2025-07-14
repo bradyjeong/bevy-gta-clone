@@ -55,6 +55,15 @@ jobs:
       - name: Run tests
         run: cargo test --workspace --all-features
       
+      - name: Run doctests
+        run: |
+          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            echo "Skipping doctests on macOS (known dynamic library issue)"
+            echo "See: https://github.com/rust-lang/cargo/issues/11046"
+          else
+            cargo test --doc --workspace --all-features
+          fi
+      
       - name: Run coverage tests (Oracle Phase 5A)
         run: cargo test --workspace --all-features --lib --test-threads=1
       
@@ -99,7 +108,13 @@ jobs:
         run: cargo test --workspace ${{ matrix.features }}
       
       - name: Test doctests with ${{ matrix.features }}
-        run: cargo test --workspace --doc ${{ matrix.features }}
+        run: |
+          if [[ $(uname) == "Darwin" ]]; then
+            echo "Skipping doctests on macOS (known dynamic library issue)"
+            echo "See: https://github.com/rust-lang/cargo/issues/11046"
+          else
+            cargo test --workspace --doc ${{ matrix.features }}
+          fi
       
       - name: Clippy with ${{ matrix.features }}
         run: cargo clippy --workspace --all-targets ${{ matrix.features }} -- -D warnings
