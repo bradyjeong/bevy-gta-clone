@@ -18,18 +18,18 @@ pub mod time;
 pub mod rapier;
 
 pub use benchmarks::{
-    BenchmarkConfig, BenchmarkResults, PhysicsBenchmarkPlugin, create_standard_benchmark,
-    create_stress_test_benchmark,
+    create_standard_benchmark, create_stress_test_benchmark, BenchmarkConfig, BenchmarkResults,
+    PhysicsBenchmarkPlugin,
 };
 pub use bundles::*;
 pub use components::*;
 pub use debug::{DebugConfig, PhysicsDebugPlugin, PhysicsPerformanceMetrics};
 pub use drivetrain::DrivetrainPlugin;
 pub use suspension::{
-    PhysicsUpdate, SuspensionPlugin, SuspensionRay, WheelState, vehicle_suspension_system,
+    vehicle_suspension_system, PhysicsUpdate, SuspensionPlugin, SuspensionRay, WheelState,
 };
 pub use systems::*;
-pub use time::{PhysicsConfig, PhysicsTime, apply_physics_config, update_physics_time};
+pub use time::{apply_physics_config, update_physics_time, PhysicsConfig, PhysicsTime};
 
 #[cfg(feature = "rapier3d_030")]
 pub use rapier::*;

@@ -5,9 +5,9 @@
 
 use bevy::prelude::*;
 use gameplay_factory::{
-    BatchSpawnRequest, ComponentMap, DslConfig, DslFactory, FactoryDslExt, PrefabId,
-    ValidationMode, clear_all_prefab_ids, create_prefab_from_component_map, parse_prefab_ron,
-    register_default_components, spawn_many,
+    clear_all_prefab_ids, create_prefab_from_component_map, parse_prefab_ron,
+    register_default_components, spawn_many, BatchSpawnRequest, ComponentMap, DslConfig,
+    DslFactory, FactoryDslExt, PrefabId, ValidationMode,
 };
 use std::collections::HashMap;
 use std::fs;
@@ -313,12 +313,10 @@ fn test_error_handling() {
     let invalid_ron = "invalid ron content";
     let result = parse_prefab_ron(invalid_ron, type_registry, &config);
     assert!(result.is_err());
-    assert!(
-        result
-            .unwrap_err()
-            .to_string()
-            .contains("Failed to parse RON")
-    );
+    assert!(result
+        .unwrap_err()
+        .to_string()
+        .contains("Failed to parse RON"));
 
     // Test empty batch spawn
     let mut world = World::new();

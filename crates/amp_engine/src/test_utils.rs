@@ -1,9 +1,9 @@
 //! Test utilities for amp_engine following Oracle's patterns
 
 use crate::assets::AmpScenePlugin;
-use bevy::MinimalPlugins;
 use bevy::app::App;
 use bevy::asset::AssetPlugin;
+use bevy::MinimalPlugins;
 
 /// Creates a configured App instance for testing with minimal plugins
 ///

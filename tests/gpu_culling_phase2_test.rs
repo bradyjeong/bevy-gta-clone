@@ -15,7 +15,7 @@ fn test_gpu_culling_integration_components() {
 
     assert!(results.is_visible(0)); // 1 = 001 -> visible, LOD 0
     assert!(!results.is_visible(1)); // 0 = 000 -> hidden
-    assert!(results.is_visible(2)); // 5 = 101 -> visible, LOD 2  
+    assert!(results.is_visible(2)); // 5 = 101 -> visible, LOD 2
     assert!(results.is_visible(3)); // 3 = 011 -> visible, LOD 1
 
     assert_eq!(results.get_lod_level(0), 0); // 1 >> 1 & 0x3 = 0

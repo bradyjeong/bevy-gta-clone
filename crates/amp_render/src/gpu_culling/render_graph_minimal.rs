@@ -4,9 +4,9 @@
 //! without the complex implementation details.
 
 use bevy::prelude::*;
-use bevy::render::RenderApp;
 use bevy::render::render_graph::{Node, NodeRunError, RenderGraphContext, RenderLabel};
 use bevy::render::renderer::RenderContext;
+use bevy::render::RenderApp;
 
 use super::{GpuCullingConfig, GpuCullingResources, GpuCullingStats};
 

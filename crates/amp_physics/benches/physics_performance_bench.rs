@@ -2,7 +2,7 @@
 
 use amp_physics::*;
 use bevy::prelude::*;
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 /// Benchmark physics system performance with 10 vehicles.
 fn benchmark_10_vehicles(c: &mut Criterion) {

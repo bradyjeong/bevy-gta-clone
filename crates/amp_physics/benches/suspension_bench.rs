@@ -5,7 +5,7 @@
 
 use amp_physics::{Suspension, SuspensionRay, WheelState};
 use bevy::prelude::*;
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 fn create_test_app() -> App {
     let mut app = App::new();

@@ -5,9 +5,9 @@ mod tests {
     use crate::assets::{
         AmpSceneComponent, AmpSceneLoader, AmpScenePlugin, AmpScenePrefab, RonScenePrefab,
     };
-    use bevy::MinimalPlugins;
     use bevy::app::App;
     use bevy::asset::{AssetLoader, AssetPlugin, AssetServer, Assets};
+    use bevy::MinimalPlugins;
     use std::fs;
     use tempfile::TempDir;
 

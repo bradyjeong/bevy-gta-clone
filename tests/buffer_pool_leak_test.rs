@@ -4,7 +4,7 @@
 //! preventing the critical production-blocking memory leaks.
 
 use amp_render::prelude::*;
-use amp_render::{ALPHA_FLAG, BatchKey, ExtractedInstance};
+use amp_render::{BatchKey, ExtractedInstance, ALPHA_FLAG};
 use bevy::prelude::*;
 use bevy::render::{ExtractSchedule, RenderApp};
 use bevy::window::{WindowCreated, WindowResized};

@@ -383,14 +383,14 @@ pub fn create_gpu_cull_bind_group_layouts(
 /// Re-exports for convenience
 pub mod prelude {
     pub use crate::culling::{
-        CameraProjectionConfig, Cullable, CullingConfig, CullingError, CullingSystemPlugin,
         distance_culling_system, extract_frustum_planes, extract_frustum_planes_safe,
-        frustum_culling_system,
+        frustum_culling_system, CameraProjectionConfig, Cullable, CullingConfig, CullingError,
+        CullingSystemPlugin,
     };
 
     #[cfg(feature = "gpu_culling")]
     pub use crate::culling::{
-        GpuCullBindGroupLayouts, GpuCullingResourcePlugin, create_gpu_cull_bind_group_layouts,
+        create_gpu_cull_bind_group_layouts, GpuCullBindGroupLayouts, GpuCullingResourcePlugin,
     };
 }
 

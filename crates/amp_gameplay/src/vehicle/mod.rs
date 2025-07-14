@@ -16,10 +16,10 @@ pub mod tests;
 
 /// Prelude for vehicle module
 pub mod prelude {
-    pub use crate::vehicle::VehiclePlugin;
     pub use crate::vehicle::bundles::*;
     pub use crate::vehicle::components::*;
     pub use crate::vehicle::resources::*;
+    pub use crate::vehicle::VehiclePlugin;
 }
 
 use bevy::prelude::*;

@@ -129,8 +129,8 @@ impl Plugin for GpuCullingPlugin {
 /// Re-exports for convenience
 pub mod prelude {
     pub use crate::gpu_culling::{
-        GpuCullingConfig, GpuCullingPlugin, GpuCullingStats, gpu_culling_status,
-        is_gpu_culling_available,
+        gpu_culling_status, is_gpu_culling_available, GpuCullingConfig, GpuCullingPlugin,
+        GpuCullingStats,
     };
 
     #[cfg(feature = "gpu_culling")]
@@ -140,7 +140,7 @@ pub mod prelude {
 
     #[cfg(feature = "gpu_culling")]
     pub use crate::gpu_culling::render_graph_minimal::{
-        GpuCullNode, GpuCullingLabel, GpuCullingPipelinePlugin, is_gpu_culling_pipeline_available,
+        is_gpu_culling_pipeline_available, GpuCullNode, GpuCullingLabel, GpuCullingPipelinePlugin,
     };
 }
 

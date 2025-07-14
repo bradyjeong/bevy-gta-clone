@@ -8,7 +8,7 @@ use crate::Config;
 use crate::Result;
 use amp_core::{ConfigError, Error};
 #[cfg(feature = "schemars")]
-use schemars::{JsonSchema, schema_for};
+use schemars::{schema_for, JsonSchema};
 
 #[cfg(feature = "schemars")]
 use serde_json::{self, Value};

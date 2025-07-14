@@ -5,8 +5,8 @@
 
 use bevy::prelude::*;
 use gameplay_factory::{
-    BatchSpawnRequest, DslConfig, DslFactory, DslFactoryPlugin, FactoryDslExt, ValidationMode,
-    parse_prefab_ron, spawn_many,
+    parse_prefab_ron, spawn_many, BatchSpawnRequest, DslConfig, DslFactory, DslFactoryPlugin,
+    FactoryDslExt, ValidationMode,
 };
 use std::collections::HashMap;
 

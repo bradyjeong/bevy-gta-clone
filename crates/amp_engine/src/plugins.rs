@@ -383,10 +383,9 @@ mod tests {
         app.add_plugins(AAAPlugins::default());
 
         // Verify app was created successfully
-        assert!(
-            app.world()
-                .contains_resource::<bevy::app::MainScheduleOrder>()
-        );
+        assert!(app
+            .world()
+            .contains_resource::<bevy::app::MainScheduleOrder>());
     }
 
     #[test]
@@ -452,9 +451,8 @@ mod tests {
         app.add_plugins(AAAPlugins::empty());
 
         // Should not panic with empty plugins
-        assert!(
-            app.world()
-                .contains_resource::<bevy::app::MainScheduleOrder>()
-        );
+        assert!(app
+            .world()
+            .contains_resource::<bevy::app::MainScheduleOrder>());
     }
 }

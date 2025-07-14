@@ -212,10 +212,10 @@ impl Plugin for BatchingPlugin {
 /// Re-exports for convenience
 pub mod prelude {
     pub use crate::{
-        ALPHA_FLAG, Batch, BatchKey, BatchingPlugin, ExtractedInstance, SHADOW_FLAG,
         batching::prelude::*, culling::prelude::*, culling_integration::prelude::*,
         gpu_culling_integration::prelude::*, lod::prelude::*, optimized_queries::cached_systems,
-        render_world::prelude::*,
+        render_world::prelude::*, Batch, BatchKey, BatchingPlugin, ExtractedInstance, ALPHA_FLAG,
+        SHADOW_FLAG,
     };
 
     #[cfg(feature = "gpu")]

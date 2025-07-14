@@ -4,7 +4,7 @@
 //! with the BatchManager infrastructure.
 
 use crate::culling::{CameraProjectionConfig, Cullable, CullingConfig};
-use crate::{ExtractedInstance, batching::BatchManager};
+use crate::{batching::BatchManager, ExtractedInstance};
 use bevy::prelude::*;
 
 #[cfg(feature = "gpu_culling")]
@@ -225,7 +225,7 @@ impl Plugin for CullingIntegrationPlugin {
 /// Re-exports for convenience
 pub mod prelude {
     pub use crate::culling_integration::{
-        CullingIntegrationPlugin, CullingMethod, CullingPerformance, cpu_culling_fallback,
-        culling_performance_monitor, integrated_culling_system,
+        cpu_culling_fallback, culling_performance_monitor, integrated_culling_system,
+        CullingIntegrationPlugin, CullingMethod, CullingPerformance,
     };
 }

@@ -13,7 +13,7 @@
 //! - **Hierarchical Search**: Searches current directory and XDG config paths
 
 use amp_core::{ConfigError, Error, Result};
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::path::PathBuf;
 
 // Bevy asset system integration (feature-gated)

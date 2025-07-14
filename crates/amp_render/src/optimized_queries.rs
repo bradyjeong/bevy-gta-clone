@@ -8,7 +8,7 @@
 use crate::batching::BatchManager;
 use crate::culling::{CameraProjectionConfig, CullingConfig};
 use crate::render_world::ExtractedInstances;
-use crate::{BatchKey, ExtractedInstance, culling::Cullable};
+use crate::{culling::Cullable, BatchKey, ExtractedInstance};
 use bevy::prelude::*;
 
 /// Sprint 9 optimization: Use optimized query patterns to reduce per-frame overhead

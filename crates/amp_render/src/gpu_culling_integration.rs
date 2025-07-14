@@ -5,9 +5,9 @@
 
 use bevy::prelude::*;
 use bevy::render::{
-    Render, RenderApp, RenderSet,
     render_resource::*,
     renderer::{RenderDevice, RenderQueue},
+    Render, RenderApp, RenderSet,
 };
 use std::collections::HashMap;
 
@@ -352,8 +352,8 @@ impl Plugin for GpuCullingIntegrationPlugin {
 /// Re-exports for convenience
 pub mod prelude {
     pub use super::{
-        GpuCulledBatch, GpuCullingIntegrationPlugin, GpuCullingResults, apply_gpu_culling_results,
-        queue_gpu_culled_batches,
+        apply_gpu_culling_results, queue_gpu_culled_batches, GpuCulledBatch,
+        GpuCullingIntegrationPlugin, GpuCullingResults,
     };
 
     #[cfg(feature = "gpu_culling")]

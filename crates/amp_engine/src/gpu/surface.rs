@@ -1,6 +1,6 @@
 //! Surface management and render pass abstraction
 
-use crate::gpu::{GpuContext, error::GpuError};
+use crate::gpu::{error::GpuError, GpuContext};
 use wgpu::*;
 use winit::window::Window;
 

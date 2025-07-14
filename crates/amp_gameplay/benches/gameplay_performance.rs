@@ -4,7 +4,7 @@ use amp_engine::prelude::*;
 use amp_gameplay::prelude::*;
 use amp_gameplay::vehicle::components::Engine;
 use bevy::prelude::*;
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::time::Duration;
 
 /// Create a benchmark app with minimal plugins

@@ -15,8 +15,8 @@ resolver = "2"
 # Current: bevy_ecs 0.13 + micro-crates  
 # Target: Bevy 0.16.1 + strategic modularity
 [workspace.package]
-edition = "2024" 
-rust-version = "1.85"
+edition = "2021" 
+rust-version = "1.73"
 version = "0.4.0-alpha.0"
 authors = ["Brady Jeong <bradyjeong@Mac.attlocal.net>"]
 license = "MIT OR Apache-2.0"
@@ -90,7 +90,7 @@ rayon = "^1.8"
 
 [package]
 name = "gta_game"
-edition = "2024"
+edition = "2021"
 version = "0.1.0"
 authors = ["Brady Jeong <bradyjeong@Mac.attlocal.net>"]
 license = "MIT OR Apache-2.0"

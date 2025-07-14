@@ -5,8 +5,8 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use crate::dsl::{parse_prefab_ron, DslConfig};
 use crate::Error;
-use crate::dsl::{DslConfig, parse_prefab_ron};
 use crate::{BasicPrefab, PrefabMetadata};
 
 /// Prefab asset that can be loaded through Bevy's asset system

@@ -4,12 +4,12 @@
 //! by at least 2x on supported hardware. Uses null/mock backend for CI.
 
 use bevy::prelude::*;
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use glam::{Mat4, Vec3, Vec4};
 use std::time::Duration;
 
 use amp_render::culling::{
-    CameraProjectionConfig, Cullable, CullingConfig, extract_frustum_planes,
+    extract_frustum_planes, CameraProjectionConfig, Cullable, CullingConfig,
 };
 use amp_render::{BatchKey, ExtractedInstance};
 

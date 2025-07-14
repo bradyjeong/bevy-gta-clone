@@ -338,7 +338,7 @@ impl Plugin for LodSystemPlugin {
 /// Re-exports for convenience
 pub mod prelude {
     pub use crate::lod::{
-        ChangedLod, LodConfig, LodGroup, LodLevel, LodSystemPlugin, lod_batch_integration_system,
-        lod_extraction_system, update_lod_system,
+        lod_batch_integration_system, lod_extraction_system, update_lod_system, ChangedLod,
+        LodConfig, LodGroup, LodLevel, LodSystemPlugin,
     };
 }

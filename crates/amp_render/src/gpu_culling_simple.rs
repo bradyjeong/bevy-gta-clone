@@ -4,8 +4,8 @@
 //! Implements Oracle P3a specification with simplified architecture.
 
 use crate::{
-    ExtractedInstance,
     culling::{CameraProjectionConfig, CullingConfig},
+    ExtractedInstance,
 };
 use bevy::prelude::*;
 

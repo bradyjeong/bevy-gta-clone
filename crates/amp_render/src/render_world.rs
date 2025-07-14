@@ -6,9 +6,9 @@
 use bevy::{
     prelude::*,
     render::{
-        Extract, Render, RenderApp, RenderSet,
         render_resource::*,
         renderer::{RenderDevice, RenderQueue},
+        Extract, Render, RenderApp, RenderSet,
     },
 };
 use bytemuck::{Pod, Zeroable};
@@ -647,9 +647,9 @@ impl Plugin for RenderWorldPlugin {
 /// Re-exports for convenience
 pub mod prelude {
     pub use super::{
-        BufferPoolStats, ExtractedInstances, InstanceMeta, InstanceRaw, PreparedBatch,
-        RenderWorldPlugin, TransientBufferPool, cleanup_buffer_pool, extract_instances,
-        monitor_buffer_pool, prepare_batches, queue_batches,
+        cleanup_buffer_pool, extract_instances, monitor_buffer_pool, prepare_batches,
+        queue_batches, BufferPoolStats, ExtractedInstances, InstanceMeta, InstanceRaw,
+        PreparedBatch, RenderWorldPlugin, TransientBufferPool,
     };
 }
 

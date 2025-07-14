@@ -12,8 +12,8 @@ pub use amp_core::Error;
 
 // Re-export component registry functions
 pub use component_registry::{
-    ComponentDeserializer, call_component_deserializer, register_component,
-    register_default_components, registered_components,
+    call_component_deserializer, register_component, register_default_components,
+    registered_components, ComponentDeserializer,
 };
 
 mod component_registry;
@@ -37,7 +37,7 @@ pub use factory_dsl_integration::*;
 
 mod assets;
 pub use assets::{
-    PrefabAsset, PrefabAssetLoader, PrefabAssetPlugin, convert_prefab_asset_to_runtime_prefab,
+    convert_prefab_asset_to_runtime_prefab, PrefabAsset, PrefabAssetLoader, PrefabAssetPlugin,
 };
 
 mod vehicle_factory;

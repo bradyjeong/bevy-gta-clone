@@ -58,11 +58,9 @@ fn test_vehicle_bundle_instantiation() {
     assert!(world.entity(vehicle_entity).contains::<Drivetrain>());
     assert!(world.entity(vehicle_entity).contains::<Steering>());
     assert!(world.entity(vehicle_entity).contains::<Brakes>());
-    assert!(
-        world
-            .entity(vehicle_entity)
-            .contains::<PhysicsVehicleInput>()
-    );
+    assert!(world
+        .entity(vehicle_entity)
+        .contains::<PhysicsVehicleInput>());
 
     // Bevy spatial components
     assert!(world.entity(vehicle_entity).contains::<Transform>());
@@ -760,10 +758,9 @@ fn test_event_system_integration() {
     app.update();
 
     // Verify event resources are present
-    assert!(
-        app.world()
-            .contains_resource::<Events<VehicleEngineAudioEvent>>()
-    );
+    assert!(app
+        .world()
+        .contains_resource::<Events<VehicleEngineAudioEvent>>());
 
     // Test that engine audio event can be sent
     let mut events = app

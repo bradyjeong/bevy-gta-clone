@@ -82,5 +82,5 @@ impl Plugin for BatchingSystemPlugin {
 
 /// Re-exports for convenience
 pub mod prelude {
-    pub use crate::batching::{BatchManager, BatchingSystemPlugin, collect_instances_system};
+    pub use crate::batching::{collect_instances_system, BatchManager, BatchingSystemPlugin};
 }

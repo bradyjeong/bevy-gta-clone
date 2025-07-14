@@ -52,13 +52,11 @@ fn test_truck_config_loads() {
     );
 
     // Verify heavy duty characteristics
-    assert!(
-        config
-            .engine
-            .torque_curve_torque
-            .iter()
-            .any(|&torque| torque > 700.0)
-    );
+    assert!(config
+        .engine
+        .torque_curve_torque
+        .iter()
+        .any(|&torque| torque > 700.0));
     assert!(config.wheels[0].radius > 0.4);
     assert!(config.wheels[0].mass > 40.0);
 }

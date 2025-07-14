@@ -4,8 +4,8 @@
 //! and the new Oracle-specified DSL system with component registry support.
 
 use crate::{
-    BatchSpawnRequest, BatchSpawnResult, ComponentMap, DslConfig, Error, Factory, FactoryDslExt,
-    PrefabId, ValidationMode, parse_prefab_ron, spawn_many,
+    parse_prefab_ron, spawn_many, BatchSpawnRequest, BatchSpawnResult, ComponentMap, DslConfig,
+    Error, Factory, FactoryDslExt, PrefabId, ValidationMode,
 };
 use bevy::prelude::*;
 use std::collections::HashMap;

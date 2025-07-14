@@ -54,8 +54,8 @@ impl PluginGroup for GameplayPlugins {
 
 /// Prelude module for convenient imports
 pub mod prelude {
-    pub use crate::GameplayPlugins;
-    pub use crate::audio::{AudioPlugin, components::*, resources::*};
-    pub use crate::physics::{PhysicsPluginBridge, resources::*};
+    pub use crate::audio::{components::*, resources::*, AudioPlugin};
+    pub use crate::physics::{resources::*, PhysicsPluginBridge};
     pub use crate::vehicle::prelude::*;
+    pub use crate::GameplayPlugins;
 }

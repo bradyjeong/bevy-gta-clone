@@ -3,7 +3,7 @@
 //! This module implements the Oracle's exact DSL patterns for dynamic entity creation
 //! from RON files with component registry integration.
 
-use crate::{BasicPrefab, Error, PrefabId, call_component_deserializer};
+use crate::{call_component_deserializer, BasicPrefab, Error, PrefabId};
 use bevy::prelude::*;
 
 use std::collections::HashMap;

@@ -295,12 +295,10 @@ mod tests {
         assert!(config.power_curve_rpm.iter().all(|&rpm| rpm > 0.0));
         assert!(config.power_curve_power.iter().all(|&power| power > 0.0));
         assert!(config.torque_curve_rpm.iter().all(|&rpm| rpm > 0.0));
-        assert!(
-            config
-                .torque_curve_torque
-                .iter()
-                .all(|&torque| torque > 0.0)
-        );
+        assert!(config
+            .torque_curve_torque
+            .iter()
+            .all(|&torque| torque > 0.0));
     }
 
     #[test]

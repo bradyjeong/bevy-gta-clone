@@ -303,7 +303,11 @@ pub fn control_input_system(
 
         // Apply deadzone
         let apply_deadzone = |value: f32, deadzone: f32| {
-            if value.abs() < deadzone { 0.0 } else { value }
+            if value.abs() < deadzone {
+                0.0
+            } else {
+                value
+            }
         };
 
         let throttle_target = apply_deadzone(throttle_input, vehicle_input.deadzone);
