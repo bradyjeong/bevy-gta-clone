@@ -1,6 +1,7 @@
 //! Vehicle input handling systems
 
 use crate::vehicle::components::*;
+use crate::vehicle::resources::VehicleInputState;
 use bevy::prelude::*;
 
 /// Handle vehicle input and sync to physics components
@@ -69,5 +70,21 @@ pub fn handle_vehicle_input(
         physics_input.brake = gameplay_input.brake;
         physics_input.steering = gameplay_input.steering;
         physics_input.handbrake = gameplay_input.handbrake;
+    }
+}
+
+/// Update VehicleInputState resource from VehicleInput components
+/// Oracle's critical fix: Wire gameplay input into physics resource
+pub fn update_input_state_from_components(
+    mut input_state: ResMut<VehicleInputState>,
+    input_query: Query<&VehicleInput, With<Vehicle>>,
+) {
+    // Take the first vehicle's input (support multiple vehicles)
+    if let Some(vehicle_input) = input_query.iter().next() {
+        input_state.throttle = vehicle_input.throttle;
+        input_state.brake = vehicle_input.brake;
+        input_state.steering = vehicle_input.steering;
+        input_state.handbrake = vehicle_input.handbrake > 0.0;
+        // Keep existing gear logic
     }
 }

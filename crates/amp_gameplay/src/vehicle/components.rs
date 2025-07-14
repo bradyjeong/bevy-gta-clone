@@ -82,7 +82,7 @@ impl Default for Engine {
             throttle: 0.0,
             torque: 0.0,
             max_rpm: 7000.0,
-            max_torque: 300.0,
+            max_torque: 150.0, // Reduced from 300.0 for stability
             idle_rpm: 800.0,
             engine_braking: 0.3,
             fuel_consumption: 15.0,
@@ -484,7 +484,7 @@ mod tests {
         assert_eq!(engine.throttle, 0.0);
         assert_eq!(engine.torque, 0.0);
         assert_eq!(engine.max_rpm, 7000.0);
-        assert_eq!(engine.max_torque, 300.0);
+        assert_eq!(engine.max_torque, 150.0);
         assert_eq!(engine.idle_rpm, 800.0);
         assert_eq!(engine.engine_braking, 0.3);
         assert_eq!(engine.fuel_consumption, 15.0);

@@ -12,11 +12,14 @@ keywords = ["error", "core", "utilities", "game-engine"]
 
 [dependencies]
 thiserror = { workspace = true }
-serde = { workspace = true, optional = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+bevy = { workspace = true }
+tracy-client = { workspace = true, optional = true }
 
 [dev-dependencies]
 rstest = { workspace = true }
 
 [features]
 default = []
-serde = ["dep:serde"]
+tracy = ["dep:tracy-client"]

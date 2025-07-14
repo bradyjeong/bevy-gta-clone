@@ -1,5 +1,6 @@
 //! Vehicle component bundles for easy entity creation
 
+use crate::audio::components::EngineAudio;
 use crate::vehicle::components::*;
 use bevy::prelude::*;
 
@@ -12,6 +13,8 @@ pub struct VehicleBundle {
     pub input: VehicleInput,
     /// Vehicle audio components (gameplay)
     pub audio: VehicleAudio,
+    /// Engine audio component for sound effects
+    pub engine_audio: EngineAudio,
     /// Transform component
     pub transform: Transform,
     /// Global transform component
@@ -49,6 +52,8 @@ pub struct CarBundle {
     pub input: VehicleInput,
     /// Vehicle audio components (gameplay)
     pub audio: VehicleAudio,
+    /// Engine audio component for sound effects
+    pub engine_audio: EngineAudio,
     /// Transform component
     pub transform: Transform,
     /// Global transform component

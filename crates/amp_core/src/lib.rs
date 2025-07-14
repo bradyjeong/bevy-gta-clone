@@ -3,6 +3,8 @@
 //! This crate provides core error handling and utilities for the AMP Game Engine.
 //! It defines the primary error types and result aliases used throughout the engine.
 
+pub mod allocation_tracking;
+
 /// A specialized `Result` type for operations that may fail within the AMP engine.
 ///
 /// This type is used as the return type for functions that may encounter errors

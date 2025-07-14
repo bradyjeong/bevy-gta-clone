@@ -2,6 +2,7 @@
 
 pub use crate::spatial::*;
 // Re-export specific items to avoid glob conflicts
+pub use crate::memory::*;
 pub use crate::world::WorldManager;
 
 #[cfg(feature = "bevy16")]

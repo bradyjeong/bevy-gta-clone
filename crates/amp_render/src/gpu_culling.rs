@@ -6,13 +6,22 @@
 //! Feature-gated behind `gpu_culling` - falls back to CPU culling when disabled.
 
 #[cfg(feature = "gpu_culling")]
+pub mod buffers;
+
+#[cfg(feature = "gpu_culling")]
 pub mod compute;
+
+#[cfg(feature = "gpu_culling")]
+pub mod real_compute;
 
 #[cfg(feature = "gpu_culling")]
 pub mod render_graph_minimal;
 
 #[cfg(feature = "gpu_culling")]
 mod integration_test_simple;
+
+#[cfg(feature = "gpu_culling")]
+pub mod integration_test;
 
 #[cfg(feature = "gpu_culling")]
 pub use compute::*;
@@ -41,8 +50,8 @@ pub struct GpuCullingConfig {
 impl Default for GpuCullingConfig {
     fn default() -> Self {
         Self {
-            max_instances_per_dispatch: 100_000,
-            workgroup_size: 64,
+            max_instances_per_dispatch: 400_000, // Oracle's Phase 3 specification: 400k instances target
+            workgroup_size: 64, // Oracle's Phase 3 specification: workgroup size 64
             debug_output: false,
             enable_frustum_culling: true,
         }
@@ -50,7 +59,7 @@ impl Default for GpuCullingConfig {
 }
 
 /// GPU culling statistics for performance monitoring
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Resource)]
 pub struct GpuCullingStats {
     /// Total instances processed by GPU culling
     pub instances_processed: u32,
@@ -104,8 +113,10 @@ impl Plugin for GpuCullingPlugin {
         #[cfg(feature = "gpu_culling")]
         {
             app.init_resource::<GpuCullingConfig>();
-            app.add_systems(Startup, compute::setup_gpu_culling);
-            app.add_systems(PostUpdate, compute::run_gpu_culling);
+            app.init_resource::<GpuCullingStats>();
+            // TODO: Implement proper RenderWorld integration for setup_gpu_culling
+            // app.add_systems(Startup, compute::setup_gpu_culling);
+            // app.add_systems(PostUpdate, real_compute::run_real_gpu_culling);
         }
 
         #[cfg(not(feature = "gpu_culling"))]
@@ -140,8 +151,8 @@ mod tests {
     #[test]
     fn test_gpu_culling_config_default() {
         let config = GpuCullingConfig::default();
-        assert_eq!(config.max_instances_per_dispatch, 100_000);
-        assert_eq!(config.workgroup_size, 64);
+        assert_eq!(config.max_instances_per_dispatch, 400_000); // Oracle's Phase 3 specification
+        assert_eq!(config.workgroup_size, 64); // Oracle's Phase 3 specification
         assert!(!config.debug_output);
     }
 

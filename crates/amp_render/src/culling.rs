@@ -175,6 +175,17 @@ pub fn frustum_culling_system(
     }
 }
 
+/// Test if sphere is inside frustum (optimized version for Sprint 9)
+pub fn sphere_in_frustum(position: Vec3, radius: f32, planes: &[Vec4; 6]) -> bool {
+    for plane in planes {
+        let distance = plane.xyz().dot(position) + plane.w;
+        if distance < -radius {
+            return false;
+        }
+    }
+    true
+}
+
 /// Extract 6 frustum planes from view-projection matrix (legacy - use extract_frustum_planes_safe)
 pub fn extract_frustum_planes(view_proj: Mat4) -> [Vec4; 6] {
     match extract_frustum_planes_safe(view_proj) {

@@ -28,6 +28,11 @@ use bevy::prelude::*;
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub struct PostPhysics;
 
+/// Oracle Sprint 9 D4-7: PhaseSet for gameplay systems to minimize flush barriers
+/// Target: -0.5ms from reduced system ordering overhead
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+pub struct GameplayPhaseSet;
+
 /// Plugin for vehicle systems
 #[derive(Default)]
 pub struct VehiclePlugin;
@@ -41,18 +46,26 @@ impl Plugin for VehiclePlugin {
             .add_systems(
                 FixedUpdate,
                 (
-                    // VehicleControl phase
-                    systems::input::handle_vehicle_input,
+                    // VehicleControl phase - grouped for minimal flush barriers
+                    systems::input::handle_vehicle_input.in_set(GameplayPhaseSet),
+                    // Oracle critical fix: Update input state resource from components
+                    systems::input::update_input_state_from_components.in_set(GameplayPhaseSet),
                     // Physics phase (handled by amp_physics)
                     // Rapier phase (handled by bevy_rapier3d)
-                    // PostPhysics phase
+                    // PostPhysics phase - Oracle Sprint 9: Group all systems + SIMD optimization
                     (
                         systems::suspension::update_suspension,
                         systems::drivetrain::update_drivetrain,
                         systems::steering::update_steering,
+                        // Oracle Sprint 9 D4-7: Optimized wheel updates (target: -0.2ms)
+                        systems::wheel_optimized::update_wheel_physics_optimized,
+                        systems::wheel_optimized::apply_steering_optimized,
                         systems::sync_rapier::sync_vehicle_physics,
+                        // Sprint 9 optimization: Manage vehicle sleeping
+                        systems::sync_rapier::manage_vehicle_sleeping,
                     )
-                        .in_set(PostPhysics),
+                        .in_set(PostPhysics)
+                        .in_set(GameplayPhaseSet),
                 )
                     .chain(),
             )

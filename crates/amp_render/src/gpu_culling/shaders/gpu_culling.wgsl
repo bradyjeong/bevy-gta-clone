@@ -1,7 +1,7 @@
-//! GPU culling compute shader for frustum and LOD culling
+//! GPU culling compute shader - Oracle's Phase 3 WGSL specification
 //!
-//! This shader performs parallel culling of instances using frustum and distance checks.
-//! Workgroup size must match the Rust configuration (default: 64).
+//! Real compute shader implementation with frustum + distance LOD culling.
+//! Oracle's specifications: workgroup size 64, bounding sphere early-out, atomic visibility tracking.
 
 @group(0) @binding(0) var<uniform> camera_data: CameraData;
 @group(0) @binding(1) var<storage, read> instance_data: array<InstanceData>;
@@ -31,36 +31,38 @@ struct CullingParams {
     _padding: array<u32, 2>,
 };
 
+// Oracle's Phase 3 specification: workgroup size 64, one instance per thread
 @compute @workgroup_size(64, 1, 1)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let instance_id = global_id.x;
     
-    // Bounds check
+    // Bounds check - early return for out-of-range threads
     if (instance_id >= culling_params.instance_count) {
         return;
     }
     
     let instance = instance_data[instance_id];
-    let world_pos = instance.transform[3].xyz;
     
-    // Distance culling
-    let distance_to_camera = distance(world_pos, camera_data.camera_pos);
-    let max_distance = culling_params.lod_distances[instance.lod_level];
+    // Bounding sphere early-out optimization - Oracle's specification
+    let aabb_center = (instance.aabb_min + instance.aabb_max) * 0.5;
+    let aabb_extent = instance.aabb_max - instance.aabb_min;
+    let sphere_radius = length(aabb_extent) * 0.5;
+    let world_sphere_center = (instance.transform * vec4<f32>(aabb_center, 1.0)).xyz;
     
-    var visible = distance_to_camera <= max_distance;
+    // Distance LOD culling - Oracle's specification
+    let distance_to_camera = distance(world_sphere_center, camera_data.camera_pos);
+    let max_distance = culling_params.lod_distances[min(instance.lod_level, 3u)];
     
-    // Frustum culling (sphere-plane test)
+    var visible = distance_to_camera <= (max_distance + sphere_radius);
+    
+    // Frustum culling with bounding sphere test - Oracle's specification
     if (visible) {
-        let sphere_radius = length(instance.aabb_max - instance.aabb_min) * 0.5;
-        let sphere_center = (instance.aabb_min + instance.aabb_max) * 0.5;
-        let world_sphere_center = (instance.transform * vec4<f32>(sphere_center, 1.0)).xyz;
-        
-        // Test against all 6 frustum planes
+        // Test sphere against all 6 frustum planes
         for (var i = 0u; i < 6u; i = i + 1u) {
             let plane = camera_data.frustum_planes[i];
             let distance_to_plane = dot(plane.xyz, world_sphere_center) + plane.w;
             
-            // If sphere is completely outside this plane, it's not visible
+            // Oracle's early-out: if sphere is completely outside this plane, cull it
             if (distance_to_plane < -sphere_radius) {
                 visible = false;
                 break;
@@ -68,20 +70,14 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
         }
     }
     
-    // Update visibility bitset
-    let word_index = instance_id / 32u;
-    let bit_index = instance_id % 32u;
-    
+    // Atomic visibility tracking - Oracle's specification
     if (visible) {
-        // Set bit atomically
+        // Set bit in visibility bitset atomically
+        let word_index = instance_id / 32u;
+        let bit_index = instance_id % 32u;
         atomicOr(&visibility_bitset[word_index], 1u << bit_index);
-        // Increment visible count
+        
+        // Increment visible count atomically
         atomicAdd(&visible_count[0], 1u);
-    }
-    
-    // Debug output (if enabled)
-    if (culling_params.debug_enabled != 0u && instance_id < 10u) {
-        // In a real implementation, this would write to a debug buffer
-        // For now, this is just a placeholder
     }
 }

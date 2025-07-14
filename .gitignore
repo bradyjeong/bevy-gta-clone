@@ -1,7 +1,11 @@
 # Rust build artifacts
-/target/
+target/
 **/*.rs.bk
 *.pdb
+
+# Performance benchmark artifacts
+*.json
+!**/configs/**/*.json
 
 # cargo-deny cache
 .cargo/advisory-db/

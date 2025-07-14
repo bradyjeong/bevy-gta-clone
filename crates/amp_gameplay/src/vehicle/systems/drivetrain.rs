@@ -12,6 +12,14 @@ pub fn update_drivetrain(
     input_state: Res<VehicleInputState>,
     time: Res<Time>,
 ) {
+    let vehicle_count = query.iter().count();
+    if vehicle_count > 0 && input_state.throttle > 0.0 {
+        info!(
+            "Found {} vehicles, throttle: {}",
+            vehicle_count, input_state.throttle
+        );
+    }
+
     for (mut engine, _transform) in query.iter_mut() {
         // Update engine based on throttle input
         update_engine_physics(&mut engine, &input_state, time.delta_secs());
@@ -20,7 +28,7 @@ pub fn update_drivetrain(
 
 /// Calculate engine physics for a single vehicle
 fn update_engine_physics(engine: &mut Engine, input_state: &VehicleInputState, delta_time: f32) {
-    // Update throttle
+    // Update throttle from input state (now forced to 0.0 in input system)
     engine.throttle = input_state.throttle;
 
     // Calculate target RPM based on throttle

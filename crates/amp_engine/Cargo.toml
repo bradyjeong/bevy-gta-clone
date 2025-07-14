@@ -8,7 +8,7 @@ repository.workspace = true
 
 [features]
 default = []
-bevy16 = ["bevy", "wgpu", "winit", "pollster", "thiserror", "anyhow", "ron", "serde"]
+bevy16 = ["bevy", "wgpu", "winit", "pollster", "thiserror", "anyhow", "ron", "serde", "amp_gameplay", "bevy_rapier3d", "bevy_kira_audio", "jemallocator"]
 config = []
 physics = []
 audio = []
@@ -19,6 +19,9 @@ bevy = { workspace = true, optional = true }
 # bevy_ecs removed: use bevy::prelude::* instead
 amp_core = { path = "../amp_core" }
 amp_math = { path = "../amp_math" }
+amp_gameplay = { path = "../amp_gameplay", optional = true }
+bevy_rapier3d = { workspace = true, optional = true }
+bevy_kira_audio = { workspace = true, optional = true }
 async-trait = { workspace = true }
 glam = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
@@ -33,6 +36,9 @@ anyhow = { workspace = true, optional = true }
 # Asset pipeline dependencies (behind bevy16 feature flag)
 ron = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"], optional = true }
+
+# Memory optimization (Oracle's Day 4-5)
+jemallocator = { workspace = true, optional = true }
 
 [dev-dependencies]
 tokio-test = { workspace = true }

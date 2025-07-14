@@ -29,7 +29,7 @@ fn test_engine_component_default() {
     assert_eq!(engine.throttle, 0.0);
     assert_eq!(engine.torque, 0.0);
     assert_eq!(engine.max_rpm, 7000.0);
-    assert_eq!(engine.max_torque, 300.0);
+    assert_eq!(engine.max_torque, 150.0);
     assert_eq!(engine.idle_rpm, 800.0);
     assert_eq!(engine.engine_braking, 0.3);
     assert_eq!(engine.fuel_consumption, 15.0);

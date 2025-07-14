@@ -87,7 +87,7 @@ pub enum VehicleGear {
 
 impl Default for VehicleGear {
     fn default() -> Self {
-        Self::Park
+        Self::Neutral
     }
 }
 

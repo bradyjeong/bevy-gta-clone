@@ -33,13 +33,28 @@
 //! assert!(true);
 //! ```
 
+use bevy::app::{PluginGroup, PluginGroupBuilder};
+
 pub mod audio;
 pub mod physics;
 pub mod vehicle;
 
+/// Collection of all gameplay plugins
+#[derive(Default)]
+pub struct GameplayPlugins;
+
+impl PluginGroup for GameplayPlugins {
+    fn build(self) -> PluginGroupBuilder {
+        PluginGroupBuilder::start::<Self>()
+            .add(vehicle::VehiclePlugin)
+            .add(audio::AudioPlugin)
+            .add(physics::PhysicsPluginBridge::default())
+    }
+}
+
 /// Prelude module for convenient imports
 pub mod prelude {
-    // pub use crate::GameplayPlugins; // TODO: Define GameplayPlugins struct
+    pub use crate::GameplayPlugins;
     pub use crate::audio::{AudioPlugin, components::*, resources::*};
     pub use crate::physics::{PhysicsPluginBridge, resources::*};
     pub use crate::vehicle::prelude::*;

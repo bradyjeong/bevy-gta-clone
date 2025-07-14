@@ -105,7 +105,7 @@ pub trait AAAPlugin: Send + Sync + 'static {
 
 /// Wrapper to make AAAPlugin compatible with Bevy's Plugin system
 ///
-/// This struct wraps a Box<dyn AAAPlugin> and implements Bevy's Plugin trait,
+/// This struct wraps a `Box<dyn AAAPlugin>` and implements Bevy's Plugin trait,
 /// enabling seamless integration with Bevy's plugin system.
 #[derive(Clone)]
 pub struct AAAPluginWrapper {
@@ -172,6 +172,9 @@ impl AAAPlugins {
 
     /// Add built-in plugins from subsystem crates
     fn add_built_ins(&mut self) {
+        // Add memory pools first (PreStartup stage)
+        self.add_memory_plugin();
+
         // Add configuration plugin first (PreStartup stage)
         #[cfg(feature = "config")]
         self.add_config_plugin();
@@ -184,9 +187,17 @@ impl AAAPlugins {
         #[cfg(feature = "audio")]
         self.add_audio_plugin();
 
+        // Add gameplay plugin (Default stage)
+        self.add_gameplay_plugin();
+
         // Add rendering plugin (Default stage)
         #[cfg(feature = "render")]
         self.add_render_plugin();
+    }
+
+    fn add_memory_plugin(&mut self) {
+        self.plugins
+            .push((PluginStage::PreStartup, Box::new(MemoryAAAPlugin)));
     }
 
     #[cfg(feature = "config")]
@@ -205,6 +216,11 @@ impl AAAPlugins {
     fn add_audio_plugin(&mut self) {
         self.plugins
             .push((PluginStage::Startup, Box::new(AudioAAAPlugin)));
+    }
+
+    fn add_gameplay_plugin(&mut self) {
+        self.plugins
+            .push((PluginStage::Default, Box::new(GameplayAAAPlugin)));
     }
 
     #[cfg(feature = "render")]
@@ -237,6 +253,24 @@ impl PluginGroup for AAAPlugins {
 
 // Built-in plugin implementations
 
+/// Memory pool plugin for Oracle's Day 4-5 memory infrastructure
+struct MemoryAAAPlugin;
+
+impl AAAPlugin for MemoryAAAPlugin {
+    fn build(&self, app: &mut App) -> Result<()> {
+        info!("Initializing Memory Pool subsystem");
+
+        // Add MemoryPoolPlugin from memory module
+        app.add_plugins(crate::memory::MemoryPoolPlugin);
+
+        Ok(())
+    }
+
+    fn stage(&self) -> PluginStage {
+        PluginStage::PreStartup
+    }
+}
+
 /// Configuration plugin for centralized config management
 #[cfg(feature = "config")]
 struct ConfigAAAPlugin;
@@ -260,9 +294,14 @@ struct PhysicsAAAPlugin;
 
 #[cfg(feature = "physics")]
 impl AAAPlugin for PhysicsAAAPlugin {
-    fn build(&self, _app: &mut App) -> Result<()> {
+    fn build(&self, app: &mut App) -> Result<()> {
         info!("Initializing Physics subsystem");
-        // TODO: Add amp_physics plugin integration
+
+        // Add Rapier3D physics plugin
+        #[cfg(feature = "bevy16")]
+        app.add_plugins(bevy_rapier3d::prelude::RapierPhysicsPlugin::<()>::default())
+            .add_plugins(bevy_rapier3d::prelude::RapierDebugRenderPlugin::default());
+
         Ok(())
     }
 
@@ -277,14 +316,37 @@ struct AudioAAAPlugin;
 
 #[cfg(feature = "audio")]
 impl AAAPlugin for AudioAAAPlugin {
-    fn build(&self, _app: &mut App) -> Result<()> {
+    fn build(&self, app: &mut App) -> Result<()> {
         info!("Initializing Audio subsystem");
-        // TODO: Add amp_gameplay audio plugin integration
+
+        // Add bevy_kira_audio plugin
+        #[cfg(feature = "bevy16")]
+        app.add_plugins(bevy_kira_audio::AudioPlugin);
+
         Ok(())
     }
 
     fn stage(&self) -> PluginStage {
         PluginStage::Startup
+    }
+}
+
+/// Gameplay plugin for vehicle systems and gameplay mechanics
+struct GameplayAAAPlugin;
+
+impl AAAPlugin for GameplayAAAPlugin {
+    fn build(&self, app: &mut App) -> Result<()> {
+        info!("Initializing Gameplay subsystem");
+
+        // Add GameplayPlugins from amp_gameplay
+        #[cfg(feature = "bevy16")]
+        app.add_plugins(amp_gameplay::GameplayPlugins);
+
+        Ok(())
+    }
+
+    fn stage(&self) -> PluginStage {
+        PluginStage::Default
     }
 }
 

@@ -252,6 +252,9 @@ pub fn spawn_many(
     request: BatchSpawnRequest,
     type_registry: &AppTypeRegistry,
 ) -> Result<BatchSpawnResult, Error> {
+    #[cfg(feature = "tracy")]
+    let _span = tracy_client::span!("spawn_many");
+
     let start_time = std::time::Instant::now();
 
     if request.entities.is_empty() {
@@ -330,6 +333,9 @@ fn spawn_batch(
     config: &DslConfig,
     type_registry: &AppTypeRegistry,
 ) -> Result<InternalBatchResult, Error> {
+    #[cfg(feature = "tracy")]
+    let _span = tracy_client::span!("spawn_batch");
+
     let mut spawned = Vec::new();
     let mut failed = Vec::new();
     let mut components_processed = 0;

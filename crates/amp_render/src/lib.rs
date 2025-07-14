@@ -16,6 +16,7 @@ pub mod culling;
 pub mod culling_integration;
 pub mod gpu_culling_integration;
 pub mod lod;
+pub mod optimized_queries;
 pub mod render_world;
 
 #[cfg(feature = "gpu")]
@@ -213,7 +214,8 @@ pub mod prelude {
     pub use crate::{
         ALPHA_FLAG, Batch, BatchKey, BatchingPlugin, ExtractedInstance, SHADOW_FLAG,
         batching::prelude::*, culling::prelude::*, culling_integration::prelude::*,
-        gpu_culling_integration::prelude::*, lod::prelude::*, render_world::prelude::*,
+        gpu_culling_integration::prelude::*, lod::prelude::*, optimized_queries::cached_systems,
+        render_world::prelude::*,
     };
 
     #[cfg(feature = "gpu")]

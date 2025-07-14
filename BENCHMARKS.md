@@ -81,11 +81,18 @@ Based on benchmarks, the 100k spawn target requires major optimization:
 
 **Required Improvement**: 100k entities must improve from 110ms to <3ms (37× faster)
 
-**Recommended Implementation Path:**
-1. **Phase 1**: Implement `spawn_batch()` method in Factory
-2. **Phase 2**: Add memory pooling for ComponentMap objects  
-3. **Phase 3**: Cache parsed component data between entities
-4. **Phase 4**: Parallel spawning with work-stealing
+**Oracle's Day 6-8 Implementation Path (COMPLETED):**
+1. **Phase 1**: ✅ Remove reflection/deserialization from hot path via `PrefabBlueprint` 
+2. **Phase 2**: ✅ Introduce `OptimizedEntityFactory` with pre-compiled bundles
+3. **Phase 3**: ✅ Archetype pre-allocation with `world.reserve_entities(count)`
+4. **Phase 4**: ✅ Memory pool integration via `amp_engine::memory`
+
+**Key Optimizations Implemented:**
+- `PrefabBlueprint` with lazy compilation (once per prefab type)
+- `OptimizedEntityFactory` using pre-compiled `EntityBundle` structs
+- Direct bundle insertion bypassing DSL parsing in hot path
+- Memory pools for temporary allocations during batch operations
+- Archetype pre-allocation for optimal ECS performance
 
 ## Performance Gates in CI
 

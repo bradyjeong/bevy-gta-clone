@@ -10,3 +10,4 @@ pub mod setup;
 pub mod steering;
 pub mod suspension;
 pub mod sync_rapier;
+pub mod wheel_optimized;

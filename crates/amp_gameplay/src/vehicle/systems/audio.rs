@@ -6,6 +6,7 @@ use bevy::prelude::*;
 use config_core::{AudioConfig, ConfigLoader};
 
 /// Update vehicle audio based on physics state
+#[allow(clippy::type_complexity)]
 pub fn update_vehicle_audio(
     mut query: Query<
         (
@@ -15,7 +16,7 @@ pub fn update_vehicle_audio(
             &GlobalTransform,
             &VehicleInput,
         ),
-        With<Vehicle>,
+        (With<Vehicle>, With<crate::audio::components::EngineAudio>),
     >,
     mut audio_events: EventWriter<VehicleEngineAudioEvent>,
 ) {

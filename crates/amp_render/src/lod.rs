@@ -77,8 +77,14 @@ impl LodGroup {
         // Sort levels by distance (closest first)
         levels.sort_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap());
 
+        // Optimization: Use SmallVec efficiently to avoid heap allocation for small LOD counts
+        let mut small_levels = SmallVec::new();
+        for level in levels {
+            small_levels.push(level);
+        }
+
         Self {
-            levels: SmallVec::from_vec(levels),
+            levels: small_levels,
             current_lod: 0,
             previous_lod: 0,
             hysteresis: 8.0, // Default 8m hysteresis
@@ -215,6 +221,9 @@ pub fn update_lod_system(
     mut commands: Commands,
     mut lod_groups: Query<(Entity, &mut LodGroup, &Transform), Without<Camera>>,
 ) {
+    #[cfg(feature = "tracy")]
+    let _span = tracy_client::span!("update_lod_system");
+
     if !lod_config.enabled {
         return;
     }
@@ -257,6 +266,12 @@ pub fn update_lod_system(
 
         updates_this_frame += 1;
     }
+
+    #[cfg(feature = "tracy")]
+    {
+        tracy_client::plot!("lod_updates_this_frame", updates_this_frame as f64);
+        tracy_client::plot!("active_lod_entities", lod_groups.iter().count() as f64);
+    }
 }
 
 /// System to integrate LOD changes with BatchManager
@@ -264,6 +279,9 @@ pub fn lod_batch_integration_system(
     mut commands: Commands,
     changed_lod_query: Query<(Entity, &LodGroup, &ChangedLod), With<ChangedLod>>,
 ) {
+    #[cfg(feature = "tracy")]
+    let _span = tracy_client::span!("lod_batch_integration_system");
+
     for (entity, _lod_group, _changed_lod) in changed_lod_query.iter() {
         // LOD change triggers batch migration in BatchManager
         // The BatchManager will handle moving instances between batches
@@ -279,6 +297,9 @@ pub fn lod_extraction_system(
     lod_groups: Query<&LodGroup>,
     mut instances: Query<&mut ExtractedInstance>,
 ) {
+    #[cfg(feature = "tracy")]
+    let _span = tracy_client::span!("lod_extraction_system");
+
     // Enhanced LOD extraction with batch key updates
     for lod_group in lod_groups.iter() {
         for mut instance in instances.iter_mut() {

@@ -1,6 +1,6 @@
 [package]
 name = "amp_gameplay"
-version = "0.3.0-alpha"
+version = "0.4.0-alpha.0"
 edition = "2024"
 authors = ["Brady Jeong <bradyjeong@Mac.attlocal.net>"]
 license = "MIT OR Apache-2.0"
@@ -16,15 +16,16 @@ categories = ["game-development", "simulation"]
 
 [dependencies]
 # Workspace dependencies
-amp_physics = { path = "../amp_physics", version = "0.3.0-alpha" }
-amp_core = { path = "../amp_core", version = "0.3.0-alpha" }
-amp_math = { path = "../amp_math", version = "0.3.0-alpha" }
-config_core = { path = "../config_core", version = "0.3.0-alpha" }
+amp_physics = { path = "../amp_physics", version = "0.4.0-alpha.0" }
+amp_core = { path = "../amp_core", version = "0.4.0-alpha.0" }
+amp_math = { path = "../amp_math", version = "0.4.0-alpha.0" }
+config_core = { path = "../config_core", version = "0.4.0-alpha.0" }
 bevy = { workspace = true }
 bevy_rapier3d = { workspace = true }
 bevy_kira_audio = { workspace = true }
 serde = { workspace = true }
 anyhow = { workspace = true }
+tracy-client = { workspace = true, optional = true }
 
 [dev-dependencies]
 rstest = { workspace = true }
@@ -33,11 +34,12 @@ tempfile = { workspace = true }
 criterion = { workspace = true, features = ["html_reports"] }
 bevy_rapier3d = { workspace = true }
 serde_json = { workspace = true }
-amp_engine = { path = "../amp_engine", version = "0.3.0-alpha" }
+amp_engine = { path = "../amp_engine", version = "0.4.0-alpha.0" }
 
 [features]
 default = []
 debug = []
+tracy = ["tracy-client"]
 
 [[bench]]
 name = "gameplay_performance"

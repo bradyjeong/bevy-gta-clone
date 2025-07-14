@@ -39,6 +39,7 @@ use bevy::window::WindowResolution;
 
 use amp_engine::prelude::*;
 
+use amp_gameplay::audio::components::EngineAudio;
 use amp_gameplay::prelude::*;
 use gameplay_factory::{PrefabFactory, PrefabFactoryPlugin, PrefabFactoryResource, PrefabId};
 
@@ -290,6 +291,11 @@ fn spawn_demo_car(
                 audio: VehicleAudio {
                     engine_sound_enabled: true,
                     engine_volume: 0.8,
+                    ..default()
+                },
+                engine_audio: EngineAudio {
+                    engine_sound_path: "audio/engine_default.ogg".to_string(),
+                    is_playing: false,
                     ..default()
                 },
                 ..default()

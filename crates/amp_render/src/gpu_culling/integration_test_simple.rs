@@ -18,8 +18,8 @@ mod tests {
 
         // Check that the resource has the correct default values
         let config = app.world().resource::<GpuCullingConfig>();
-        assert_eq!(config.max_instances_per_dispatch, 100_000);
-        assert_eq!(config.workgroup_size, 64);
+        assert_eq!(config.max_instances_per_dispatch, 400_000); // Oracle's Phase 3 specification
+        assert_eq!(config.workgroup_size, 64); // Oracle's Phase 3 specification
         assert!(!config.debug_output);
         assert!(config.enable_frustum_culling);
     }

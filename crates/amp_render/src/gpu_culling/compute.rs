@@ -12,6 +12,7 @@ use bevy::render::render_resource::*;
 use bevy::render::renderer::RenderDevice;
 use std::sync::Arc;
 
+use super::buffers::{GpuCullingBuffers, IndirectDrawCommand};
 use super::{GpuCullingConfig, GpuCullingStats};
 use crate::render_world::TransientBufferPool;
 
@@ -27,7 +28,7 @@ pub struct GpuCullingPipeline {
 }
 
 impl GpuCullingPipeline {
-    /// Create new GPU culling pipeline
+    /// Create new GPU culling pipeline - Oracle's Phase 3 real implementation
     pub fn new(
         device: &RenderDevice,
         pipeline_cache: &mut PipelineCache,
@@ -98,10 +99,19 @@ impl GpuCullingPipeline {
             ),
         );
 
-        // Create compute pipeline with shader
-        // For now, create a placeholder pipeline to avoid compilation errors
-        // In a real implementation, this would properly load the shader
-        let pipeline = CachedComputePipelineId::INVALID;
+        // Oracle's Phase 3: Create compute pipeline with embedded WGSL shader
+        let pipeline_descriptor = ComputePipelineDescriptor {
+            label: Some("gpu_culling_compute_pipeline".into()),
+            layout: vec![bind_group_layout.clone()],
+            push_constant_ranges: vec![],
+            shader: FRUSTUM_CULLING_SHADER_HANDLE.clone(),
+            shader_defs: vec![],
+            entry_point: "main".into(),
+            zero_initialize_workgroup_memory: true,
+        };
+
+        // Queue pipeline for compilation - Oracle's specification: no panic paths
+        let pipeline = pipeline_cache.queue_compute_pipeline(pipeline_descriptor);
 
         Ok(Self {
             pipeline,
@@ -110,7 +120,7 @@ impl GpuCullingPipeline {
         })
     }
 
-    /// Dispatch GPU culling for a batch of instances
+    /// Dispatch GPU culling for a batch of instances - Oracle's Phase 3 implementation
     pub fn dispatch_culling(
         &self,
         command_encoder: &mut CommandEncoder,
@@ -118,6 +128,11 @@ impl GpuCullingPipeline {
         instance_count: u32,
         pipeline_cache: &PipelineCache,
     ) -> Result<()> {
+        // Oracle's specification: graceful pipeline readiness handling
+        let Some(pipeline) = pipeline_cache.get_compute_pipeline(self.pipeline) else {
+            return Err(anyhow::anyhow!("GPU culling pipeline not ready yet"));
+        };
+
         let workgroup_count = instance_count.div_ceil(self.config.workgroup_size);
 
         let mut compute_pass = command_encoder.begin_compute_pass(&ComputePassDescriptor {
@@ -125,7 +140,7 @@ impl GpuCullingPipeline {
             timestamp_writes: None,
         });
 
-        compute_pass.set_pipeline(self.get_pipeline_or_panic(pipeline_cache));
+        compute_pass.set_pipeline(pipeline);
         compute_pass.set_bind_group(0, bind_group, &[]);
         compute_pass.dispatch_workgroups(workgroup_count, 1, 1);
 
@@ -138,18 +153,9 @@ impl GpuCullingPipeline {
         &self.bind_group_layout
     }
 
-    /// Get the compute pipeline (panics if not ready)
-    fn get_pipeline_or_panic<'a>(&self, pipeline_cache: &'a PipelineCache) -> &'a ComputePipeline {
-        // Get the pipeline from the cache
-        // In a real implementation, this would handle pipeline readiness properly
-        match pipeline_cache.get_compute_pipeline(self.pipeline) {
-            Some(pipeline) => pipeline,
-            None => {
-                panic!(
-                    "GPU culling pipeline not ready. This should be handled gracefully in production."
-                );
-            }
-        }
+    /// Check if pipeline is ready for dispatch
+    pub fn is_ready(&self, pipeline_cache: &PipelineCache) -> bool {
+        pipeline_cache.get_compute_pipeline(self.pipeline).is_some()
     }
 }
 
@@ -158,6 +164,8 @@ impl GpuCullingPipeline {
 pub struct GpuCullingResources {
     /// The culling pipeline
     pub pipeline: Option<GpuCullingPipeline>,
+    /// GPU buffers for compute culling
+    pub buffers: Option<GpuCullingBuffers>,
     /// Configuration
     pub config: GpuCullingConfig,
     /// Performance statistics
@@ -168,6 +176,7 @@ impl Default for GpuCullingResources {
     fn default() -> Self {
         Self {
             pipeline: None,
+            buffers: None,
             config: GpuCullingConfig::default(),
             stats: GpuCullingStats::default(),
         }
@@ -222,6 +231,10 @@ pub struct GpuCullingParams {
 #[allow(dead_code)]
 const FRUSTUM_CULLING_SHADER: &str = include_str!("shaders/gpu_culling.wgsl");
 
+/// Shader handle for GPU culling compute shader
+const FRUSTUM_CULLING_SHADER_HANDLE: Handle<Shader> =
+    Handle::weak_from_u128(15372828631925940434756341430428634800);
+
 /// System to initialize GPU culling resources
 pub fn setup_gpu_culling(
     mut commands: Commands,
@@ -238,6 +251,7 @@ pub fn setup_gpu_culling(
     let resources = match pipeline_result {
         Ok(pipeline) => GpuCullingResources {
             pipeline: Some(pipeline),
+            buffers: None,
             config,
             stats: GpuCullingStats::default(),
         },
@@ -245,6 +259,7 @@ pub fn setup_gpu_culling(
             warn!("Failed to create GPU culling pipeline: {}", e);
             GpuCullingResources {
                 pipeline: None,
+                buffers: None,
                 config,
                 stats: GpuCullingStats::default(),
             }
@@ -336,7 +351,7 @@ mod tests {
     fn test_gpu_culling_resources_default() {
         let resources = GpuCullingResources::default();
         assert!(resources.pipeline.is_none());
-        assert_eq!(resources.config.max_instances_per_dispatch, 100_000);
+        assert_eq!(resources.config.max_instances_per_dispatch, 400_000); // Oracle's Phase 3 specification
         assert_eq!(resources.stats.instances_processed, 0);
     }
 }

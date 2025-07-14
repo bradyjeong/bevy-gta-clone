@@ -153,6 +153,9 @@ impl PrefabFactory {
         commands: &mut Commands,
         spawns: &[(PrefabId, Transform)],
     ) -> Result<Vec<Entity>, Error> {
+        #[cfg(feature = "tracy")]
+        let _span = tracy_client::span!("prefab_batch_spawn");
+
         let mut entities = Vec::new();
 
         for (id, transform) in spawns {
@@ -163,6 +166,49 @@ impl PrefabFactory {
 
         Ok(entities)
     }
+
+    // Commented out for MVP - complex blueprint optimization
+    // /// High-performance batch spawn using blueprint cache and memory pools
+    // ///
+    // /// Oracle's 37× optimization: This method bypasses the Commands system and uses
+    // /// direct world manipulation with pre-compiled blueprints for maximum performance
+    // pub fn batch_spawn_optimized(
+    //     &self,
+    //     world: &mut World,
+    //     spawns: &[(PrefabId, usize)], // (prefab_id, count)
+    //     pooled_factory: &mut crate::PooledEntityFactory,
+    //     type_registry: &AppTypeRegistry,
+    // ) -> Result<Vec<Entity>, Error> {
+    //     #[cfg(feature = "tracy")]
+    //     let _span = tracy_client::span!("prefab_batch_spawn_optimized");
+
+    //     // Collect component maps for all requested prefabs
+    //     let mut component_maps = std::collections::HashMap::new();
+    //     for (prefab_id, _count) in spawns {
+    //         if let Some(prefab) = self.factory.registry.get(prefab_id) {
+    //             // Convert BasicPrefab to ComponentMap for blueprint compilation
+    //             // This is a simplified conversion - in practice, we'd need proper
+    //             // conversion logic from BasicPrefab to ComponentMap
+    //             let component_map = crate::ComponentMap {
+    //                 components: std::collections::HashMap::new(), // TODO: Convert from BasicPrefab
+    //                 metadata: crate::ComponentMapMetadata {
+    //                     source_path: None,
+    //                     validation_status: crate::ValidationStatus::Valid,
+    //                     component_count: 0,
+    //                 },
+    //             };
+    //             component_maps.insert(*prefab_id, component_map);
+    //         } else {
+    //             return Err(Error::resource_load(
+    //                 "prefab",
+    //                 format!("Prefab {prefab_id:?} not found in registry"),
+    //             ));
+    //         }
+    //     }
+
+    //     // Use pooled factory for optimized batch spawning
+    //     pooled_factory.spawn_batch(spawns, &component_maps, world, type_registry)
+    // }
 
     /// Batch spawn by name
     pub fn batch_spawn_named(
