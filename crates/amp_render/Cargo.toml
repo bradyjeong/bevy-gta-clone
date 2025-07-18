@@ -9,11 +9,14 @@ repository.workspace = true
 description = "High-performance batch rendering and GPU culling for Amp"
 
 [features]
-default = ["instancing"]
+default = ["instancing", "diagnostics"]
 instancing = []
 gpu = ["wgpu"]
 gpu_culling = ["wgpu"]
 tracy = ["tracy-client"]
+perf_trace = ["tracing", "tracing-chrome"]
+profile = ["tracy-client", "tracing", "tracing-chrome"]
+diagnostics = []
 
 [dependencies]
 # Core Bevy (use workspace version with all features)
@@ -29,6 +32,8 @@ anyhow = { workspace = true }
 thiserror = { workspace = true }
 bytemuck = { workspace = true }
 smallvec = { workspace = true }
+ron = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
 
 # Internal crates
 amp_core = { path = "../amp_core" }
@@ -36,6 +41,10 @@ amp_math = { path = "../amp_math" }
 
 # Tracy profiling (optional)
 tracy-client = { workspace = true, optional = true }
+
+# Performance tracing
+tracing = { workspace = true, optional = true }
+tracing-chrome = { workspace = true, optional = true }
 
 [dev-dependencies]
 bevy = { workspace = true, features = ["dynamic_linking"] }

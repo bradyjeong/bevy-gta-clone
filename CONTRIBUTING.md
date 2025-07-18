@@ -4,7 +4,7 @@
 
 ## Development Setup
 
-1. **Install Rust**: Use rustup to install Rust 1.85+ (Rust 2024 edition)
+1. **Install Rust**: Use rustup to install Rust 1.73+ (Rust 2021 edition)
 2. **Clone Repository**: `git clone <repository-url>`
 3. **Build**: `cargo build --workspace`
 4. **Test**: `cargo test --workspace`

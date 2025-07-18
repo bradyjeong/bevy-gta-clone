@@ -43,6 +43,9 @@ pub use assets::{
 mod vehicle_factory;
 pub use vehicle_factory::*;
 
+mod npc_factory;
+pub use npc_factory::*;
+
 mod prefab_factory;
 pub use prefab_factory::*;
 

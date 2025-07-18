@@ -19,13 +19,17 @@ categories = ["game-development", "simulation"]
 amp_physics = { path = "../amp_physics", version = "0.4.0-alpha.0" }
 amp_core = { path = "../amp_core", version = "0.4.0-alpha.0" }
 amp_math = { path = "../amp_math", version = "0.4.0-alpha.0" }
+amp_render = { path = "../amp_render", version = "0.4.0-alpha.0" }
 config_core = { path = "../config_core", version = "0.4.0-alpha.0" }
 bevy = { workspace = true }
 bevy_rapier3d = { workspace = true }
 bevy_kira_audio = { workspace = true }
 serde = { workspace = true }
 anyhow = { workspace = true }
+rand = { workspace = true }
 tracy-client = { workspace = true, optional = true }
+tracing = { workspace = true, optional = true }
+tracing-chrome = { workspace = true, optional = true }
 
 [dev-dependencies]
 rstest = { workspace = true }
@@ -34,12 +38,13 @@ tempfile = { workspace = true }
 criterion = { workspace = true, features = ["html_reports"] }
 bevy_rapier3d = { workspace = true }
 serde_json = { workspace = true }
-amp_engine = { path = "../amp_engine", version = "0.4.0-alpha.0" }
+# amp_engine = { path = "../amp_engine", version = "0.4.0-alpha.0" }  # Temporarily disabled
 
 [features]
 default = []
 debug = []
 tracy = ["tracy-client"]
+perf_trace = ["tracing", "tracing-chrome"]
 
 [[bench]]
 name = "gameplay_performance"

@@ -16,6 +16,7 @@ serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 bevy = { workspace = true }
 tracy-client = { workspace = true, optional = true }
+tracing = { workspace = true, optional = true }
 
 [dev-dependencies]
 rstest = { workspace = true }
@@ -23,3 +24,4 @@ rstest = { workspace = true }
 [features]
 default = []
 tracy = ["dep:tracy-client"]
+entity_debug = ["tracing"]

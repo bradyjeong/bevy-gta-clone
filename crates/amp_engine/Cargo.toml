@@ -13,6 +13,8 @@ config = []
 physics = []
 audio = []
 render = []
+perf_trace = ["tracing", "tracing-chrome", "tracing-subscriber"]
+entity_debug = ["tracing"]
 
 [dependencies]
 bevy = { workspace = true, optional = true }
@@ -20,6 +22,7 @@ bevy = { workspace = true, optional = true }
 amp_core = { path = "../amp_core" }
 amp_math = { path = "../amp_math" }
 amp_gameplay = { path = "../amp_gameplay", optional = true }
+config_core = { path = "../config_core", features = ["bevy-assets"] }
 bevy_rapier3d = { workspace = true, optional = true }
 bevy_kira_audio = { workspace = true, optional = true }
 async-trait = { workspace = true }
@@ -39,6 +42,16 @@ serde = { workspace = true, features = ["derive"], optional = true }
 
 # Memory optimization (Oracle's Day 4-5)
 jemallocator = { workspace = true, optional = true }
+
+# Performance tracing
+tracing = { workspace = true, optional = true }
+tracing-chrome = { workspace = true, optional = true }
+tracing-subscriber = { workspace = true, optional = true }
+
+# Performance optimization dependencies
+slotmap = { workspace = true }
+rayon = { workspace = true }
+criterion = { workspace = true }
 
 [dev-dependencies]
 tokio-test = { workspace = true }

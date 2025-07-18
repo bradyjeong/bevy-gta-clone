@@ -233,7 +233,7 @@ const FRUSTUM_CULLING_SHADER: &str = include_str!("shaders/gpu_culling.wgsl");
 
 /// Shader handle for GPU culling compute shader
 const FRUSTUM_CULLING_SHADER_HANDLE: Handle<Shader> =
-    Handle::weak_from_u128(15372828631925940434756341430428634800);
+    bevy::utils::weak_handle!("142c8b8d-7e7f-4b0a-8a72-f1e8f9a1b9c0");
 
 /// System to initialize GPU culling resources
 pub fn setup_gpu_culling(

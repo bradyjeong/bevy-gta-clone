@@ -1,0 +1,183 @@
+(
+    // City Configuration for f430bc6-style massive urban environment
+    city_config: (
+        // Grid configuration for massive city
+        grid_size: (200, 200),           // 200x200 grid = 4000x4000 meter city
+        tile_size: 20.0,                 // 20 meter tiles
+        seed: 42,                        // Deterministic generation
+        
+        // Building density and distribution
+        building_density: 0.75,          // 75% of available tiles have buildings
+        varied_heights: true,            // Enable f430bc6-style varied building heights
+        
+        // Street configuration
+        street_width: 8.0,               // Base street width
+        intersection_frequency: 6,       // Major intersection every 6 tiles
+        
+        // Building height ranges for varied skyline
+        building_height_range: (8.0, 150.0),  // 8m to 150m buildings
+        building_size_range: (6.0, 30.0),     // 6m to 30m building footprints
+        
+        // City center configuration for dense urban core
+        city_center: (100.0, 100.0),    // Center of the grid
+        city_center_radius: 25.0,       // Dense area radius
+    ),
+    
+    // Building type distribution matching f430bc6 urban environment
+    building_distribution: (
+        // City center distribution (high-rises and commercial)
+        city_center: (
+            residential: 0.25,            // 25% residential towers
+            commercial: 0.35,             // 35% commercial buildings
+            skyscraper: 0.25,             // 25% skyscrapers
+            infrastructure: 0.05,         // 5% infrastructure
+            industrial: 0.05,             // 5% industrial
+            shop: 0.05,                   // 5% shops
+        ),
+        
+        // Mid-city distribution (mixed use)
+        mid_city: (
+            residential: 0.40,            // 40% residential
+            commercial: 0.25,             // 25% commercial
+            skyscraper: 0.10,             // 10% skyscrapers
+            infrastructure: 0.05,         // 5% infrastructure
+            industrial: 0.15,             // 15% industrial
+            shop: 0.05,                   // 5% shops
+        ),
+        
+        // Outer city distribution (suburban style)
+        outer_city: (
+            residential: 0.55,            // 55% residential
+            commercial: 0.15,             // 15% commercial
+            skyscraper: 0.02,             // 2% skyscrapers
+            infrastructure: 0.03,         // 3% infrastructure
+            industrial: 0.20,             // 20% industrial
+            shop: 0.05,                   // 5% shops
+        ),
+    ),
+    
+    // Street and infrastructure configuration
+    street_config: (
+        // Street types and widths
+        main_street_width: 12.0,         // Main arterial roads
+        secondary_street_width: 10.0,    // Secondary streets
+        side_street_width: 8.0,          // Side streets
+        alley_width: 6.0,                // Narrow alleys
+        
+        // Infrastructure
+        sidewalk_width: 2.0,             // Sidewalk width
+        street_light_spacing: 25.0,      // Street light every 25m
+        traffic_light_intersections: true, // Traffic lights at major intersections
+        
+        // Street network density
+        main_street_frequency: 8,        // Major street every 8 tiles
+        side_street_frequency: 3,        // Side street every 3 tiles
+    ),
+    
+    // Physics and collision configuration
+    physics_config: (
+        // Building colliders
+        building_collider_height_factor: 0.9,  // 90% of building height
+        building_collider_size_factor: 0.95,   // 95% of building footprint
+        
+        // Street colliders
+        street_collider_height: 0.1,           // Thin surface colliders
+        sidewalk_collider_height: 0.15,        // Slightly raised sidewalks
+        
+        // Collision groups
+        building_collision_group: 1,
+        street_collision_group: 2,
+        vehicle_collision_group: 3,
+        character_collision_group: 4,
+    ),
+    
+    // Visual and performance configuration
+    visual_config: (
+        // LOD distances for buildings
+        building_lod_distances: [100.0, 300.0, 500.0],
+        
+        // Building materials and colors
+        residential_colors: [
+            (0.8, 0.7, 0.6),            // Beige
+            (0.6, 0.6, 0.7),            // Gray-blue
+            (0.7, 0.6, 0.5),            // Brown
+        ],
+        
+        commercial_colors: [
+            (0.5, 0.5, 0.6),            // Gray
+            (0.4, 0.4, 0.5),            // Dark gray
+            (0.6, 0.5, 0.4),            // Brown-gray
+        ],
+        
+        skyscraper_colors: [
+            (0.3, 0.3, 0.4),            // Steel gray
+            (0.2, 0.2, 0.3),            // Dark steel
+            (0.4, 0.3, 0.2),            // Bronze
+        ],
+        
+        // Lighting configuration
+        ambient_light_intensity: 0.3,
+        street_light_intensity: 5000.0,
+        street_light_color: (1.0, 0.9, 0.7),   // Warm white
+        street_light_range: 25.0,
+    ),
+    
+    // Performance optimization settings
+    performance_config: (
+        // Streaming and culling
+        max_visible_buildings: 1000,     // Maximum buildings rendered
+        building_cull_distance: 500.0,   // Building culling distance
+        street_cull_distance: 300.0,     // Street culling distance
+        
+        // Batching configuration
+        building_batch_size: 50,         // Buildings per batch
+        street_batch_size: 100,          // Streets per batch
+        
+        // Update frequencies
+        city_update_interval: 1.0,       // City systems update every 1s
+        lod_update_interval: 0.5,        // LOD updates every 0.5s
+    ),
+    
+    // Prefab specifications
+    prefab_config: (
+        // Building prefab variants
+        residential_variants: [
+            "building_residential_low",
+            "building_residential_mid",
+            "building_residential_high",
+            "building_residential_tower",
+        ],
+        
+        commercial_variants: [
+            "building_commercial_small",
+            "building_commercial_medium",
+            "building_commercial_large",
+            "building_commercial_complex",
+        ],
+        
+        skyscraper_variants: [
+            "building_skyscraper_modern",
+            "building_skyscraper_glass",
+            "building_skyscraper_steel",
+            "building_skyscraper_mixed",
+        ],
+        
+        // Street prefab variants
+        street_variants: [
+            "street_main_4lane",
+            "street_main_6lane",
+            "street_secondary_2lane",
+            "street_side_1lane",
+            "street_alley",
+        ],
+        
+        // Intersection prefab variants
+        intersection_variants: [
+            "intersection_4way_large",
+            "intersection_4way_medium",
+            "intersection_3way",
+            "intersection_corner",
+            "intersection_roundabout",
+        ],
+    ),
+)

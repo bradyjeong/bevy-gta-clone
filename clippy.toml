@@ -1,0 +1,13 @@
+# Oracle's Phase 1 - Eliminate println! spam causing frame drops
+# Deny print statements to prevent performance-impacting console spam
+
+# Deny println!/print! macros to prevent performance regressions
+disallowed-macros = [
+    "println",
+    "print",
+    "eprintln",
+    "eprint",
+]
+
+# Allow debug/trace macros from tracing crate
+# These are properly gated and don't impact performance

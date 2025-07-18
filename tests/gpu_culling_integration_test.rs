@@ -7,6 +7,7 @@
 
 use bevy::prelude::*;
 use bevy::render::RenderApp;
+use std::sync::atomic::{AtomicU32, Ordering};
 
 use amp_render::prelude::*;
 
@@ -151,12 +152,10 @@ fn verify_culling_efficiency(
     }
 
     // Only run verification after a few frames to allow system stabilization
-    static mut FRAME_COUNT: u32 = 0;
-    unsafe {
-        FRAME_COUNT += 1;
-        if FRAME_COUNT < 10 {
-            return;
-        }
+    static FRAME_COUNT: AtomicU32 = AtomicU32::new(0);
+    let current_frame = FRAME_COUNT.fetch_add(1, Ordering::SeqCst) + 1;
+    if current_frame < 10 {
+        return;
     }
 
     // Verify GPU culling is working

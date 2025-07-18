@@ -10,11 +10,13 @@
 pub use bevy::prelude::*;
 
 /// Future world management implementation
+#[cfg(feature = "bevy16")]
 pub struct WorldManager {
     /// The ECS world
     world: World,
 }
 
+#[cfg(feature = "bevy16")]
 impl WorldManager {
     /// Create a new world manager
     pub fn new() -> Self {
@@ -34,6 +36,30 @@ impl WorldManager {
     }
 }
 
+#[cfg(feature = "bevy16")]
+impl Default for WorldManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+// Non-Bevy version for when bevy16 feature is not enabled
+/// World manager placeholder when Bevy is not available
+#[cfg(not(feature = "bevy16"))]
+pub struct WorldManager {
+    // Placeholder for non-Bevy world management
+    _placeholder: (),
+}
+
+#[cfg(not(feature = "bevy16"))]
+impl WorldManager {
+    /// Create a new world manager
+    pub fn new() -> Self {
+        Self { _placeholder: () }
+    }
+}
+
+#[cfg(not(feature = "bevy16"))]
 impl Default for WorldManager {
     fn default() -> Self {
         Self::new()
@@ -47,12 +73,14 @@ mod tests {
     #[test]
     fn test_world_manager_creation() {
         let manager = WorldManager::new();
+        #[cfg(feature = "bevy16")]
         assert_eq!(manager.world().entities().len(), 0);
     }
 
     #[test]
     fn test_world_manager_default() {
         let manager = WorldManager::default();
+        #[cfg(feature = "bevy16")]
         assert_eq!(manager.world().entities().len(), 0);
     }
 }

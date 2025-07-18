@@ -29,6 +29,12 @@ pub fn sync_vehicle_physics(
     input_state: Res<VehicleInputState>,
     time: Res<Time>,
 ) {
+    #[cfg(feature = "perf_trace")]
+    let _span = tracing::trace_span!(
+        "sync_vehicle_physics",
+        vehicle_count = vehicle_query.iter().count()
+    )
+    .entered();
     for (
         mut transform,
         vehicle,

@@ -24,6 +24,9 @@ pub fn run_real_gpu_culling(
     #[cfg(feature = "tracy")]
     let _span = tracy_client::span!("run_real_gpu_culling");
 
+    #[cfg(feature = "perf_trace")]
+    let _span = tracing::trace_span!("run_real_gpu_culling");
+
     // Early exit if resources not available
     let Some(mut resources) = culling_resources else {
         return;

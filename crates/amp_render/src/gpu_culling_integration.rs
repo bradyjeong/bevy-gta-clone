@@ -4,17 +4,11 @@
 //! ensuring that only GPU-culled visible instances are submitted for rendering.
 
 use bevy::prelude::*;
-use bevy::render::{
-    render_resource::*,
-    renderer::{RenderDevice, RenderQueue},
-    Render, RenderApp, RenderSet,
-};
-use std::collections::HashMap;
+use bevy::render::{Render, RenderApp, RenderSet};
 
 #[cfg(feature = "gpu_culling")]
 use crate::gpu_culling::GpuCullingStats;
-use crate::render_world::{InstanceMeta, TransientBufferPool};
-use crate::{BatchKey, ExtractedInstance};
+use crate::render_world::InstanceMeta;
 
 /// GPU culling results resource - contains visibility data from compute shader
 #[derive(Resource, Default, Clone)]
@@ -250,7 +244,7 @@ pub fn queue_gpu_culled_batches(
         let mut visible_count = original_count;
 
         // Apply GPU culling if results are available
-        if let Some(results) = &gpu_results {
+        if let Some(_results) = &gpu_results {
             // Count only visible instances for this batch
             // This is a simplified implementation - in reality, we'd need
             // to track instance indices per batch

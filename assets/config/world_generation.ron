@@ -16,6 +16,11 @@
         detail_streaming_radius: 2000.0,
         micro_streaming_radius: 500.0,
         
+        // World Streaming Constants
+        streaming_radius: 800.0,
+        active_radius: 400.0,
+        entity_limit_per_chunk: 100,
+        
         // Generation Limits
         max_chunks_loaded_per_frame: 2,
         max_chunks_unloaded_per_frame: 4,

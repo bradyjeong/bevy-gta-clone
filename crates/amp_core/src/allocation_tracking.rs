@@ -5,6 +5,9 @@
 use bevy::prelude::*;
 use std::collections::HashMap;
 
+#[cfg(feature = "entity_debug")]
+use tracing::info;
+
 /// Global allocation tracker for system-level monitoring
 #[derive(Resource, Default, Debug)]
 pub struct SystemAllocationTracker {
@@ -140,11 +143,13 @@ pub fn output_allocation_summary(tracker: Res<SystemAllocationTracker>) {
     let summary = tracker.get_summary();
 
     // Output to CI logs
-    println!("{}", summary.format_ci_output());
+    #[cfg(feature = "entity_debug")]
+    info!("{}", summary.format_ci_output());
 
     // Also output JSON for structured parsing
-    if let Ok(json) = serde_json::to_string(&AllocationSummaryJson::from(&summary)) {
-        println!("ALLOCATION_JSON: {json}");
+    if let Ok(_json) = serde_json::to_string(&AllocationSummaryJson::from(&summary)) {
+        #[cfg(feature = "entity_debug")]
+        info!("ALLOCATION_JSON: {_json}");
     }
 }
 

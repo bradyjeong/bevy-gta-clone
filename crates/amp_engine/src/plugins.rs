@@ -122,6 +122,11 @@ impl AAAPluginWrapper {
 
 impl Plugin for AAAPluginWrapper {
     fn build(&self, app: &mut App) {
+        #[cfg(feature = "perf_trace")]
+        let _span =
+            tracing::trace_span!("aaa_plugin_build", plugin = ?std::any::type_name::<Self>())
+                .entered();
+
         if let Err(e) = self.inner.build(app) {
             error!("Failed to build AAAPlugin: {}", e);
         }
@@ -232,6 +237,10 @@ impl AAAPlugins {
 
 impl PluginGroup for AAAPlugins {
     fn build(mut self) -> PluginGroupBuilder {
+        #[cfg(feature = "perf_trace")]
+        let _span =
+            tracing::trace_span!("aaa_plugins_build", plugin_count = self.plugins.len()).entered();
+
         // Sort plugins by stage
         self.plugins.sort_by_key(|(stage, _)| match stage {
             PluginStage::PreStartup => 0,
@@ -243,7 +252,10 @@ impl PluginGroup for AAAPlugins {
         // Build the plugin group
         let mut builder = PluginGroupBuilder::start::<Self>();
 
-        for (_, plugin) in self.plugins {
+        for (stage, plugin) in self.plugins {
+            #[cfg(feature = "perf_trace")]
+            tracing::trace!("Adding plugin at stage {:?}", stage);
+
             builder = builder.add(AAAPluginWrapper::new(plugin));
         }
 

@@ -1,25 +1,20 @@
-# Documentation Index
+# Documentation
 
-This directory contains all project documentation organized by topic.
+## Current Documentation
+- [`BENCHMARKS.md`](current/BENCHMARKS.md) - Performance benchmarks and metrics
+- [`CHANGELOG.md`](current/CHANGELOG.md) - Project changelog
+- [`RELEASE_NOTES_v0.3.0-alpha.md`](current/RELEASE_NOTES_v0.3.0-alpha.md) - Release notes
 
-## Structure
+## Reference Documentation
+- [`GAP_REPORT.md`](reference/GAP_REPORT.md) - Gap analysis between current state and f430bc6
+- [`F430BC6_ARCHITECTURE_ANALYSIS.md`](reference/F430BC6_ARCHITECTURE_ANALYSIS.md) - Architecture analysis of f430bc6
+- [`STRATEGIC_SHIFT.md`](reference/STRATEGIC_SHIFT.md) - Strategic shift documentation
 
-- **[architecture/](architecture/)** - Technical architecture and design documents
-- **[guides/](guides/)** - Development guides and tutorials  
-- **[api/](api/)** - Auto-generated API documentation
-- **[adr/](adr/)** - Architecture Decision Records
+## Architecture Decision Records
+- [`adr/`](adr/) - Architecture Decision Records (ADRs)
 
-## Quick Links
+## Oracle Consultations
+- [`oracle-consultations.md`](oracle-consultations.md) - Oracle guidance and strategic decisions
 
-- [Architecture Overview](architecture/README.md)
-- [Configuration System](architecture/config.md)
-- [Development Guide](guides/development.md)
-- [Contributing Guidelines](../CONTRIBUTING.md)
-- [Agent Configuration](../AGENT.md)
-
-## Documentation Maintenance
-
-- Each document has an owner specified in CODEOWNERS
-- API docs are auto-generated from rustdoc comments
-- Architecture decisions are tracked in ADR format
-- Weekly documentation review during project checkpoints
+## Archived Documentation
+- [`archive/`](archive/) - Historical completion reports and implementation summaries

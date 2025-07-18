@@ -11,9 +11,9 @@ exclude = [
 ]
 resolver = "2"
 
-# STRATEGIC SHIFT: Updated to Rust 2024 edition (released with 1.85.0)
-# Current: bevy_ecs 0.13 + micro-crates  
-# Target: Bevy 0.16.1 + strategic modularity
+# STRATEGIC SHIFT: Using Rust 2021 edition with Bevy 0.16.1
+# Current: Bevy 0.16.1 + strategic modularity achieved
+# Status: Sprint 9 completed, v0.4.0-alpha.0 release ready
 [workspace.package]
 edition = "2021" 
 rust-version = "1.73"
@@ -39,6 +39,7 @@ kira = "=0.9.6"                           # Audio engine
 # Bevy re-exports wgpu/winit; keep them in sync for crates that still need them
 wgpu = "=24.0.5"   # Locked to Bevy 0.16.1 version
 winit = "=0.30.11"  # Locked to Bevy 0.16.1 version
+bevy_egui = "0.35.1"  # UI framework for debug/performance overlay
 # ---------- Math / util ----------
 glam = { version = "=0.29.3", features = ["fast-math"] }
 serde = { version = "^1", features = ["derive"] }
@@ -56,6 +57,9 @@ dirs = "^5.0"
 serde_json = "^1.0"
 chrono = { version = "^0.4", features = ["serde"] }
 
+# Random number generation
+rand = "^0.8"
+
 # Dev tools
 rstest = "^0.21"
 criterion = "^0.5"
@@ -69,6 +73,10 @@ tracy-client = "^0.17"
 tracing-tracy = "^0.11"
 tracing-subscriber = "^0.3"
 
+# Performance tracing
+tracing = "^0.1"
+tracing-chrome = "^0.7"
+
 # Common runtime deps used by multiple crates
 tokio = { version = "^1.37", features = ["rt", "sync", "time"] }
 notify = "^6.1"
@@ -81,6 +89,7 @@ async-trait = "^0.1"
 env_logger = "^0.11"
 clap = "^4.0"
 rayon = "^1.8"
+slotmap = "^1.0"
 
 # LEGACY DEPENDENCIES REMOVED: Oracle's migration cleanup complete
 
@@ -99,69 +108,48 @@ repository = "https://github.com/bradyjeong/bevy-gta-clone"
 # Disable automatic example discovery
 autoexamples = false
 
-# Examples for asset pipeline integration
-[[example]]
-name = "asset_pipeline_test"
-path = "examples/asset_pipeline_test.rs"
-
-[[example]]
-name = "city_demo_baseline"
-path = "examples/city_demo_baseline.rs"
-required-features = ["rapier3d_030"]
-
-[[example]]
-name = "batch_processing_test"
-path = "examples/batch_processing_test.rs"
+# Examples temporarily disabled - will be re-enabled during migration per Oracle's plan
 
 [features]
-default = []
+default = ["bevy16", "gpu_culling", "gpu"]
 ron = ["gameplay_factory/ron"]
 rapier3d_030 = ["gameplay_factory/rapier3d_030", "amp_physics", "bevy_rapier3d"]
-gpu_culling = ["amp_render/gpu_culling"]
-tracy = ["tracy-client", "tracing-tracy", "amp_render/tracy", "amp_gameplay/tracy", "gameplay_factory/tracy"]
+gpu_culling = []
+world_streaming = []
+bevy16 = []
+gpu = []
+audio = ["bevy_kira_audio"]
+debug = []
+tracy = ["tracy-client", "tracing-tracy", "amp_gameplay/tracy", "gameplay_factory/tracy"]
+profile = ["tracy", "amp_render/profile"]
+perf_trace = ["tracing", "tracing-chrome", "amp_gameplay/perf_trace", "gameplay_factory/perf_trace"]
 
 [dependencies]
 gameplay_factory = { path = "crates/gameplay_factory" }
 config_core = { path = "crates/config_core" }
-amp_engine = { path = "crates/amp_engine", features = ["bevy16", "physics", "audio"] }
+amp_engine = { path = "crates/amp_engine", features = ["bevy16"] }
 amp_physics = { path = "crates/amp_physics", optional = true }
 amp_gameplay = { path = "crates/amp_gameplay" }
 amp_render = { path = "crates/amp_render" }
 bevy.workspace = true
 bevy_rapier3d = { workspace = true, optional = true }
+bevy_kira_audio = { workspace = true, optional = true }
+bevy_egui = { workspace = true }
+rand = { workspace = true }
 env_logger = { workspace = true }
 tracy-client = { workspace = true, optional = true }
 tracing-tracy = { workspace = true, optional = true }
+tracing = { workspace = true, optional = true }
+tracing-chrome = { workspace = true, optional = true }
 
 [[bin]]
 name = "prefab-ls"
 path = "src/bin/prefab-ls.rs"
 
 [[bin]]
-name = "collision_test"
-path = "collision_test.rs"
+name = "gta_game"
+path = "src/main.rs"
 
-[[example]]
-name = "vehicle_physics_integration"
-path = "examples/vehicle_physics_integration.rs"
 
-[[example]]
-name = "sprint_3_demo"
-path = "examples/sprint_3_demo.rs"
-required-features = ["rapier3d_030"]
 
-[[example]]
-name = "gpu_culling_demo"
-path = "examples/gpu_culling_demo.rs"
-
-[[example]]
-name = "lod_system_demo"
-path = "examples/lod_system_demo.rs"
-
-[[example]]
-name = "simple_lod_demo"
-path = "examples/simple_lod_demo.rs"
-
-[[example]]
-name = "gpu_culling_feature_demo"
-path = "examples/gpu_culling_feature_demo.rs"
+# All examples temporarily disabled - will be re-enabled during migration per Oracle's plan

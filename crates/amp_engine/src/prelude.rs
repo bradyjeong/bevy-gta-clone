@@ -5,6 +5,9 @@ pub use crate::spatial::*;
 pub use crate::memory::*;
 pub use crate::world::WorldManager;
 
+#[cfg(feature = "perf_trace")]
+pub use crate::tracing::*;
+
 #[cfg(feature = "bevy16")]
 pub use crate::plugins::{AAAPlugin, AAAPlugins, PluginStage};
 

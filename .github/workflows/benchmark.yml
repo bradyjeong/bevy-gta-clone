@@ -1,0 +1,162 @@
+name: Performance Benchmarks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run nightly benchmarks at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  benchmark:
+    name: Performance Benchmark
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: clippy, rustfmt
+    
+    - name: Cache cargo dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-benchmark-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-benchmark-
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libasound2-dev libudev-dev
+    
+    - name: Build in release mode
+      run: cargo build --release --workspace --features "f430bc6,perf_trace"
+    
+    - name: Run performance benchmarks
+      run: |
+        # Run perf_100k with different entity counts
+        echo "=== 1k entities benchmark ==="
+        cargo run --release --example perf_100k --features "f430bc6,perf_trace" -- --entity-count 1000 --iterations 10
+        
+        echo "=== 10k entities benchmark ==="
+        cargo run --release --example perf_100k --features "f430bc6,perf_trace" -- --entity-count 10000 --iterations 5
+        
+        echo "=== 100k entities benchmark ==="
+        cargo run --release --example perf_100k --features "f430bc6,perf_trace" -- --entity-count 100000 --iterations 3
+        
+        echo "=== Performance gate test ==="
+        cargo run --release --example perf_100k --features "f430bc6,perf_trace" -- --entity-count 100000 --iterations 1 --test-pattern basic > benchmark_result.txt
+        
+        # Check if we meet the 3.2ms threshold (with headroom)
+        if grep -q "exceeds 3.2ms target" benchmark_result.txt; then
+          echo "❌ Performance gate failed: 100k entities exceeds 3.2ms target"
+          exit 1
+        else
+          echo "✅ Performance gate passed: 100k entities within 3.2ms target"
+        fi
+    
+    - name: Generate performance report
+      run: |
+        echo "# Performance Benchmark Report" > performance_report.md
+        echo "Generated: $(date)" >> performance_report.md
+        echo "" >> performance_report.md
+        echo "## Benchmark Results" >> performance_report.md
+        echo '```' >> performance_report.md
+        cat benchmark_result.txt >> performance_report.md
+        echo '```' >> performance_report.md
+        
+        # Add system info
+        echo "" >> performance_report.md
+        echo "## System Information" >> performance_report.md
+        echo "- OS: $(uname -a)" >> performance_report.md
+        echo "- CPU: $(lscpu | grep 'Model name' | cut -d':' -f2 | xargs)" >> performance_report.md
+        echo "- Memory: $(free -h | grep 'Mem:' | awk '{print $2}')" >> performance_report.md
+        echo "- Rust: $(rustc --version)" >> performance_report.md
+        echo "- Cargo: $(cargo --version)" >> performance_report.md
+    
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-benchmark-${{ github.sha }}
+        path: |
+          performance_report.md
+          benchmark_result.txt
+          trace.json
+        retention-days: 30
+    
+    - name: Comment PR with benchmark results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = './performance_report.md';
+          
+          if (fs.existsSync(path)) {
+            const report = fs.readFileSync(path, 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔥 Performance Benchmark Results\n\n${report}`
+            });
+          }
+
+  nightly-benchmark:
+    name: Nightly Performance Tracking
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+    
+    - name: Cache cargo dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-nightly-${{ hashFiles('**/Cargo.lock') }}
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libasound2-dev libudev-dev
+    
+    - name: Run extended benchmarks
+      run: |
+        # Run comprehensive benchmark suite
+        cargo run --release --example perf_100k --features "f430bc6,perf_trace" -- --test-pattern all --iterations 10
+        
+        # Run memory profiling if available
+        if command -v valgrind &> /dev/null; then
+          echo "Running memory profiling..."
+          valgrind --tool=massif cargo run --release --example perf_100k --features "f430bc6,perf_trace" -- --entity-count 100000 --iterations 1
+        fi
+    
+    - name: Upload nightly results
+      uses: actions/upload-artifact@v3
+      with:
+        name: nightly-benchmark-${{ github.sha }}
+        path: |
+          *.txt
+          *.json
+          massif.out.*
+        retention-days: 90

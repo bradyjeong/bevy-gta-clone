@@ -155,6 +155,12 @@ pub struct WorldGenerationConfig {
     pub max_building_height: f32,
     pub terrain_complexity: f32,
     pub water_level: f32,
+
+    // Streaming constants
+    pub chunk_size: f32,
+    pub streaming_radius: f32,
+    pub active_radius: f32,
+    pub entity_limit_per_chunk: u32,
 }
 
 impl Default for WorldGenerationConfig {
@@ -167,6 +173,10 @@ impl Default for WorldGenerationConfig {
             max_building_height: 200.0,
             terrain_complexity: 0.5,
             water_level: 0.0,
+            chunk_size: 200.0,
+            streaming_radius: 800.0,
+            active_radius: 400.0,
+            entity_limit_per_chunk: 100,
         }
     }
 }

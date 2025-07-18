@@ -15,9 +15,11 @@ keywords = ["gamedev", "bevy", "entity", "factory", "prefab"]
 [dependencies]
 bevy = { workspace = true }
 amp_core = { path = "../amp_core" }
-amp_engine = { path = "../amp_engine", features = ["bevy16"] }
+# amp_engine = { path = "../amp_engine", features = ["bevy16"] }  # Temporarily disabled
 amp_physics = { path = "../amp_physics" }
+amp_gameplay = { path = "../amp_gameplay" }
 config_core = { path = "../config_core" }
+rand = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 ron = { workspace = true, optional = true }
 glob = { workspace = true }
@@ -27,6 +29,8 @@ tokio = { workspace = true, features = ["test-util"], optional = true }
 once_cell = { workspace = true }
 dashmap = { workspace = true }
 tracy-client = { workspace = true, optional = true }
+tracing = { workspace = true, optional = true }
+tracing-chrome = { workspace = true, optional = true }
 rayon = { workspace = true }
 
 [dev-dependencies]
@@ -43,6 +47,7 @@ ron = ["dep:ron"]
 hot-reload = ["dep:notify", "dep:tokio"]
 legacy_ron_loader = []
 tracy = ["tracy-client"]
+perf_trace = ["tracing", "tracing-chrome"]
 
 rapier3d_030 = ["amp_physics/rapier3d_030"]
 

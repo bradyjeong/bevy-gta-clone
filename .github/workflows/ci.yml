@@ -193,15 +193,59 @@ jobs:
           key: benchmark-stable
           cache-targets: true
       
+      - name: Install bc for numeric calculations
+        run: sudo apt-get update && sudo apt-get install -y bc
+      
       - name: Run gameplay_factory spawn_100k benchmark
         run: |
-          cargo bench -p gameplay_factory --bench factory_spawn spawn_100k
+          echo "🚀 Running factory_spawn benchmark..."
+          cargo bench -p gameplay_factory --bench factory_spawn spawn_100k 2>&1 | tee factory_results.txt
+      
+      - name: Run perf_100k example for Oracle's performance gate
+        run: |
+          echo "🎯 Running perf_100k example for Oracle's performance gate..."
+          
+          # Run with reproducible settings
+          timeout 10m cargo run --release --example perf_100k -- \
+            --entity-count 100000 \
+            --test-pattern optimized \
+            --iterations 3 \
+            --warmup 2>&1 | tee perf_100k_results.txt
+          
+          # Extract spawn time for gate validation
+          SPAWN_TIME=$(grep -o "Average Spawn Time: [0-9.]*ms" perf_100k_results.txt | head -1 | grep -o "[0-9.]*" || echo "999")
+          echo "SPAWN_TIME=${SPAWN_TIME}" >> $GITHUB_ENV
+          echo "::notice title=100k Spawn Time::${SPAWN_TIME}ms"
       
       - name: Check performance gates
         run: |
-          echo "🎯 Performance Gate: spawn_100k should be ≤3.0ms on release build"
-          # TODO: Add actual performance gate validation once baseline is established
-          # Expected: ≤3.0ms total time, ≤1.2× legacy baseline
+          echo "🎯 Oracle's Performance Gate Validation"
+          echo "======================================"
+          echo "Target: spawn_100k ≤3.0ms (Oracle's 37× improvement goal)"
+          echo "Threshold: ≤3.2ms (allowing headroom for CI variance)"
+          echo ""
+          
+          if [[ -n "${SPAWN_TIME:-}" ]]; then
+            echo "Measured: ${SPAWN_TIME}ms"
+            
+            # Performance gate: 3.2ms (allowing headroom for 3ms target)
+            if (( $(echo "$SPAWN_TIME > 3.2" | bc -l) )); then
+              echo "❌ PERFORMANCE GATE FAILED: ${SPAWN_TIME}ms > 3.2ms threshold"
+              echo "::error title=Performance Gate Failed::100k spawn time ${SPAWN_TIME}ms exceeds 3.2ms threshold"
+              echo ""
+              echo "🔧 Oracle's optimization recommendations:"
+              echo "1. Use pre-compiled bundles instead of DSL parsing"
+              echo "2. Implement memory pools for entity storage"
+              echo "3. Batch spawn operations for better cache locality"
+              echo "4. Remove component validation from hot path"
+              exit 1
+            else
+              echo "✅ PERFORMANCE GATE PASSED: ${SPAWN_TIME}ms ≤ 3.2ms"
+            fi
+          else
+            echo "⚠️ Could not extract spawn time from perf_100k results"
+            echo "::warning title=Performance Gate Skipped::Could not extract spawn time from perf_100k results"
+          fi
           
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
@@ -209,6 +253,8 @@ jobs:
           name: benchmark-results
           path: |
             target/criterion/
+            factory_results.txt
+            perf_100k_results.txt
           retention-days: 30
 
   # GPU Culling Demo Testing (Optional/Non-blocking)

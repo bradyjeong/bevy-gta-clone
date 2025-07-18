@@ -3,7 +3,10 @@
 //! Enhanced LOD system with hysteresis, smooth transitions, and BatchManager integration.
 //! Provides distance-based switching with efficient change tracking.
 
-use crate::{BatchKey, ExtractedInstance};
+use crate::{
+    distance_cache::{get_cached_distance, DistanceCacheResource, FrameCounter},
+    BatchKey, ExtractedInstance,
+};
 use bevy::prelude::*;
 use smallvec::SmallVec;
 
@@ -220,6 +223,8 @@ pub fn update_lod_system(
     cameras: Query<&Transform, With<Camera>>,
     mut commands: Commands,
     mut lod_groups: Query<(Entity, &mut LodGroup, &Transform), Without<Camera>>,
+    mut distance_cache: ResMut<DistanceCacheResource>,
+    frame_counter: Res<FrameCounter>,
 ) {
     #[cfg(feature = "tracy")]
     let _span = tracy_client::span!("update_lod_system");
@@ -244,7 +249,13 @@ pub fn update_lod_system(
             break;
         }
 
-        let distance = camera_position.distance(transform.translation);
+        let distance = get_cached_distance(
+            &mut distance_cache,
+            &frame_counter,
+            camera_position,
+            transform.translation,
+            entity,
+        );
         let adjusted_distance = (distance * lod_config.bias).max(lod_config.min_distance);
 
         // Update LOD with change tracking

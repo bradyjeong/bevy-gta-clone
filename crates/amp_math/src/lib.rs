@@ -17,7 +17,10 @@
 //! ```
 
 pub mod bounds;
+pub mod chunk_key;
+pub mod coordinate_conversion;
 pub mod morton;
+pub mod spatial;
 pub mod transforms;
 
 pub use glam::*;

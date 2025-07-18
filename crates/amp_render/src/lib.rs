@@ -3,20 +3,18 @@
 //! This crate provides optimized rendering systems for AAA-level performance,
 //! including instance batching, GPU culling, and level-of-detail management.
 
-#![allow(deprecated)]
-#![allow(unused_imports)]
-#![allow(unused_variables)]
-#![allow(unexpected_cfgs)]
-#![allow(clippy::derivable_impls)]
-#![allow(clippy::explicit_counter_loop)]
-#![allow(clippy::uninlined_format_args)]
+// Allow directives removed as part of Phase 3.F cleanup
+// Tests may need additional fixes for full compatibility
 
 pub mod batching;
 pub mod culling;
 pub mod culling_integration;
+pub mod diagnostics;
+pub mod distance_cache;
 pub mod gpu_culling_integration;
 pub mod lod;
 pub mod optimized_queries;
+pub mod performance_tuning;
 pub mod render_world;
 
 #[cfg(feature = "gpu")]
@@ -27,6 +25,12 @@ pub mod gpu_culling;
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod distance_cache_integration_test;
+
+#[cfg(test)]
+mod distance_cache_benchmark;
 
 use bevy::prelude::*;
 use glam::{Mat4, Vec3};
@@ -188,6 +192,8 @@ impl Plugin for BatchingPlugin {
             batching::BatchingSystemPlugin,
             culling::CullingSystemPlugin,
             culling_integration::CullingIntegrationPlugin,
+            diagnostics::PerformanceDiagnosticsPlugin,
+            distance_cache::DistanceCachePlugin,
             gpu_culling_integration::GpuCullingIntegrationPlugin,
             lod::LodSystemPlugin,
             render_world::RenderWorldPlugin,
@@ -212,10 +218,22 @@ impl Plugin for BatchingPlugin {
 /// Re-exports for convenience
 pub mod prelude {
     pub use crate::{
-        batching::prelude::*, culling::prelude::*, culling_integration::prelude::*,
-        gpu_culling_integration::prelude::*, lod::prelude::*, optimized_queries::cached_systems,
-        render_world::prelude::*, Batch, BatchKey, BatchingPlugin, ExtractedInstance, ALPHA_FLAG,
-        SHADOW_FLAG,
+        batching::prelude::*,
+        culling::prelude::*,
+        culling_integration::prelude::*,
+        diagnostics::{
+            FrameMetrics, PerformanceBudgets, PerformanceDiagnosticIds, PerformanceDiagnostics,
+            PerformanceDiagnosticsPlugin, PerformanceStatus, PerformanceWarning,
+        },
+        distance_cache::{
+            get_cached_distance, DistanceCacheExt, DistanceCachePlugin, DistanceCacheResource,
+        },
+        gpu_culling_integration::prelude::*,
+        lod::prelude::*,
+        optimized_queries::cached_systems,
+        performance_tuning::{PerformanceTuning, PerformanceTuningPlugin},
+        render_world::prelude::*,
+        Batch, BatchKey, BatchingPlugin, ExtractedInstance, ALPHA_FLAG, SHADOW_FLAG,
     };
 
     #[cfg(feature = "gpu")]

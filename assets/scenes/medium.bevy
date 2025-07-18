@@ -1,0 +1,82 @@
+(
+  resources: {},
+  entities: [
+    // Camera
+    (
+      entity: 0,
+      components: [
+        {
+          "type": "bevy_transform::components::transform::Transform",
+          "struct": {
+            "translation": [0.0, 50.0, 0.0],
+            "rotation": [0.0, 0.0, 0.0, 1.0],
+            "scale": [1.0, 1.0, 1.0],
+          },
+        },
+        {
+          "type": "bevy_transform::components::global_transform::GlobalTransform",
+          "struct": {
+            "translation": [0.0, 50.0, 0.0],
+            "rotation": [0.0, 0.0, 0.0, 1.0],
+            "scale": [1.0, 1.0, 1.0],
+          },
+        },
+        {
+          "type": "bevy_render::camera::camera::Camera",
+          "struct": {
+            "viewport": null,
+            "priority": 0,
+            "is_active": true,
+            "hdr": false,
+            "msaa_writeback": true,
+            "clear_color": "Default",
+            "clear_color_config": "Custom",
+          },
+        },
+        {
+          "type": "bevy_render::camera::projection::Projection",
+          "enum": {
+            "Perspective": {
+              "fov": 1.0471975511965979,
+              "aspect_ratio": 1.7777777777777777,
+              "near": 0.1,
+              "far": 1000.0,
+            },
+          },
+        },
+        {
+          "type": "bevy_render::view::visibility::Visibility",
+          "enum": "Visible",
+        },
+        {
+          "type": "bevy_render::view::visibility::InheritedVisibility",
+          "struct": {
+            "visible": true,
+          },
+        },
+        {
+          "type": "bevy_render::view::visibility::ViewVisibility",
+          "struct": {
+            "visible": false,
+          },
+        },
+      ],
+    ),
+    // Medium scene configuration marker
+    (
+      entity: 1,
+      components: [
+        {
+          "type": "amp_gameplay::city::components::SceneConfig",
+          "struct": {
+            "building_count": 10000,
+            "light_count": 2000,
+            "npc_count": 500,
+            "vehicle_count": 200,
+            "complexity": "Medium",
+          },
+        },
+      ],
+    ),
+  ],
+)

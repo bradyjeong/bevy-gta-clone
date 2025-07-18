@@ -23,7 +23,7 @@
 - **Purpose**: Prevents the ADR-0007 version consistency violation from happening again
 
 ## Project Vision
-**AAA-Level Open World Game** - GTA-style game built with Bevy 0.16.1 using Rust 2024 edition
+**AAA-Level Open World Game** - GTA-style game built with Bevy 0.16.1 using Rust 2021 edition
 - **Target**: Professional game development with Amp-optimized workflow
 - **Focus**: Ecosystem alignment, fast iteration, clear boundaries
 
@@ -97,12 +97,14 @@
 - Plugin-based architecture ready for Sprint 7
 
 ## Current Status
-🚀 **SPRINT 9 ACTIVE** - Optimization & Polishing Phase
+✅ **SPRINT 9 COMPLETED** - Optimization & Polishing Phase
 - **Objective**: Final optimization, performance tuning, and polish for AAA-grade release
+- **Status**: **COMPLETED** - All Sprint 9 deliverables implemented, v0.4.0-alpha.0 release ready
 - **Architecture**: 8-crate structure with Bevy 0.16.1 ecosystem alignment + rendering pipeline
 - **Active Crates**: amp_core, amp_math, amp_engine, amp_physics, amp_render, amp_gameplay, config_core, gameplay_factory
 - **Test Status**: 370+ tests passing across all crates + comprehensive integration tests
 - **Performance Baseline**: Established with 60 FPS gates, GPU culling infrastructure ready
+- **Release**: v0.4.0-alpha.0 tagged and ready for deployment
 
 ✅ **SPRINT 2 COMPLETED** - Vehicle Physics Foundation
 - **Objective**: Implement professional-grade vehicle physics system

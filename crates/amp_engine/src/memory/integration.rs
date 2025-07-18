@@ -5,7 +5,10 @@
 //! - Spawn DSL temporary Vec optimization
 //! - Batching instance vector pooling
 
+#[cfg(feature = "bevy16")]
 use super::{FixedVecPool, GlobalMemoryPools, PooledVec};
+#[cfg(not(feature = "bevy16"))]
+use super::{FixedVecPool, PooledVec};
 #[cfg(feature = "bevy16")]
 use bevy::prelude::*;
 

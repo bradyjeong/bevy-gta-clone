@@ -165,6 +165,12 @@ impl SimpleOptimizedFactory {
         #[cfg(feature = "tracy")]
         let _span = tracy_client::span!("spawn_batch_optimized");
 
+        #[cfg(feature = "perf_trace")]
+        let _span = tracing::trace_span!(
+            "spawn_batch_optimized",
+            total_entities = requests.iter().map(|(_, count)| count).sum::<usize>()
+        );
+
         // Calculate total entity count for pre-allocation
         let total_count: usize = requests.iter().map(|(_, count)| count).sum();
         if total_count == 0 {

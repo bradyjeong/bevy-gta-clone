@@ -8,7 +8,11 @@
 use crate::batching::BatchManager;
 use crate::culling::{CameraProjectionConfig, CullingConfig};
 use crate::render_world::ExtractedInstances;
-use crate::{culling::Cullable, BatchKey, ExtractedInstance};
+use crate::{
+    culling::Cullable,
+    distance_cache::{get_cached_distance, DistanceCacheResource, FrameCounter},
+    BatchKey, ExtractedInstance,
+};
 use bevy::prelude::*;
 
 /// Sprint 9 optimization: Use optimized query patterns to reduce per-frame overhead
@@ -28,7 +32,10 @@ pub mod cached_systems {
         #[cfg(feature = "tracy")]
         let _span = tracy_client::span!("optimized_extract_instances");
 
-        let Ok(camera_transform) = camera_query.get_single() else {
+        #[cfg(feature = "perf_trace")]
+        let _span = tracing::trace_span!("optimized_extract_instances");
+
+        let Ok(camera_transform) = camera_query.single() else {
             return;
         };
         let cam_pos = camera_transform.translation();
@@ -55,11 +62,16 @@ pub mod cached_systems {
         // Combined camera query for efficiency
         camera_query: Query<(&Camera, &GlobalTransform, Option<&Projection>)>,
         // Direct mutable access to cullable instances
-        mut cullable_query: Query<(&mut ExtractedInstance, &Cullable)>,
+        mut cullable_query: Query<(Entity, &mut ExtractedInstance, &Cullable)>,
         mut batch_manager: ResMut<BatchManager>,
+        mut distance_cache: ResMut<DistanceCacheResource>,
+        frame_counter: Res<FrameCounter>,
     ) {
         #[cfg(feature = "tracy")]
         let _span = tracy_client::span!("optimized_cpu_culling");
+
+        #[cfg(feature = "perf_trace")]
+        let _span = tracing::trace_span!("optimized_cpu_culling");
 
         let Some((_, camera_transform, camera_projection)) = camera_query.iter().next() else {
             return;
@@ -87,20 +99,25 @@ pub mod cached_systems {
         };
 
         let camera_pos = camera_transform.translation();
-        let mut visible_count = 0;
-        let mut culled_count = 0;
+        let mut _visible_count = 0;
+        let mut _culled_count = 0;
 
         // Single pass through cullable instances (optimized iteration)
-        for (mut instance, cullable) in cullable_query.iter_mut() {
+        for (entity, mut instance, cullable) in cullable_query.iter_mut() {
             let position = instance.transform.w_axis.truncate();
             let radius = cullable.radius;
             let mut visible = true;
 
-            // Distance culling (branch prediction friendly)
+            // Distance culling (branch prediction friendly) - using cached distance
             if culling_config.enable_distance_culling {
-                let distance_sq = camera_pos.distance_squared(position);
-                let max_distance_sq = culling_config.max_distance * culling_config.max_distance;
-                if distance_sq > max_distance_sq {
+                let distance = get_cached_distance(
+                    &mut distance_cache,
+                    &frame_counter,
+                    camera_pos,
+                    position,
+                    entity,
+                );
+                if distance > culling_config.max_distance {
                     visible = false;
                 }
             }
@@ -115,10 +132,10 @@ pub mod cached_systems {
             instance.visible = visible;
 
             if visible {
-                visible_count += 1;
+                _visible_count += 1;
                 batch_manager.add_instance(&instance);
             } else {
-                culled_count += 1;
+                _culled_count += 1;
             }
         }
 
@@ -139,7 +156,7 @@ pub mod cached_systems {
         #[cfg(feature = "tracy")]
         let _span = tracy_client::span!("optimized_lod_extraction");
 
-        let mut updated_instances = 0;
+        let mut _updated_instances = 0;
 
         // Reduced iteration scope: only visible LOD groups
         for lod_group in lod_query.iter() {
@@ -151,7 +168,7 @@ pub mod cached_systems {
                         .unwrap_or_else(Handle::default);
 
                     instance.batch_key = crate::BatchKey::new(&current_level.mesh, &material);
-                    updated_instances += 1;
+                    _updated_instances += 1;
                 }
             }
         }

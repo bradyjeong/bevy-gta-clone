@@ -458,7 +458,7 @@ pub fn extract_instances(
     >,
     camera_q: Extract<Query<&GlobalTransform, With<Camera>>>,
 ) {
-    let Ok(camera_transform) = camera_q.get_single() else {
+    let Ok(camera_transform) = camera_q.single() else {
         return; // No camera found, skip extraction
     };
     let cam_pos = camera_transform.translation();
@@ -679,8 +679,8 @@ mod tests {
 
     #[test]
     fn test_prepared_batch_operations() {
-        let mesh_handle = Handle::weak_from_u128(123);
-        let material_handle = Handle::weak_from_u128(456);
+        let mesh_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-00000000007b");
+        let material_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-0000000001c8");
         let key = BatchKey::new(&mesh_handle, &material_handle);
         let mut batch = PreparedBatch::new(key.clone());
 
@@ -702,8 +702,8 @@ mod tests {
         let mut instance_meta = InstanceMeta::default();
 
         // Setup test batches
-        let mesh_handle = Handle::weak_from_u128(123);
-        let material_handle = Handle::weak_from_u128(456);
+        let mesh_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-00000000007b");
+        let material_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-0000000001c8");
 
         // Opaque batch
         let opaque_key = BatchKey::new(&mesh_handle, &material_handle);
@@ -756,8 +756,8 @@ mod tests {
     fn test_instance_meta_batch_management() {
         let mut meta = InstanceMeta::default();
 
-        let mesh_handle = Handle::weak_from_u128(123);
-        let material_handle = Handle::weak_from_u128(456);
+        let mesh_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-00000000007b");
+        let material_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-0000000001c8");
         let key = BatchKey::new(&mesh_handle, &material_handle);
 
         let transform = Mat4::from_translation(Vec3::new(1.0, 2.0, 3.0));
@@ -782,8 +782,8 @@ mod tests {
         world.spawn((GlobalTransform::from_xyz(0.0, 0.0, 5.0), Camera::default()));
 
         // Spawn entities with different visibility states
-        let mesh_handle = Handle::weak_from_u128(123);
-        let material_handle = Handle::weak_from_u128(456);
+        let mesh_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-00000000007b");
+        let material_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-0000000001c8");
         let key = BatchKey::new(&mesh_handle, &material_handle);
 
         // Visible entity (should be extracted)
@@ -820,7 +820,7 @@ mod tests {
 
         // Manually run the extraction logic
         let mut camera_query = world.query_filtered::<&GlobalTransform, With<Camera>>();
-        let Ok(camera_transform) = camera_query.get_single(&world) else {
+        let Ok(camera_transform) = camera_query.single(&world) else {
             panic!("No camera found");
         };
         let cam_pos = camera_transform.translation();
