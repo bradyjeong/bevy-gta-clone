@@ -15,6 +15,7 @@ default = []
 hot-reload = ["dep:notify"]
 bevy-assets = ["dep:bevy", "dep:notify"]
 schemars = ["dep:schemars", "dep:serde_json"]
+unstable_advanced_input = []
 
 [dependencies]
 amp_core = { path = "../amp_core" }

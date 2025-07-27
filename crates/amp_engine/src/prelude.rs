@@ -12,8 +12,7 @@ pub use crate::tracing::*;
 pub use crate::plugins::{AAAPlugin, AAAPlugins, PluginStage};
 
 #[cfg(feature = "bevy16")]
-pub use crate::assets::*;
-
+// pub use crate::assets::*; // TODO: Fix assets module
 #[cfg(feature = "bevy16")]
 // Re-export GPU module contents (avoiding Window/Color conflicts)
 pub use crate::gpu::{GpuContext, GpuError, Surface, SurfaceManager};

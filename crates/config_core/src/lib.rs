@@ -30,8 +30,15 @@ pub mod vehicle;
 // Audio configuration types
 pub mod audio;
 
+// Vegetation configuration types
+pub mod vegetation;
+
 // Configuration validation
 pub mod validation;
+
+// Input configuration (feature-gated)
+#[cfg(feature = "unstable_advanced_input")]
+pub mod input;
 
 // Re-export vehicle configuration types for convenience
 pub use vehicle::{
@@ -41,6 +48,9 @@ pub use vehicle::{
 
 // Re-export audio configuration types for convenience
 pub use audio::{AudioConfig, EngineAudioConfig, VehicleAudioConfig};
+
+// Re-export vegetation configuration types for convenience
+pub use vegetation::{VegetationConfig, VegetationInstancingConfig, VegetationLODConfig};
 
 // Re-export validation functionality
 pub use validation::ConfigValidator;

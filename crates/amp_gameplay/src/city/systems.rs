@@ -303,13 +303,15 @@ fn spawn_one_street(
     city_config: &CityConfig,
     city_render_assets: &CityRenderAssets,
 ) -> Entity {
-    let world_pos = city_config.grid_to_world(grid_pos);
+    let mut world_pos = city_config.grid_to_world(grid_pos);
+    // Position streets at ground level
+    world_pos.y = 0.05;
 
-    // Calculate proper scaling
+    // Calculate proper scaling - use cube for better visibility
     let scale = Vec3::new(
-        street_spec.width / 8.0, // Normalize to base width
-        1.0,
-        city_config.tile_size / 8.0,
+        city_config.tile_size * 0.9, // Slightly smaller than tile to avoid overlaps
+        0.1,                         // Thin but visible thickness
+        city_config.tile_size * 0.9, // Slightly smaller than tile
     );
 
     // Calculate cullable radius based on scaled dimensions
@@ -330,7 +332,7 @@ fn spawn_one_street(
             InheritedVisibility::default(),
             ViewVisibility::default(),
             BatchKey::new(
-                &city_render_assets.plane_mesh,
+                &city_render_assets.cube_mesh, // Use cube instead of plane for visibility
                 &city_render_assets.street_material,
             ),
             Cullable::new(cullable_radius),
@@ -347,13 +349,15 @@ fn spawn_one_intersection(
     city_config: &CityConfig,
     city_render_assets: &CityRenderAssets,
 ) -> Entity {
-    let world_pos = city_config.grid_to_world(grid_pos);
+    let mut world_pos = city_config.grid_to_world(grid_pos);
+    // Position intersections at ground level
+    world_pos.y = 0.05;
 
-    // Calculate proper scaling
+    // Calculate proper scaling - use cube for better visibility
     let scale = Vec3::new(
-        intersection_spec.size / 15.0, // Normalize to base size
-        1.0,
-        intersection_spec.size / 15.0,
+        city_config.tile_size, // Use full tile size for width
+        0.1,                   // Thin but visible thickness
+        city_config.tile_size, // Use full tile size for length
     );
 
     // Calculate cullable radius based on scaled dimensions
@@ -373,7 +377,7 @@ fn spawn_one_intersection(
             InheritedVisibility::default(),
             ViewVisibility::default(),
             BatchKey::new(
-                &city_render_assets.plane_mesh,
+                &city_render_assets.cube_mesh, // Use cube instead of plane for visibility
                 &city_render_assets.intersection_material,
             ),
             Cullable::new(cullable_radius),
@@ -383,6 +387,7 @@ fn spawn_one_intersection(
 }
 
 /// Simple radius-based city streaming system - spawns entities around player within radius
+/// Now integrated with SpawnBudgetPolicy for controlled entity spawning
 pub fn spawn_city_radius(
     mut commands: Commands,
     city_config: Res<CityConfig>,
@@ -390,6 +395,9 @@ pub fn spawn_city_radius(
     city_render_assets: Res<CityRenderAssets>,
     player_query: Query<&Transform, With<Player>>,
     existing_buildings: Query<&Transform, With<Building>>,
+    existing_streets: Query<&Transform, With<Street>>,
+    mut spawn_budget: ResMut<crate::spawn_budget_policy::SpawnBudgetPolicy>,
+    time: Res<Time>,
 ) {
     const SPAWN_RADIUS: f32 = 512.0; // 512m radius matching Oracle's spec
     const MAX_BUILDINGS_IN_WORLD: usize = 1000; // Limit to prevent spawning too many entities
@@ -399,6 +407,10 @@ pub fn spawn_city_radius(
         Ok(transform) => transform.translation,
         Err(_) => return, // No player found
     };
+
+    // Determine biome based on player position (simplified)
+    let biome = crate::spawn_budget_integration::detect_biome_from_position(player_pos);
+    let game_time = time.elapsed_secs();
 
     // Skip if we already have too many buildings
     if existing_buildings.iter().count() >= MAX_BUILDINGS_IN_WORLD {
@@ -424,14 +436,25 @@ pub fn spawn_city_radius(
                 .any(|existing_transform| existing_transform.translation.distance(world_pos) < 1.0);
 
             if !already_exists {
-                spawn_one_building(
-                    &mut commands,
-                    *grid_pos,
-                    building_spec,
-                    &city_config,
-                    &city_render_assets,
-                );
-                entities_spawned += 1;
+                // Check SBP before spawning
+                if spawn_budget.can_spawn(crate::spawn_budget_policy::EntityType::Building, biome) {
+                    spawn_one_building(
+                        &mut commands,
+                        *grid_pos,
+                        building_spec,
+                        &city_config,
+                        &city_render_assets,
+                    );
+                    spawn_budget.record_spawn(crate::spawn_budget_policy::EntityType::Building);
+                    entities_spawned += 1;
+                } else {
+                    // Log budget limitation
+                    debug!(
+                        "Building spawn blocked by budget limit for biome {:?}",
+                        biome
+                    );
+                    break; // Stop spawning buildings if budget exhausted
+                }
             }
         }
     }
@@ -446,14 +469,28 @@ pub fn spawn_city_radius(
         let distance = player_pos.distance(world_pos);
 
         if distance <= SPAWN_RADIUS {
-            spawn_one_street(
-                &mut commands,
-                *grid_pos,
-                street_spec,
-                &city_config,
-                &city_render_assets,
-            );
-            entities_spawned += 1;
+            // Check if street already exists at this position
+            let already_exists = existing_streets
+                .iter()
+                .any(|existing_transform| existing_transform.translation.distance(world_pos) < 1.0);
+
+            if !already_exists {
+                // Check SBP before spawning (treat streets as buildings for budget purposes)
+                if spawn_budget.can_spawn(crate::spawn_budget_policy::EntityType::Building, biome) {
+                    spawn_one_street(
+                        &mut commands,
+                        *grid_pos,
+                        street_spec,
+                        &city_config,
+                        &city_render_assets,
+                    );
+                    spawn_budget.record_spawn(crate::spawn_budget_policy::EntityType::Building);
+                    entities_spawned += 1;
+                } else {
+                    debug!("Street spawn blocked by budget limit for biome {:?}", biome);
+                    break;
+                }
+            }
         }
     }
 
@@ -467,23 +504,39 @@ pub fn spawn_city_radius(
         let distance = player_pos.distance(world_pos);
 
         if distance <= SPAWN_RADIUS {
-            spawn_one_intersection(
-                &mut commands,
-                *grid_pos,
-                intersection_spec,
-                &city_config,
-                &city_render_assets,
-            );
-            entities_spawned += 1;
+            // Check SBP before spawning (treat intersections as buildings for budget purposes)
+            if spawn_budget.can_spawn(crate::spawn_budget_policy::EntityType::Building, biome) {
+                spawn_one_intersection(
+                    &mut commands,
+                    *grid_pos,
+                    intersection_spec,
+                    &city_config,
+                    &city_render_assets,
+                );
+                spawn_budget.record_spawn(crate::spawn_budget_policy::EntityType::Building);
+                entities_spawned += 1;
+            } else {
+                debug!(
+                    "Intersection spawn blocked by budget limit for biome {:?}",
+                    biome
+                );
+                break;
+            }
         }
     }
 
     if entities_spawned > 0 {
+        let budget_utilization = spawn_budget.get_budget_utilization(biome);
         info!(
-            "Spawned {} entities this frame around player",
-            entities_spawned
+            "Spawned {} entities this frame around player (Budget utilization: {:.1}% for {:?})",
+            entities_spawned,
+            budget_utilization * 100.0,
+            biome
         );
     }
+
+    // Reset frame counters for SBP
+    spawn_budget.reset_frame_counters();
 }
 
 // Phase 3.D: Light Budget System

@@ -48,7 +48,7 @@ pub fn update_interaction_prompts(
             interaction_state.prompt_visible = true;
         } else {
             // Hide prompt
-            if let Ok((ui_entity, mut text, mut visibility)) = ui_query.single_mut() {
+            if let Ok((ui_entity, text, mut visibility)) = ui_query.single_mut() {
                 *visibility = Visibility::Hidden;
             }
 

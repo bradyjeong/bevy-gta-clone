@@ -1,6 +1,6 @@
 //! Test utilities for amp_engine following Oracle's patterns
 
-use crate::assets::AmpScenePlugin;
+// use crate::assets::AmpScenePlugin; // TODO: Fix assets module
 use bevy::app::App;
 use bevy::asset::AssetPlugin;
 use bevy::MinimalPlugins;
@@ -31,8 +31,8 @@ use bevy::MinimalPlugins;
 pub fn test_app() -> App {
     let mut app = App::new();
     app.add_plugins(MinimalPlugins)
-        .add_plugins(AssetPlugin::default())
-        .add_plugins(AmpScenePlugin);
+        .add_plugins(AssetPlugin::default());
+    // .add_plugins(AmpScenePlugin); // TODO: Fix assets module
     app
 }
 
@@ -52,12 +52,11 @@ pub fn test_app() -> App {
 /// ```
 pub fn test_app_with_assets(asset_dir: String) -> App {
     let mut app = App::new();
-    app.add_plugins(MinimalPlugins)
-        .add_plugins(AssetPlugin {
-            file_path: asset_dir,
-            ..Default::default()
-        })
-        .add_plugins(AmpScenePlugin);
+    app.add_plugins(MinimalPlugins).add_plugins(AssetPlugin {
+        file_path: asset_dir,
+        ..Default::default()
+    });
+    // .add_plugins(AmpScenePlugin); // TODO: Fix assets module
     app
 }
 

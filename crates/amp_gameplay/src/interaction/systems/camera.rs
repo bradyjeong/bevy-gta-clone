@@ -2,6 +2,7 @@
 
 use crate::interaction::{components::*, events::*};
 use crate::prelude::{Player, Vehicle};
+use amp_physics::InterpolatedTransform;
 use bevy::prelude::*;
 
 /// Switch camera rigs based on vehicle enter/exit
@@ -10,7 +11,7 @@ pub fn switch_camera_rigs(
     mut vehicle_enter_events: EventReader<VehicleEnterEvent>,
     mut vehicle_exit_events: EventReader<VehicleExitEvent>,
     mut camera_query: Query<(Entity, &mut Transform), With<Camera>>,
-    player_query: Query<&Transform, (With<Player>, Without<Camera>)>,
+    player_query: Query<&InterpolatedTransform, (With<Player>, Without<Camera>)>,
     vehicle_query: Query<&Transform, (With<Vehicle>, Without<Camera>, Without<Player>)>,
 ) {
     // Handle vehicle enter - switch to vehicle camera
@@ -45,7 +46,7 @@ pub fn switch_camera_rigs(
     // Handle vehicle exit - switch to character camera
     for event in vehicle_exit_events.read() {
         if let Ok((camera_entity, mut camera_transform)) = camera_query.single_mut() {
-            if let Ok(player_transform) = player_query.get(event.player_entity) {
+            if let Ok(interpolated_transform) = player_query.get(event.player_entity) {
                 // Add character camera rig
                 commands.entity(camera_entity).insert(CharacterCameraRig {
                     target_entity: event.player_entity,
@@ -61,8 +62,9 @@ pub fn switch_camera_rigs(
 
                 // Initial camera position
                 let camera_offset = Vec3::new(0.0, 2.0, 5.0);
-                camera_transform.translation = player_transform.translation + camera_offset;
-                camera_transform.look_at(player_transform.translation, Vec3::Y);
+                camera_transform.translation =
+                    interpolated_transform.visual.translation + camera_offset;
+                camera_transform.look_at(interpolated_transform.visual.translation, Vec3::Y);
 
                 info!("Switched to character camera mode");
             }
@@ -102,13 +104,13 @@ pub fn update_vehicle_camera(
 pub fn update_character_camera(
     time: Res<Time>,
     mut camera_query: Query<(&mut Transform, &CharacterCameraRig), (With<Camera>, Without<Player>)>,
-    character_query: Query<&Transform, (With<Player>, Without<Camera>)>,
+    character_query: Query<&InterpolatedTransform, (With<Player>, Without<Camera>)>,
 ) {
     for (mut camera_transform, camera_rig) in camera_query.iter_mut() {
-        if let Ok(character_transform) = character_query.get(camera_rig.target_entity) {
+        if let Ok(interpolated_transform) = character_query.get(camera_rig.target_entity) {
             // Calculate desired camera position
-            let character_forward = character_transform.forward();
-            let desired_position = character_transform.translation
+            let character_forward = interpolated_transform.visual.forward();
+            let desired_position = interpolated_transform.visual.translation
                 - character_forward * camera_rig.follow_distance
                 + Vec3::Y * camera_rig.follow_height;
 
@@ -119,7 +121,7 @@ pub fn update_character_camera(
                 .lerp(desired_position, damping_factor);
 
             // Look at character
-            camera_transform.look_at(character_transform.translation, Vec3::Y);
+            camera_transform.look_at(interpolated_transform.visual.translation, Vec3::Y);
         }
     }
 }

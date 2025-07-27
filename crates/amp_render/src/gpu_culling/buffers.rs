@@ -9,7 +9,7 @@ use wgpu::util::DeviceExt;
 
 use super::{GpuCameraData, GpuCullingParams, GpuInstanceData};
 
-/// Manages GPU buffers for compute culling pipeline
+/// Manages GPU buffers for compute culling pipeline with double-buffering
 #[derive(Resource)]
 pub struct GpuCullingBuffers {
     /// Instance data buffer (read-only in compute shader)
@@ -22,6 +22,8 @@ pub struct GpuCullingBuffers {
     pub visibility_buffer: Buffer,
     /// Visible count output buffer (atomic counter)
     pub count_buffer: Buffer,
+    /// Double-buffered staging buffers for async readback (eliminates GPU→CPU sync stalls)
+    pub staging_buffers: [Buffer; 2],
     /// Bind group for compute shader
     pub bind_group: Option<BindGroup>,
     /// Current capacity in instances
@@ -78,12 +80,29 @@ impl GpuCullingBuffers {
             mapped_at_creation: false,
         });
 
+        // Create double-buffered staging buffers for async readback
+        let staging_buffers = [
+            device.create_buffer(&BufferDescriptor {
+                label: Some("gpu_culling_staging_buffer_0"),
+                size: count_buffer_size,
+                usage: BufferUsages::MAP_READ | BufferUsages::COPY_DST,
+                mapped_at_creation: false,
+            }),
+            device.create_buffer(&BufferDescriptor {
+                label: Some("gpu_culling_staging_buffer_1"),
+                size: count_buffer_size,
+                usage: BufferUsages::MAP_READ | BufferUsages::COPY_DST,
+                mapped_at_creation: false,
+            }),
+        ];
+
         Self {
             instance_buffer,
             camera_buffer,
             params_buffer,
             visibility_buffer,
             count_buffer,
+            staging_buffers,
             bind_group: None,
             capacity,
         }
@@ -139,22 +158,27 @@ impl GpuCullingBuffers {
         encoder.clear_buffer(&self.count_buffer, 0, Some(4));
     }
 
-    /// Read back visible count from GPU (async)
-    pub fn read_visible_count(
+    /// Get staging buffer for non-blocking GPU culling result readback
+    ///
+    /// Returns the current frame's staging buffer for asynchronous reading.
+    /// Uses double-buffering to eliminate GPU→CPU sync stalls by maintaining
+    /// two result buffers and swapping between frames.
+    pub fn get_result_staging_buffer(&self, frame_index: usize) -> &Buffer {
+        &self.staging_buffers[frame_index % 2]
+    }
+
+    /// Initiate asynchronous copy of culling results to staging buffer
+    ///
+    /// This does NOT block the GPU pipeline. The results will be available
+    /// in the next frame via async readback without causing frame drops.
+    pub fn begin_async_readback(
         &self,
         device: &RenderDevice,
         encoder: &mut CommandEncoder,
-    ) -> Buffer {
-        // Create staging buffer for readback
-        let staging_buffer = device.create_buffer(&BufferDescriptor {
-            label: Some("gpu_culling_readback_buffer"),
-            size: 4,
-            usage: BufferUsages::MAP_READ | BufferUsages::COPY_DST,
-            mapped_at_creation: false,
-        });
-
-        encoder.copy_buffer_to_buffer(&self.count_buffer, 0, &staging_buffer, 0, 4);
-        staging_buffer
+        frame_index: usize,
+    ) {
+        let staging_buffer = &self.staging_buffers[frame_index % 2];
+        encoder.copy_buffer_to_buffer(&self.count_buffer, 0, staging_buffer, 0, 4);
     }
 
     /// Check if buffers can accommodate the given instance count

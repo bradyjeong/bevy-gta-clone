@@ -1,0 +1,43 @@
+(
+    character_type: "basic_humanoid",
+    clips: {
+        "idle": "characters/models/basic_humanoid.gltf#Animation0",
+        "walk": "characters/models/basic_humanoid.gltf#Animation1", 
+        "run": "characters/models/basic_humanoid.gltf#Animation2",
+        "sprint": "characters/models/basic_humanoid.gltf#Animation2", // Reuse run for now
+        "jump": "characters/models/basic_humanoid.gltf#Animation0", // Fallback to idle
+        "fall": "characters/models/basic_humanoid.gltf#Animation0", // Fallback to idle
+        "land": "characters/models/basic_humanoid.gltf#Animation0", // Fallback to idle
+        "turn": "characters/models/basic_humanoid.gltf#Animation1", // Reuse walk
+    },
+    blend_weights: {
+        "idle": 1.0,
+        "walk": 1.0,
+        "run": 1.0,
+        "sprint": 1.0,
+        "jump": 1.0,
+        "fall": 1.0,
+        "land": 1.0,
+        "turn": 1.0,
+    },
+    speeds: {
+        "idle": 1.0,
+        "walk": 1.2,
+        "run": 1.5,
+        "sprint": 2.0,
+        "jump": 1.0,
+        "fall": 1.0,
+        "land": 1.0,
+        "turn": 1.0,
+    },
+    transitions: {
+        "idle": 0.3,
+        "walk": 0.2,
+        "run": 0.15,
+        "sprint": 0.1,
+        "jump": 0.1,
+        "fall": 0.05,
+        "land": 0.2,
+        "turn": 0.15,
+    },
+)

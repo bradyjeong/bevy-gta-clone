@@ -21,6 +21,19 @@ pub mod chunk_key;
 pub mod coordinate_conversion;
 pub mod morton;
 pub mod spatial;
+
+#[cfg(feature = "unstable_road_system")]
+pub mod spline;
 pub mod transforms;
 
-pub use glam::*;
+// Essential glam re-exports - minimized API surface
+pub use glam::{f32::Vec3A, IVec3, Mat4, Quat, UVec3, Vec2, Vec3};
+
+// DEPRECATED: Use amp_foundation::prelude instead
+#[deprecated(note = "Use amp_foundation::prelude instead")]
+pub mod prelude {
+    pub use crate::bounds::{Aabb, Sphere};
+    pub use crate::morton::Morton3D;
+    pub use crate::transforms::Transform;
+    pub use glam::Vec3;
+}

@@ -113,6 +113,33 @@ This demonstrates all core systems working together: vehicle physics, audio, NPC
 
 ## Quick Start
 
+### Using Facade Crates (Recommended)
+
+```rust
+// For game development - use amp_game facade
+use amp_game::prelude::*;
+
+fn main() {
+    App::new()
+        .add_plugins(DefaultPlugins)
+        .add_plugins(GameplayPlugins)
+        .run();
+}
+```
+
+```rust
+// For engine building - use amp_foundation facade
+use amp_foundation::prelude::*;
+
+fn main() {
+    let position = Vec3::new(1.0, 2.0, 3.0);
+    let aabb = AABB::from_center_size(position, Vec3::ONE);
+    println!("AABB: {:?}", aabb);
+}
+```
+
+### Development Setup
+
 ```bash
 # Clone the repository
 git clone https://github.com/bradyjeong/bevy-gta-clone.git
@@ -121,11 +148,11 @@ cd bevy-gta-clone
 # Build the workspace
 cargo build --workspace
 
+# Test facade crates
+cargo test -p amp_foundation -p amp_game
+
 # Run the city demo (post-migration)
 cargo run --example city_demo
-
-# Run tests
-cargo test --workspace
 
 # Run full CI pipeline locally
 ./scripts/pre-commit-check.sh
@@ -133,10 +160,12 @@ cargo test --workspace
 
 ## Current Architecture
 
-Oracle's strategic crate structure for ecosystem alignment:
+Oracle's strategic crate structure with facade strategy for ecosystem alignment:
 
 ```
 ├─ crates/
+│   ├─ amp_foundation/    # 🎯 Facade: Core + Math (no Bevy deps, engine builders)
+│   ├─ amp_game/          # 🎯 Facade: Complete game development interface
 │   ├─ amp_core/          # Pure Rust utilities, error handling (no Bevy deps)
 │   ├─ amp_math/          # glam re-exports, Morton, AABB (no Bevy deps)  
 │   ├─ amp_engine/        # Bevy 0.16.1 dependency, engine plugins
@@ -149,6 +178,12 @@ Oracle's strategic crate structure for ecosystem alignment:
 ├─ examples/              # Asset pipeline demonstrations
 └─ docs/adr/              # Architecture Decision Records
 ```
+
+### 🎯 Facade Strategy
+
+Two main entry points for different developer needs:
+- **amp_foundation**: For engine builders - core utilities without Bevy dependencies
+- **amp_game**: For game developers - complete game development interface
 
 ## Features
 

@@ -7,6 +7,10 @@ use amp_core::Error;
 use amp_gameplay::npc::{
     LastUpdateFrame, NpcBrainHandle, NpcBundle, NpcConfig, NpcState, NpcType, NPC,
 };
+use amp_gameplay::spawn_budget_integration::{detect_biome_from_position, NpcTag};
+use amp_gameplay::spawn_budget_policy::{
+    EntityType, SpawnBudgetPolicy, SpawnData, SpawnPriority, SpawnResult,
+};
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -35,7 +39,60 @@ impl NpcFactory {
     /// 3. Configurable NPC type and behavior properties
     ///
     /// Returns the Entity ID of the NPC entity.
+    /// Spawn a single NPC entity with budget enforcement
+    pub fn spawn_npc_with_budget(
+        &self,
+        commands: &mut Commands,
+        policy: &mut ResMut<SpawnBudgetPolicy>,
+        config: &NpcConfig,
+        npc_type: NpcType,
+        position: Vec3,
+        npc_id: u32,
+        priority: SpawnPriority,
+        time: &Res<Time>,
+    ) -> Result<SpawnResult, Error> {
+        let biome = detect_biome_from_position(position);
+        let game_time = time.elapsed_secs();
+
+        let spawn_data = SpawnData::Npc {
+            position,
+            npc_type: format!("{:?}", npc_type),
+        };
+
+        let result = policy.request_spawn(
+            EntityType::Npc,
+            biome,
+            priority,
+            spawn_data.clone(),
+            game_time,
+        );
+
+        match result {
+            SpawnResult::Approved => {
+                // Immediate spawn
+                let _entity =
+                    self.spawn_npc_immediate(commands, config, npc_type, position, npc_id)?;
+                Ok(SpawnResult::Approved)
+            }
+            SpawnResult::Queued => Ok(SpawnResult::Queued),
+            SpawnResult::Rejected(reason) => Ok(SpawnResult::Rejected(reason)),
+        }
+    }
+
+    /// Spawn a single NPC entity (original method, now internal)
     pub fn spawn_npc(
+        &self,
+        commands: &mut Commands,
+        config: &NpcConfig,
+        npc_type: NpcType,
+        position: Vec3,
+        npc_id: u32,
+    ) -> Result<Entity, Error> {
+        self.spawn_npc_immediate(commands, config, npc_type, position, npc_id)
+    }
+
+    /// Internal immediate spawn method
+    fn spawn_npc_immediate(
         &self,
         commands: &mut Commands,
         config: &NpcConfig,
@@ -89,13 +146,49 @@ impl NpcFactory {
             view_visibility: ViewVisibility::default(),
         };
 
-        // Spawn the NPC entity
-        let entity = commands.spawn(npc_bundle).id();
+        // Spawn the NPC entity with budget tracking tag
+        let entity = commands
+            .spawn((
+                npc_bundle,
+                NpcTag {
+                    npc_type: format!("{:?}", npc_type),
+                },
+            ))
+            .id();
 
         Ok(entity)
     }
 
-    /// Spawn multiple NPCs in a batch
+    /// Spawn multiple NPCs in a batch with budget enforcement
+    pub fn spawn_npcs_batch_with_budget(
+        &self,
+        commands: &mut Commands,
+        policy: &mut ResMut<SpawnBudgetPolicy>,
+        config: &NpcConfig,
+        spawn_requests: &[NpcSpawnRequest],
+        priority: SpawnPriority,
+        time: &Res<Time>,
+    ) -> Result<Vec<SpawnResult>, Error> {
+        let mut results = Vec::with_capacity(spawn_requests.len());
+
+        for request in spawn_requests {
+            let result = self.spawn_npc_with_budget(
+                commands,
+                policy,
+                config,
+                request.npc_type,
+                request.position,
+                request.npc_id,
+                priority,
+                time,
+            )?;
+            results.push(result);
+        }
+
+        Ok(results)
+    }
+
+    /// Spawn multiple NPCs in a batch (original method)
     pub fn spawn_npcs_batch(
         &self,
         commands: &mut Commands,

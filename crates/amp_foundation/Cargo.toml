@@ -1,0 +1,22 @@
+[package]
+name = "amp_foundation"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "README.md"
+resolver = "2"
+
+[dependencies]
+# Re-export foundation crates (Bevy-free)
+amp_core = { path = "../amp_core", default-features = false }
+amp_math = { path = "../amp_math" }
+config_core = { path = "../config_core" }
+
+[features]
+default = []
+# Forward features from underlying crates
+unstable_advanced_input = ["amp_core/unstable_advanced_input", "config_core/unstable_advanced_input"]
+unstable_road_system = ["amp_math/unstable_road_system"]
+

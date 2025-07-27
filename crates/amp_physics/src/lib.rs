@@ -5,11 +5,25 @@
 
 use bevy::prelude::*;
 
+/// System sets for proper physics pipeline ordering
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+pub enum PhysicsSets {
+    /// Prepare physics interpolation before physics step
+    PrePhysics,
+    /// Physics simulation step (FixedUpdate systems + Rapier)
+    PhysicsStep,
+    /// Sync physics transforms after physics step
+    PostPhysics,
+    /// Interpolate visual transforms for smooth rendering
+    Interpolate,
+}
+
 pub mod benchmarks;
 pub mod bundles;
 pub mod components;
 pub mod debug;
 pub mod drivetrain;
+pub mod interpolation;
 pub mod suspension;
 pub mod systems;
 pub mod time;
@@ -25,6 +39,10 @@ pub use bundles::*;
 pub use components::*;
 pub use debug::{DebugConfig, PhysicsDebugPlugin, PhysicsPerformanceMetrics};
 pub use drivetrain::DrivetrainPlugin;
+pub use interpolation::{
+    interpolate_transforms, prepare_physics_interpolation, sync_physics_transforms,
+    InterpolatedTransform, InterpolatedTransformBundle,
+};
 pub use suspension::{
     vehicle_suspension_system, PhysicsUpdate, SuspensionPlugin, SuspensionRay, WheelState,
 };
@@ -55,9 +73,36 @@ impl PhysicsPlugin {
 
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
+        // Configure proper system ordering
+        app.configure_sets(
+            Update,
+            (
+                PhysicsSets::PrePhysics,
+                PhysicsSets::PhysicsStep,
+                PhysicsSets::PostPhysics,
+                PhysicsSets::Interpolate,
+            )
+                .chain(),
+        );
+
         // Add core physics resources and systems
         app.init_resource::<PhysicsTime>()
-            .add_systems(Update, (update_physics_time, apply_physics_config));
+            .add_systems(
+                Update,
+                (update_physics_time, apply_physics_config).in_set(PhysicsSets::PrePhysics),
+            )
+            .add_systems(
+                Update,
+                prepare_physics_interpolation.in_set(PhysicsSets::PrePhysics),
+            )
+            .add_systems(
+                Update,
+                sync_physics_transforms.in_set(PhysicsSets::PostPhysics),
+            )
+            .add_systems(
+                Update,
+                interpolate_transforms.in_set(PhysicsSets::Interpolate),
+            );
 
         // Insert provided config or default
         if let Some(config) = &self.config {
@@ -111,4 +156,10 @@ mod tests {
         // Note: We don't call update() because Rapier requires AssetPlugin
         // This test verifies the plugin builds correctly with the feature flag
     }
+}
+
+// DEPRECATED: Use amp_foundation::prelude instead
+#[deprecated(note = "Use amp_foundation::prelude instead")]
+pub mod prelude {
+    pub use crate::{InterpolatedTransform, PhysicsSets};
 }

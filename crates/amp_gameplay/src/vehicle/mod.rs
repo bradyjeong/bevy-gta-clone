@@ -70,9 +70,20 @@ impl Plugin for VehiclePlugin {
                     .chain(),
             )
             .add_systems(
+                PostUpdate,
+                (
+                    // Ensure vehicles have cached physics component
+                    systems::audio::ensure_vehicle_cached_physics,
+                    // Cache physics data from FixedUpdate for use in Update systems
+                    systems::audio::cache_vehicle_physics_for_audio,
+                )
+                    .chain(),
+            )
+            .add_systems(
                 Update,
                 (
-                    systems::input::handle_vehicle_input,
+                    // Audio systems run in Update for real-time responsiveness
+                    // but use cached physics data from FixedUpdate
                     systems::audio::update_vehicle_audio,
                 ),
             )
@@ -84,6 +95,7 @@ impl Plugin for VehiclePlugin {
             .register_type::<components::VehicleInput>()
             .register_type::<components::VehicleAudio>()
             .register_type::<components::CarConfig>()
+            .register_type::<systems::audio::CachedVehiclePhysics>()
             // Physics component types are now owned by amp_gameplay
             .register_type::<components::PhysicsVehicle>()
             .register_type::<components::Engine>()

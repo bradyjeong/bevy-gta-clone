@@ -3,9 +3,44 @@
 use crate::audio::VehicleEngineAudioEvent;
 use crate::vehicle::components::*;
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::Velocity;
 use config_core::{AudioConfig, ConfigLoader};
 
-/// Update vehicle audio based on physics state
+/// Cached physics data for audio systems
+#[derive(Component, Default, Debug, Clone, Reflect)]
+#[reflect(Component)]
+pub struct CachedVehiclePhysics {
+    pub velocity: Vec3,
+    pub speed: f32,
+    pub last_updated: f64,
+}
+
+/// System to ensure vehicles have cached physics component
+pub fn ensure_vehicle_cached_physics(
+    mut commands: Commands,
+    vehicles_without_cache: Query<Entity, (With<Vehicle>, Without<CachedVehiclePhysics>)>,
+) {
+    for entity in vehicles_without_cache.iter() {
+        commands
+            .entity(entity)
+            .insert(CachedVehiclePhysics::default());
+    }
+}
+
+/// System to cache physics data from FixedUpdate for use in Update systems
+pub fn cache_vehicle_physics_for_audio(
+    mut query: Query<(&mut CachedVehiclePhysics, &Velocity), With<Vehicle>>,
+    time: Res<Time>,
+) {
+    let current_time = time.elapsed_secs_f64();
+    for (mut cached, velocity) in query.iter_mut() {
+        cached.velocity = velocity.linvel;
+        cached.speed = velocity.linvel.length();
+        cached.last_updated = current_time;
+    }
+}
+
+/// Update vehicle audio based on cached physics state
 #[allow(clippy::type_complexity)]
 pub fn update_vehicle_audio(
     mut query: Query<
@@ -15,6 +50,7 @@ pub fn update_vehicle_audio(
             &Engine,
             &GlobalTransform,
             &VehicleInput,
+            Option<&CachedVehiclePhysics>,
         ),
         (With<Vehicle>, With<crate::audio::components::EngineAudio>),
     >,
@@ -24,7 +60,7 @@ pub fn update_vehicle_audio(
     let audio_config = ConfigLoader::new()
         .load_with_merge::<AudioConfig>()
         .unwrap_or_default();
-    for (entity, mut audio, engine, transform, input) in query.iter_mut() {
+    for (entity, mut audio, engine, transform, input, cached_physics) in query.iter_mut() {
         if audio.engine_sound_enabled {
             // Calculate engine volume based on RPM only if engine is running
             if engine.rpm > 0.0 {
@@ -47,8 +83,8 @@ pub fn update_vehicle_audio(
         }
 
         if audio.tire_screech_enabled {
-            // Calculate tire screech volume based on velocity
-            let speed = 0.0_f32; // TODO: Get speed from physics system
+            // Calculate tire screech volume based on cached velocity from FixedUpdate physics
+            let speed = cached_physics.map(|p| p.speed).unwrap_or(0.0);
             let velocity_ratio = (speed / 50.0).min(1.0); // Assume 50 m/s max for screech
 
             // Only update tire screech volume if there's actual velocity

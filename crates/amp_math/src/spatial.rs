@@ -21,6 +21,16 @@
 use glam::Vec3;
 use std::collections::HashMap;
 
+#[cfg(feature = "unstable_hierarchical_world")]
+pub mod quadtree;
+
+#[cfg(feature = "unstable_hierarchical_world")]
+pub use quadtree::{
+    LODLevel, WorldCoord, DETAIL_CHUNK_SIZE, DETAIL_STREAMING_RADIUS, LOCAL_CHUNK_SIZE,
+    LOCAL_STREAMING_RADIUS, MACRO_REGION_SIZE, MACRO_STREAMING_RADIUS, MICRO_CHUNK_SIZE,
+    MICRO_STREAMING_RADIUS, REGION_SIZE, REGION_STREAMING_RADIUS,
+};
+
 /// Morton key wrapper for 3D spatial indexing using u64.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct MortonKey3(pub u64);

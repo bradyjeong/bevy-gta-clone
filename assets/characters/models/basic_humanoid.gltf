@@ -1,0 +1,137 @@
+{
+  "asset": {
+    "generator": "Khronos glTF Blender I/O v3.6.27",
+    "version": "2.0"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Scene",
+      "nodes": [0]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "Cube",
+      "rotation": [0, 0, 0, 1],
+      "scale": [1, 1, 1],
+      "translation": [0, 0, 0]
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Cube",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1
+          },
+          "indices": 2
+        }
+      ]
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 8,
+      "max": [1, 1, 1],
+      "min": [-1, -1, -1],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 8,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5123,
+      "count": 36,
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 96,
+      "byteOffset": 0
+    },
+    {
+      "buffer": 0,
+      "byteLength": 96,
+      "byteOffset": 96
+    },
+    {
+      "buffer": 0,
+      "byteLength": 72,
+      "byteOffset": 192
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 264,
+      "uri": "data:application/octet-stream;base64,AACAPwAAgD8AAIA/AACAPwAAgD8AAIC/AACAPwAAgL8AAIA/AACAPwAAgL8AAIC/AACAvwAAgD8AAIA/AACAvwAAgD8AAIC/AACAvwAAgL8AAIA/AACAvwAAgL8AAIC/AAAAAAAAAAAAAIA/AAAAgAAAgD8AAAAAAACAPwAAAAAAAACAAAAAAAAAgL8AAACAAAAAAAAAAAAAAIC/AAAAgAAAgL8AAAAAAACAvwAAAAAAAACAAAAAvwAAgD8AAAAAAACAvwAAAAAAAACAAAAAAAAAAJ8AAABAAAAAAAAAAIAAAABAAAAAAIAAAABAAAAAAIAAAABAAAAAAAAAAAAAAIAAAAAAIAAAAAAAAAAAAABAAAAAIAAAABAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQACAAMAAQADAAQAAQAEGAAQAAQAAACAAAACAAAACAAQAAAAAACADAAWAA"
+    }
+  ],
+  "animations": [
+    {
+      "name": "Idle",
+      "channels": [
+        {
+          "sampler": 0,
+          "target": {
+            "node": 0,
+            "path": "translation"
+          }
+        }
+      ],
+      "samplers": [
+        {
+          "input": 3,
+          "output": 4
+        }
+      ]
+    },
+    {
+      "name": "Walk",
+      "channels": [
+        {
+          "sampler": 1,
+          "target": {
+            "node": 0,
+            "path": "translation"
+          }
+        }
+      ],
+      "samplers": [
+        {
+          "input": 5,
+          "output": 6
+        }
+      ]
+    },
+    {
+      "name": "Run",
+      "channels": [
+        {
+          "sampler": 2,
+          "target": {
+            "node": 0,
+            "path": "translation"
+          }
+        }
+      ],
+      "samplers": [
+        {
+          "input": 7,
+          "output": 8
+        }
+      ]
+    }
+  ]
+}

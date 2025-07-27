@@ -2,6 +2,7 @@
 
 use crate::audio::components::EngineAudio;
 use crate::vehicle::components::*;
+use amp_physics::InterpolatedTransform;
 use bevy::prelude::*;
 
 /// Bundle for creating a complete vehicle entity
@@ -15,6 +16,8 @@ pub struct VehicleBundle {
     pub audio: VehicleAudio,
     /// Engine audio component for sound effects
     pub engine_audio: EngineAudio,
+    /// Interpolated transform for smooth physics-visual rendering
+    pub interpolated_transform: InterpolatedTransform,
     /// Transform component
     pub transform: Transform,
     /// Global transform component
@@ -54,6 +57,8 @@ pub struct CarBundle {
     pub audio: VehicleAudio,
     /// Engine audio component for sound effects
     pub engine_audio: EngineAudio,
+    /// Interpolated transform for smooth physics-visual rendering
+    pub interpolated_transform: InterpolatedTransform,
     /// Transform component
     pub transform: Transform,
     /// Global transform component

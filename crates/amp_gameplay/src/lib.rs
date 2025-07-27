@@ -40,8 +40,21 @@ pub mod character;
 pub mod city;
 pub mod interaction;
 pub mod npc;
+pub mod persistence;
 pub mod physics;
+pub mod spawn_budget_integration;
+pub mod spawn_budget_policy;
 pub mod vehicle;
+pub mod water;
+
+#[cfg(feature = "unstable_road_system")]
+pub mod road;
+
+#[cfg(feature = "unstable_hierarchical_world")]
+pub mod biome;
+
+#[cfg(test)]
+pub mod spawn_budget_policy_tests;
 
 // Oracle's M4 requirements: Import world streaming and HUD
 #[cfg(feature = "bevy16")]
@@ -55,7 +68,7 @@ pub struct GameplayPlugins;
 
 impl PluginGroup for GameplayPlugins {
     fn build(self) -> PluginGroupBuilder {
-        let mut builder = PluginGroupBuilder::start::<Self>()
+        let builder = PluginGroupBuilder::start::<Self>()
             .add(character::CharacterPlugin)
             .add(vehicle::VehiclePlugin)
             .add(audio::AudioPlugin)
@@ -63,7 +76,15 @@ impl PluginGroup for GameplayPlugins {
             .add(physics::PhysicsPluginBridge::default())
             .add(city::CityPlugin)
             .add(city::CityStreamingPlugin)
-            .add(interaction::InteractionPlugin);
+            .add(interaction::InteractionPlugin)
+            .add(persistence::PersistencePlugin)
+            .add(spawn_budget_policy::SpawnBudgetPlugin);
+
+        // Add ported systems with feature flags
+        #[cfg(feature = "unstable_road_system")]
+        let builder = builder.add(road::RoadPlugin::new());
+
+        // Note: WaterPlugin available separately via water::WaterPlugin
 
         // Oracle's M4 requirements: Add world streaming and HUD plugins
         #[cfg(feature = "bevy16")]
@@ -82,7 +103,9 @@ pub mod prelude {
     pub use crate::city::{components::*, resources::*, CityPlugin, CityStreamingPlugin};
     pub use crate::interaction::*;
     pub use crate::npc::*;
+    pub use crate::persistence::{GameStatisticsTracker, PersistencePlugin, SaveGameState};
     pub use crate::physics::{resources::*, PhysicsPluginBridge};
     pub use crate::vehicle::prelude::*;
+    pub use crate::water::{components::*, WaterPlugin};
     pub use crate::GameplayPlugins;
 }

@@ -1,0 +1,19 @@
+(
+    lod: (
+        full_distance: 50.0,
+        medium_distance: 150.0,
+        billboard_distance: 300.0,
+        cull_distance: 500.0,
+        adaptive_lod: true,
+        target_frame_time: 0.016666667, // 60 FPS
+        update_frequency: 30.0,
+        monitor_performance: true,
+    ),
+    instancing: (
+        enable_instancing: true,
+        max_instances_per_batch: 1024,
+        batch_update_frequency: 10.0,
+        frustum_culling: true,
+        distance_culling: true,
+    )
+)

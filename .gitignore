@@ -7,12 +7,20 @@ target/
 *.json
 !**/configs/**/*.json
 
+# Coverage reports
+lcov.info
+coverage/
+
 # cargo-deny cache
 .cargo/advisory-db/
 
 # OS files
 .DS_Store
 Thumbs.db
+
+# Node.js artifacts (should not be in assets)
+node_modules/
+package-lock.json
 
 # IDE files
 .vscode/

@@ -4,6 +4,10 @@
 //! into proper Bevy entities with physics components and hierarchy.
 
 use amp_core::Error;
+use amp_gameplay::spawn_budget_integration::{detect_biome_from_position, VehicleTag};
+use amp_gameplay::spawn_budget_policy::{
+    EntityType, SpawnBudgetPolicy, SpawnData, SpawnPriority, SpawnResult,
+};
 use amp_physics::{Engine, Suspension, SuspensionRay, Transmission, VehicleBundle, Wheel};
 use bevy::prelude::*;
 use config_core::VehicleConfig;
@@ -34,10 +38,58 @@ impl VehicleFactory {
     /// 3. Proper parent-child hierarchy
     ///
     /// Returns the Entity ID of the parent chassis entity.
+    /// Spawn a vehicle entity with budget enforcement
+    pub fn spawn_vehicle_with_budget(
+        &self,
+        commands: &mut Commands,
+        policy: &mut ResMut<SpawnBudgetPolicy>,
+        config: &VehicleConfig,
+        position: Vec3,
+        priority: SpawnPriority,
+        time: &Res<Time>,
+    ) -> Result<SpawnResult, Error> {
+        let biome = detect_biome_from_position(position);
+        let game_time = time.elapsed_secs();
+
+        let spawn_data = SpawnData::Vehicle {
+            position,
+            vehicle_type: "vehicle".to_string(),
+        };
+
+        let result = policy.request_spawn(
+            EntityType::Vehicle,
+            biome,
+            priority,
+            spawn_data.clone(),
+            game_time,
+        );
+
+        match result {
+            SpawnResult::Approved => {
+                // Immediate spawn with position
+                let _entity = self.spawn_vehicle_immediate(commands, config, position)?;
+                Ok(SpawnResult::Approved)
+            }
+            SpawnResult::Queued => Ok(SpawnResult::Queued),
+            SpawnResult::Rejected(reason) => Ok(SpawnResult::Rejected(reason)),
+        }
+    }
+
+    /// Spawn a vehicle entity (original method)
     pub fn spawn_vehicle(
         &self,
         commands: &mut Commands,
         config: &VehicleConfig,
+    ) -> Result<Entity, Error> {
+        self.spawn_vehicle_immediate(commands, config, Vec3::ZERO)
+    }
+
+    /// Internal immediate spawn method
+    fn spawn_vehicle_immediate(
+        &self,
+        commands: &mut Commands,
+        config: &VehicleConfig,
+        position: Vec3,
     ) -> Result<Entity, Error> {
         // Create engine component from config with all fields
         let engine = Engine {
@@ -81,16 +133,21 @@ impl VehicleFactory {
             travel: config.suspension.travel,
         };
 
-        // Create vehicle bundle
+        // Create vehicle bundle with position
         let vehicle_bundle = VehicleBundle::new(
             engine,
             transmission,
-            Transform::default(),
+            Transform::from_translation(position),
             "Vehicle".to_string(),
         );
 
-        // Spawn the parent chassis entity with suspension and mass
-        let mut chassis_entity_commands = commands.spawn(vehicle_bundle);
+        // Spawn the parent chassis entity with suspension and mass, plus budget tracking tag
+        let mut chassis_entity_commands = commands.spawn((
+            vehicle_bundle,
+            VehicleTag {
+                vehicle_type: "vehicle".to_string(),
+            },
+        ));
         chassis_entity_commands.insert(suspension);
 
         // Add custom mass properties if feature is enabled

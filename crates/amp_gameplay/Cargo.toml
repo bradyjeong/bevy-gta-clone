@@ -20,6 +20,7 @@ amp_physics = { path = "../amp_physics", version = "0.4.0-alpha.0" }
 amp_core = { path = "../amp_core", version = "0.4.0-alpha.0" }
 amp_math = { path = "../amp_math", version = "0.4.0-alpha.0" }
 amp_render = { path = "../amp_render", version = "0.4.0-alpha.0" }
+# amp_engine dependency removed - using amp_core for system ordering
 config_core = { path = "../config_core", version = "0.4.0-alpha.0" }
 bevy = { workspace = true }
 bevy_rapier3d = { workspace = true }
@@ -27,6 +28,10 @@ bevy_kira_audio = { workspace = true }
 serde = { workspace = true }
 anyhow = { workspace = true }
 rand = { workspace = true }
+rand_chacha = "0.3"
+ron = { workspace = true }
+fastrand = { workspace = true }
+chrono = { workspace = true }
 tracy-client = { workspace = true, optional = true }
 tracing = { workspace = true, optional = true }
 tracing-chrome = { workspace = true, optional = true }
@@ -41,10 +46,18 @@ serde_json = { workspace = true }
 # amp_engine = { path = "../amp_engine", version = "0.4.0-alpha.0" }  # Temporarily disabled
 
 [features]
-default = []
+default = ["rapier3d_030"]
+unstable_road_system = ["amp_math/unstable_road_system"]
 debug = []
+bevy16 = []
+rapier3d_030 = []
 tracy = ["tracy-client"]
+tracy-client = ["dep:tracy-client"]
+tracing = ["dep:tracing"]
+tracing-chrome = ["dep:tracing-chrome"]
 perf_trace = ["tracing", "tracing-chrome"]
+unstable_hierarchical_world = ["amp_math/unstable_hierarchical_world"]
+unstable_advanced_input = []
 
 [[bench]]
 name = "gameplay_performance"

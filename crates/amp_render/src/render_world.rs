@@ -66,7 +66,7 @@ impl Default for TransientBufferPool {
 }
 
 impl TransientBufferPool {
-    /// Frame-local bump allocator: Get or create a buffer with improved memory locality
+    /// Frame-local bump allocator with pre-allocation to prevent mid-frame resizing
     pub fn get_buffer(&mut self, required_size: u64, render_device: &RenderDevice) -> Buffer {
         self.allocations_this_frame += 1;
         self.frame_allocations += 1;
@@ -74,6 +74,9 @@ impl TransientBufferPool {
 
         // Find a suitable bucket (power of 2 sizing for efficiency)
         let bucket_size = required_size.next_power_of_two();
+
+        // Pre-allocate arena to prevent mid-frame resizing stalls
+        self.ensure_arena_capacity(bucket_size as usize);
 
         // Try frame-local bump allocation first for small buffers
         if bucket_size <= 64 * 1024 && self.can_bump_allocate(bucket_size as usize) {
@@ -104,19 +107,26 @@ impl TransientBufferPool {
         buffer
     }
 
+    /// Ensure arena has sufficient capacity to prevent mid-frame resizing
+    fn ensure_arena_capacity(&mut self, required_size: usize) {
+        let total_required = self.bump_offset + required_size;
+        if self.frame_arena.capacity() < total_required {
+            // Pre-allocate 25% extra to reduce future reallocations
+            let new_capacity = ((total_required * 5) / 4).next_power_of_two();
+            self.frame_arena
+                .reserve(new_capacity - self.frame_arena.capacity());
+        }
+    }
+
     /// Check if we can bump allocate within current frame arena
     fn can_bump_allocate(&self, size: usize) -> bool {
         self.bump_offset + size <= self.arena_size
     }
 
-    /// Perform bump allocation within frame arena
+    /// Perform bump allocation within frame arena (capacity already ensured)
     fn bump_allocate_buffer(&mut self, size: u64, render_device: &RenderDevice) -> Buffer {
-        // Ensure arena has enough capacity
-        let required_capacity = self.bump_offset + size as usize;
-        if self.frame_arena.capacity() < required_capacity {
-            self.frame_arena
-                .reserve(required_capacity - self.frame_arena.capacity());
-        }
+        // Arena capacity is pre-allocated in ensure_arena_capacity(), no resizing here
+        // This prevents mid-frame allocation stalls that cause frame drops
 
         // Bump allocate within frame-local arena
         let buffer = render_device.create_buffer(&BufferDescriptor {
@@ -679,8 +689,8 @@ mod tests {
 
     #[test]
     fn test_prepared_batch_operations() {
-        let mesh_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-00000000007b");
-        let material_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-0000000001c8");
+        let mesh_handle = bevy::asset::weak_handle!("00000000-0000-0000-0000-00000000007b");
+        let material_handle = bevy::asset::weak_handle!("00000000-0000-0000-0000-0000000001c8");
         let key = BatchKey::new(&mesh_handle, &material_handle);
         let mut batch = PreparedBatch::new(key.clone());
 
@@ -702,8 +712,8 @@ mod tests {
         let mut instance_meta = InstanceMeta::default();
 
         // Setup test batches
-        let mesh_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-00000000007b");
-        let material_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-0000000001c8");
+        let mesh_handle = bevy::asset::weak_handle!("00000000-0000-0000-0000-00000000007b");
+        let material_handle = bevy::asset::weak_handle!("00000000-0000-0000-0000-0000000001c8");
 
         // Opaque batch
         let opaque_key = BatchKey::new(&mesh_handle, &material_handle);
@@ -756,8 +766,8 @@ mod tests {
     fn test_instance_meta_batch_management() {
         let mut meta = InstanceMeta::default();
 
-        let mesh_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-00000000007b");
-        let material_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-0000000001c8");
+        let mesh_handle = bevy::asset::weak_handle!("00000000-0000-0000-0000-00000000007b");
+        let material_handle = bevy::asset::weak_handle!("00000000-0000-0000-0000-0000000001c8");
         let key = BatchKey::new(&mesh_handle, &material_handle);
 
         let transform = Mat4::from_translation(Vec3::new(1.0, 2.0, 3.0));
@@ -782,8 +792,8 @@ mod tests {
         world.spawn((GlobalTransform::from_xyz(0.0, 0.0, 5.0), Camera::default()));
 
         // Spawn entities with different visibility states
-        let mesh_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-00000000007b");
-        let material_handle = bevy::utils::weak_handle!("00000000-0000-0000-0000-0000000001c8");
+        let mesh_handle = bevy::asset::weak_handle!("00000000-0000-0000-0000-00000000007b");
+        let material_handle = bevy::asset::weak_handle!("00000000-0000-0000-0000-0000000001c8");
         let key = BatchKey::new(&mesh_handle, &material_handle);
 
         // Visible entity (should be extracted)

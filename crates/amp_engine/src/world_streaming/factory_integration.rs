@@ -2,6 +2,12 @@ use super::{ChunkKey, WorldStreamer};
 #[cfg(feature = "bevy16")]
 use crate::batch::{BatchController, BatchJob, BatchType};
 #[cfg(feature = "bevy16")]
+use amp_gameplay::spawn_budget_integration::{
+    detect_biome_from_position, BuildingTag, NpcTag, TreeTag, VehicleTag,
+};
+#[cfg(feature = "bevy16")]
+use amp_gameplay::spawn_budget_policy::{EntityType, SpawnBudgetPolicy, SpawnData, SpawnPriority};
+#[cfg(feature = "bevy16")]
 use bevy::ecs::system::SystemId;
 #[cfg(feature = "bevy16")]
 use bevy::prelude::*;
@@ -73,6 +79,8 @@ pub fn generate_chunk_content(
     mut batch_controller: ResMut<BatchController>,
     mut generators: Query<(Entity, &mut ChunkContentGenerator)>,
     mut streamer: ResMut<WorldStreamer>,
+    mut policy: ResMut<SpawnBudgetPolicy>,
+    time: Res<Time>,
 ) {
     const MAX_GENERATIONS_PER_FRAME: usize = 2;
 
@@ -93,19 +101,43 @@ pub fn generate_chunk_content(
         // Submit to batch controller
         batch_controller.submit_job(batch_job);
 
-        // Generate content based on type
+        // Generate content based on type with budget enforcement
         match generator.generation_type {
             ContentGenerationType::Buildings => {
-                generate_buildings(&mut commands, generator.chunk_key, &mut streamer);
+                generate_buildings(
+                    &mut commands,
+                    generator.chunk_key,
+                    &mut streamer,
+                    &mut policy,
+                    &time,
+                );
             }
             ContentGenerationType::Vehicles => {
-                generate_vehicles(&mut commands, generator.chunk_key, &mut streamer);
+                generate_vehicles(
+                    &mut commands,
+                    generator.chunk_key,
+                    &mut streamer,
+                    &mut policy,
+                    &time,
+                );
             }
             ContentGenerationType::NPCs => {
-                generate_npcs(&mut commands, generator.chunk_key, &mut streamer);
+                generate_npcs(
+                    &mut commands,
+                    generator.chunk_key,
+                    &mut streamer,
+                    &mut policy,
+                    &time,
+                );
             }
             ContentGenerationType::Environment => {
-                generate_environment(&mut commands, generator.chunk_key, &mut streamer);
+                generate_environment(
+                    &mut commands,
+                    generator.chunk_key,
+                    &mut streamer,
+                    &mut policy,
+                    &time,
+                );
             }
         }
 
@@ -116,26 +148,57 @@ pub fn generate_chunk_content(
 }
 
 #[cfg(feature = "bevy16")]
-fn generate_buildings(commands: &mut Commands, chunk_key: ChunkKey, streamer: &mut WorldStreamer) {
+fn generate_buildings(
+    commands: &mut Commands,
+    chunk_key: ChunkKey,
+    streamer: &mut WorldStreamer,
+    policy: &mut ResMut<SpawnBudgetPolicy>,
+    time: &Res<Time>,
+) {
     let (chunk_x, chunk_z) = chunk_key.to_world_position(streamer.chunk_size);
 
-    // Generate buildings in a grid pattern
+    // Generate buildings in a grid pattern with budget enforcement
     for i in 0..3 {
         for j in 0..3 {
             let building_x = chunk_x + (i as f32 * 60.0) - 90.0;
             let building_z = chunk_z + (j as f32 * 60.0) - 90.0;
+            let position = Vec3::new(building_x, 0.0, building_z);
+
+            // Check budget before spawning
+            let biome = detect_biome_from_position(position);
+            if !policy.can_spawn(EntityType::Building, biome) {
+                // Queue for later if budget exceeded
+                let spawn_data = SpawnData::Building {
+                    position,
+                    building_type: "chunk_building".to_string(),
+                };
+                let _ = policy.request_spawn(
+                    EntityType::Building,
+                    biome,
+                    SpawnPriority::Low,
+                    spawn_data,
+                    time.elapsed_secs(),
+                );
+                continue; // Skip immediate spawn
+            }
 
             let entity = commands
                 .spawn((
                     ChunkEntity { chunk_key },
                     MockBuilding,
-                    Transform::from_translation(Vec3::new(building_x, 0.0, building_z)),
+                    Transform::from_translation(position),
                     GlobalTransform::default(),
                     Visibility::default(),
                     InheritedVisibility::default(),
                     ViewVisibility::default(),
+                    BuildingTag {
+                        building_type: "chunk_building".to_string(),
+                    },
                 ))
                 .id();
+
+            // Record the spawn
+            policy.record_spawn(EntityType::Building);
 
             // Add entity to chunk with cap guard
             if let Some(chunk_data) = streamer.loaded_chunks.get_mut(&chunk_key) {
@@ -148,25 +211,56 @@ fn generate_buildings(commands: &mut Commands, chunk_key: ChunkKey, streamer: &m
 }
 
 #[cfg(feature = "bevy16")]
-fn generate_vehicles(commands: &mut Commands, chunk_key: ChunkKey, streamer: &mut WorldStreamer) {
+fn generate_vehicles(
+    commands: &mut Commands,
+    chunk_key: ChunkKey,
+    streamer: &mut WorldStreamer,
+    policy: &mut ResMut<SpawnBudgetPolicy>,
+    time: &Res<Time>,
+) {
     let (chunk_x, chunk_z) = chunk_key.to_world_position(streamer.chunk_size);
 
-    // Generate fewer vehicles scattered around
+    // Generate fewer vehicles scattered around with budget enforcement
     for i in 0..2 {
         let vehicle_x = chunk_x + (i as f32 * 100.0) - 50.0;
         let vehicle_z = chunk_z + (i as f32 * 100.0) - 50.0;
+        let position = Vec3::new(vehicle_x, 0.0, vehicle_z);
+
+        // Check budget before spawning
+        let biome = detect_biome_from_position(position);
+        if !policy.can_spawn(EntityType::Vehicle, biome) {
+            // Queue for later if budget exceeded
+            let spawn_data = SpawnData::Vehicle {
+                position,
+                vehicle_type: "chunk_vehicle".to_string(),
+            };
+            let _ = policy.request_spawn(
+                EntityType::Vehicle,
+                biome,
+                SpawnPriority::Medium,
+                spawn_data,
+                time.elapsed_secs(),
+            );
+            continue; // Skip immediate spawn
+        }
 
         let entity = commands
             .spawn((
                 ChunkEntity { chunk_key },
                 MockVehicle,
-                Transform::from_translation(Vec3::new(vehicle_x, 0.0, vehicle_z)),
+                Transform::from_translation(position),
                 GlobalTransform::default(),
                 Visibility::default(),
                 InheritedVisibility::default(),
                 ViewVisibility::default(),
+                VehicleTag {
+                    vehicle_type: "chunk_vehicle".to_string(),
+                },
             ))
             .id();
+
+        // Record the spawn
+        policy.record_spawn(EntityType::Vehicle);
 
         // Add entity to chunk with cap guard
         if let Some(chunk_data) = streamer.loaded_chunks.get_mut(&chunk_key) {
@@ -178,25 +272,56 @@ fn generate_vehicles(commands: &mut Commands, chunk_key: ChunkKey, streamer: &mu
 }
 
 #[cfg(feature = "bevy16")]
-fn generate_npcs(commands: &mut Commands, chunk_key: ChunkKey, streamer: &mut WorldStreamer) {
+fn generate_npcs(
+    commands: &mut Commands,
+    chunk_key: ChunkKey,
+    streamer: &mut WorldStreamer,
+    policy: &mut ResMut<SpawnBudgetPolicy>,
+    time: &Res<Time>,
+) {
     let (chunk_x, chunk_z) = chunk_key.to_world_position(streamer.chunk_size);
 
-    // Generate NPCs at random positions
+    // Generate NPCs at random positions with budget enforcement
     for i in 0..5 {
         let npc_x = chunk_x + (i as f32 * 40.0) - 80.0;
         let npc_z = chunk_z + (i as f32 * 40.0) - 80.0;
+        let position = Vec3::new(npc_x, 0.0, npc_z);
+
+        // Check budget before spawning
+        let biome = detect_biome_from_position(position);
+        if !policy.can_spawn(EntityType::Npc, biome) {
+            // Queue for later if budget exceeded
+            let spawn_data = SpawnData::Npc {
+                position,
+                npc_type: "chunk_npc".to_string(),
+            };
+            let _ = policy.request_spawn(
+                EntityType::Npc,
+                biome,
+                SpawnPriority::Medium,
+                spawn_data,
+                time.elapsed_secs(),
+            );
+            continue; // Skip immediate spawn
+        }
 
         let entity = commands
             .spawn((
                 ChunkEntity { chunk_key },
                 MockNPC,
-                Transform::from_translation(Vec3::new(npc_x, 0.0, npc_z)),
+                Transform::from_translation(position),
                 GlobalTransform::default(),
                 Visibility::default(),
                 InheritedVisibility::default(),
                 ViewVisibility::default(),
+                NpcTag {
+                    npc_type: "chunk_npc".to_string(),
+                },
             ))
             .id();
+
+        // Record the spawn
+        policy.record_spawn(EntityType::Npc);
 
         // Add entity to chunk with cap guard
         if let Some(chunk_data) = streamer.loaded_chunks.get_mut(&chunk_key) {
@@ -212,25 +337,52 @@ fn generate_environment(
     commands: &mut Commands,
     chunk_key: ChunkKey,
     streamer: &mut WorldStreamer,
+    policy: &mut ResMut<SpawnBudgetPolicy>,
+    time: &Res<Time>,
 ) {
     let (chunk_x, chunk_z) = chunk_key.to_world_position(streamer.chunk_size);
 
-    // Generate trees and other environmental objects
+    // Generate trees and other environmental objects with budget enforcement
     for i in 0..8 {
         let tree_x = chunk_x + (i as f32 * 25.0) - 87.5;
         let tree_z = chunk_z + (i as f32 * 25.0) - 87.5;
+        let position = Vec3::new(tree_x, 0.0, tree_z);
+
+        // Check budget before spawning
+        let biome = detect_biome_from_position(position);
+        if !policy.can_spawn(EntityType::Tree, biome) {
+            // Queue for later if budget exceeded
+            let spawn_data = SpawnData::Tree {
+                position,
+                tree_type: "chunk_tree".to_string(),
+            };
+            let _ = policy.request_spawn(
+                EntityType::Tree,
+                biome,
+                SpawnPriority::Low,
+                spawn_data,
+                time.elapsed_secs(),
+            );
+            continue; // Skip immediate spawn
+        }
 
         let entity = commands
             .spawn((
                 ChunkEntity { chunk_key },
                 MockTree,
-                Transform::from_translation(Vec3::new(tree_x, 0.0, tree_z)),
+                Transform::from_translation(position),
                 GlobalTransform::default(),
                 Visibility::default(),
                 InheritedVisibility::default(),
                 ViewVisibility::default(),
+                TreeTag {
+                    tree_type: "chunk_tree".to_string(),
+                },
             ))
             .id();
+
+        // Record the spawn
+        policy.record_spawn(EntityType::Tree);
 
         // Add entity to chunk with cap guard
         if let Some(chunk_data) = streamer.loaded_chunks.get_mut(&chunk_key) {

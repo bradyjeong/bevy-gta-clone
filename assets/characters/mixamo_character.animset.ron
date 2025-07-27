@@ -1,0 +1,43 @@
+(
+    character_type: "mixamo_character",
+    clips: {
+        "idle": "characters/mixamo/animations/idle.glb#Animation0",
+        "walk": "characters/mixamo/animations/walking.glb#Animation0", 
+        "run": "characters/mixamo/animations/running.glb#Animation0",
+        "sprint": "characters/mixamo/animations/running.glb#Animation0", // Reuse run for now
+        "jump": "characters/mixamo/animations/idle.glb#Animation0", // Fallback to idle
+        "fall": "characters/mixamo/animations/idle.glb#Animation0", // Fallback to idle
+        "land": "characters/mixamo/animations/idle.glb#Animation0", // Fallback to idle
+        "turn": "characters/mixamo/animations/walking.glb#Animation0", // Reuse walk
+    },
+    blend_weights: {
+        "idle": 1.0,
+        "walk": 1.0,
+        "run": 1.0,
+        "sprint": 1.0,
+        "jump": 1.0,
+        "fall": 1.0,
+        "land": 1.0,
+        "turn": 1.0,
+    },
+    speeds: {
+        "idle": 1.0,
+        "walk": 1.0,
+        "run": 1.0,
+        "sprint": 1.5, // Play running animation faster for sprint effect
+        "jump": 1.0,
+        "fall": 1.0,
+        "land": 1.0,
+        "turn": 1.0,
+    },
+    transitions: {
+        "idle": 0.3,
+        "walk": 0.2,
+        "run": 0.15,
+        "sprint": 0.1,
+        "jump": 0.1,
+        "fall": 0.05,
+        "land": 0.2,
+        "turn": 0.15,
+    },
+)

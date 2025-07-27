@@ -10,7 +10,7 @@ use std::time::Instant;
 
 /// Main NPC brain system that processes NPC behavior
 pub fn npc_brain_system(
-    mut commands: Commands,
+    commands: Commands,
     mut npcs: Query<(
         Entity,
         &mut NPC,
@@ -23,7 +23,7 @@ pub fn npc_brain_system(
     mut npc_metrics: ResMut<NpcMetrics>,
     npc_config: Res<NpcConfig>,
     time: Res<Time>,
-    mut query_player: Query<&Transform, (With<Camera>, Without<NPC>)>,
+    query_player: Query<&Transform, (With<Camera>, Without<NPC>)>,
 ) {
     let start_time = Instant::now();
     let current_frame = time.elapsed_secs_f64() as u64;

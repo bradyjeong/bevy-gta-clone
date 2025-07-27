@@ -397,7 +397,7 @@ pub fn optimized_lod_system(
 
     let start_time = Instant::now();
 
-    let Ok(camera_transform) = camera_query.get_single() else {
+    let Ok(camera_transform) = camera_query.single() else {
         return;
     };
     let camera_pos = camera_transform.translation;

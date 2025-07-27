@@ -57,26 +57,30 @@ pub fn load_city_render_assets(
     // Create shared plane mesh for streets and intersections
     let plane_mesh = meshes.add(Mesh::from(Plane3d::default().mesh().size(1.0, 1.0)));
 
-    // Create materials for different city elements
+    // Create materials for different city elements - f430bc6 desert style
     let building_material = materials.add(StandardMaterial {
-        base_color: Color::srgb(0.6, 0.6, 0.7), // Light gray for buildings
+        base_color: Color::srgb(0.85, 0.75, 0.6), // Beige/tan for desert buildings
+        perceptual_roughness: 0.8,
         ..default()
     });
 
     let street_material = materials.add(StandardMaterial {
-        base_color: Color::srgb(0.3, 0.3, 0.3), // Dark gray for streets
+        base_color: Color::srgb(0.7, 0.6, 0.45), // Sandy brown for streets
+        perceptual_roughness: 0.9,
         ..default()
     });
 
     let intersection_material = materials.add(StandardMaterial {
-        base_color: Color::srgb(0.4, 0.4, 0.4), // Medium gray for intersections
+        base_color: Color::srgb(0.75, 0.65, 0.5), // Medium sandy brown for intersections
+        perceptual_roughness: 0.85,
         ..default()
     });
 
     // Create emissive material for buildings with lit windows (replaces distant point lights)
     let building_emissive_material = materials.add(StandardMaterial {
-        base_color: Color::srgb(0.6, 0.6, 0.7), // Same as regular buildings
+        base_color: Color::srgb(0.85, 0.75, 0.6), // Same as regular buildings
         emissive: Color::srgb(1.0, 0.9, 0.7).into(), // Warm window glow
+        perceptual_roughness: 0.8,
         ..default()
     });
 

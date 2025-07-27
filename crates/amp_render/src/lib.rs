@@ -13,9 +13,16 @@ pub mod diagnostics;
 pub mod distance_cache;
 pub mod gpu_culling_integration;
 pub mod lod;
+pub mod optimized_culling;
 pub mod optimized_queries;
 pub mod performance_tuning;
 pub mod render_world;
+
+#[cfg(feature = "unstable_vegetation_lod")]
+pub mod vegetation;
+
+#[cfg(feature = "unstable_road_system")]
+pub mod road;
 
 #[cfg(feature = "gpu")]
 pub mod gpu_culling_simple;
@@ -190,12 +197,15 @@ impl Plugin for BatchingPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             batching::BatchingSystemPlugin,
+            #[cfg(not(feature = "gpu_culling"))]
             culling::CullingSystemPlugin,
+            #[cfg(not(feature = "gpu_culling"))]
             culling_integration::CullingIntegrationPlugin,
             diagnostics::PerformanceDiagnosticsPlugin,
             distance_cache::DistanceCachePlugin,
             gpu_culling_integration::GpuCullingIntegrationPlugin,
             lod::LodSystemPlugin,
+            optimized_culling::OptimizedCullingPlugin,
             render_world::RenderWorldPlugin,
         ));
 
@@ -212,6 +222,9 @@ impl Plugin for BatchingPlugin {
             culling::GpuCullingResourcePlugin,
             gpu_culling::GpuCullingPipelinePlugin,
         ));
+
+        #[cfg(feature = "unstable_vegetation_lod")]
+        app.add_plugins(vegetation::VegetationLODPlugin);
     }
 }
 
@@ -230,6 +243,7 @@ pub mod prelude {
         },
         gpu_culling_integration::prelude::*,
         lod::prelude::*,
+        optimized_culling::prelude::*,
         optimized_queries::cached_systems,
         performance_tuning::{PerformanceTuning, PerformanceTuningPlugin},
         render_world::prelude::*,
@@ -242,6 +256,14 @@ pub mod prelude {
     #[cfg(feature = "gpu_culling")]
     pub use crate::gpu_culling::prelude::*;
 
-    #[cfg(feature = "gpu")]
-    pub use crate::gpu_culling_simple::prelude::*;
+    #[cfg(feature = "unstable_vegetation_lod")]
+    pub use crate::vegetation::{
+        VegetationBillboard, VegetationLOD, VegetationLODPlugin, VegetationMeshLOD,
+    };
+
+    #[cfg(feature = "unstable_road_system")]
+    pub use crate::road::{
+        generate_intersection_mesh, generate_lane_markings, generate_road_mesh, MarkingParams,
+        MarkingType, RoadMaterialFactory, RoadMaterialLibrary, RoadMeshParams, RoadSurfaceType,
+    };
 }

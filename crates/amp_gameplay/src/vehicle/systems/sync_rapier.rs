@@ -6,6 +6,7 @@ use crate::vehicle::components::*;
 use crate::vehicle::resources::*;
 // Fix: Use amp_gameplay components, not amp_physics components
 // This ensures the query matches entities created by VehicleBundle
+use amp_physics::{InterpolatedTransform, PhysicsTime};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
@@ -14,7 +15,7 @@ use bevy_rapier3d::prelude::*;
 pub fn sync_vehicle_physics(
     mut vehicle_query: Query<
         (
-            &mut Transform,
+            &mut InterpolatedTransform,
             &Vehicle,
             &Engine,
             &Steering,
@@ -27,7 +28,7 @@ pub fn sync_vehicle_physics(
     >,
     physics_config: Res<VehiclePhysicsConfig>,
     input_state: Res<VehicleInputState>,
-    time: Res<Time>,
+    physics_time: Res<PhysicsTime>,
 ) {
     #[cfg(feature = "perf_trace")]
     let _span = tracing::trace_span!(
@@ -36,7 +37,7 @@ pub fn sync_vehicle_physics(
     )
     .entered();
     for (
-        mut transform,
+        mut interpolated_transform,
         vehicle,
         engine,
         steering,
@@ -46,11 +47,14 @@ pub fn sync_vehicle_physics(
         external_force,
     ) in vehicle_query.iter_mut()
     {
+        // Work with the physics transform (current state)
+        let mut physics_transform = interpolated_transform.current;
+
         // Apply vehicle physics to Rapier components
         if let (Some(_rb), Some(mut vel), Some(mut force)) = (rigid_body, velocity, external_force)
         {
             apply_vehicle_forces(
-                &mut transform,
+                &mut physics_transform,
                 vehicle,
                 engine,
                 steering,
@@ -59,9 +63,12 @@ pub fn sync_vehicle_physics(
                 &mut force,
                 &physics_config,
                 &input_state,
-                time.delta_secs(),
+                physics_time.fixed_timestep,
             );
         }
+
+        // Physics interpolation is now handled by the physics plugin pipeline
+        // Remove duplicate transform updates to fix rubber-band artifacts
     }
 }
 

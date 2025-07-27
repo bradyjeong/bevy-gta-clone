@@ -1,0 +1,487 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Amp Character Asset Generator"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "SimpleHumanoidScene",
+      "nodes": [0]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Hips",
+      "translation": [0.0, 1.0, 0.0],
+      "children": [1, 6, 11]
+    },
+    {
+      "name": "Spine",
+      "translation": [0.0, 0.15, 0.0],
+      "mesh": 0,
+      "children": [2]
+    },
+    {
+      "name": "Chest", 
+      "translation": [0.0, 0.25, 0.0],
+      "mesh": 1,
+      "children": [3, 4, 5]
+    },
+    {
+      "name": "Neck",
+      "translation": [0.0, 0.3, 0.0],
+      "mesh": 2,
+      "children": [16]
+    },
+    {
+      "name": "LeftShoulder",
+      "translation": [-0.2, 0.2, 0.0],
+      "mesh": 2,
+      "children": [17]
+    },
+    {
+      "name": "RightShoulder", 
+      "translation": [0.2, 0.2, 0.0],
+      "mesh": 2,
+      "children": [20]
+    },
+    {
+      "name": "LeftUpperLeg",
+      "translation": [-0.1, -0.2, 0.0],
+      "mesh": 3,
+      "children": [7]
+    },
+    {
+      "name": "LeftLowerLeg",
+      "translation": [0.0, -0.35, 0.0],
+      "mesh": 4,
+      "children": [8]
+    },
+    {
+      "name": "LeftFoot",
+      "translation": [0.0, -0.35, 0.0],
+      "mesh": 5
+    },
+    {
+      "name": "LeftToeBase",
+      "translation": [0.0, -0.1, 0.15],
+      "mesh": 2
+    },
+    {
+      "name": "LeftToe_End",
+      "translation": [0.0, 0.0, 0.1]
+    },
+    {
+      "name": "RightUpperLeg",
+      "translation": [0.1, -0.2, 0.0],
+      "mesh": 3,
+      "children": [12]
+    },
+    {
+      "name": "RightLowerLeg",
+      "translation": [0.0, -0.35, 0.0],
+      "mesh": 4,
+      "children": [13]
+    },
+    {
+      "name": "RightFoot",
+      "translation": [0.0, -0.35, 0.0],
+      "mesh": 5
+    },
+    {
+      "name": "RightToeBase",
+      "translation": [0.0, -0.1, 0.15],
+      "mesh": 2
+    },
+    {
+      "name": "RightToe_End",
+      "translation": [0.0, 0.0, 0.1]
+    },
+    {
+      "name": "Head",
+      "translation": [0.0, 0.2, 0.0],
+      "mesh": 6
+    },
+    {
+      "name": "LeftUpperArm",
+      "translation": [-0.15, 0.0, 0.0],
+      "mesh": 7,
+      "children": [18]
+    },
+    {
+      "name": "LeftForeArm", 
+      "translation": [-0.25, 0.0, 0.0],
+      "mesh": 8,
+      "children": [19]
+    },
+    {
+      "name": "LeftHand",
+      "translation": [-0.2, 0.0, 0.0],
+      "mesh": 2
+    },
+    {
+      "name": "RightUpperArm",
+      "translation": [0.15, 0.0, 0.0],
+      "mesh": 7,
+      "children": [21]
+    },
+    {
+      "name": "RightForeArm",
+      "translation": [0.25, 0.0, 0.0],
+      "mesh": 8,
+      "children": [22]
+    },
+    {
+      "name": "RightHand",
+      "translation": [0.2, 0.0, 0.0],
+      "mesh": 2
+    }
+  ],
+  "meshes": [
+    {
+      "name": "SpineMesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "name": "ChestMesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "name": "SmallSphereMesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 4
+          },
+          "indices": 5,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "name": "UpperLegMesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 6
+          },
+          "indices": 7,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "name": "LowerLegMesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 8
+          },
+          "indices": 9,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "name": "FootMesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 10
+          },
+          "indices": 11,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "name": "HeadMesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 12
+          },
+          "indices": 13,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "name": "UpperArmMesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 14
+          },
+          "indices": 15,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "name": "ForeArmMesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 16
+          },
+          "indices": 17,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "SkinMaterial",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [0.8, 0.7, 0.6, 1.0],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.8
+      }
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 8,
+      "type": "VEC3",
+      "max": [0.1, 0.15, 0.1],
+      "min": [-0.1, -0.15, -0.1]
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5123,
+      "count": 36,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 8,
+      "type": "VEC3",
+      "max": [0.15, 0.2, 0.12],
+      "min": [-0.15, -0.2, -0.12]
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5123,
+      "count": 36,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3",
+      "max": [0.08, 0.08, 0.08],
+      "min": [-0.08, -0.08, -0.08]
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5123,
+      "count": 72,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5126,
+      "count": 16,
+      "type": "VEC3",
+      "max": [0.08, 0.2, 0.08],
+      "min": [-0.08, -0.2, -0.08]
+    },
+    {
+      "bufferView": 7,
+      "componentType": 5123,
+      "count": 48,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 8,
+      "componentType": 5126,
+      "count": 16,
+      "type": "VEC3",
+      "max": [0.06, 0.175, 0.06],
+      "min": [-0.06, -0.175, -0.06]
+    },
+    {
+      "bufferView": 9,
+      "componentType": 5123,
+      "count": 48,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 10,
+      "componentType": 5126,
+      "count": 8,
+      "type": "VEC3",
+      "max": [0.15, 0.08, 0.25],
+      "min": [-0.15, -0.08, -0.05]
+    },
+    {
+      "bufferView": 11,
+      "componentType": 5123,
+      "count": 36,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 12,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3",
+      "max": [0.12, 0.12, 0.12],
+      "min": [-0.12, -0.12, -0.12]
+    },
+    {
+      "bufferView": 13,
+      "componentType": 5123,
+      "count": 72,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 14,
+      "componentType": 5126,
+      "count": 16,
+      "type": "VEC3",
+      "max": [0.06, 0.125, 0.06],
+      "min": [-0.06, -0.125, -0.06]
+    },
+    {
+      "bufferView": 15,
+      "componentType": 5123,
+      "count": 48,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 16,
+      "componentType": 5126,
+      "count": 16,
+      "type": "VEC3",
+      "max": [0.05, 0.1, 0.05],
+      "min": [-0.05, -0.1, -0.05]
+    },
+    {
+      "bufferView": 17,
+      "componentType": 5123,
+      "count": 48,
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 96
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 96,
+      "byteLength": 72
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 168,
+      "byteLength": 96
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 264,
+      "byteLength": 72
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 336,
+      "byteLength": 288
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 624,
+      "byteLength": 144
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 768,
+      "byteLength": 192
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 960,
+      "byteLength": 96
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1056,
+      "byteLength": 192
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1248,
+      "byteLength": 96
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1344,
+      "byteLength": 96
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1440,
+      "byteLength": 72
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1512,
+      "byteLength": 288
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1800,
+      "byteLength": 144
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1944,
+      "byteLength": 192
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 2136,
+      "byteLength": 96
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 2232,
+      "byteLength": 192
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 2424,
+      "byteLength": 96
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "simple_humanoid.bin",
+      "byteLength": 2520
+    }
+  ]
+}

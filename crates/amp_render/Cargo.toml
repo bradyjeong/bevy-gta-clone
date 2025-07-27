@@ -13,6 +13,8 @@ default = ["instancing", "diagnostics"]
 instancing = []
 gpu = ["wgpu"]
 gpu_culling = ["wgpu"]
+unstable_vegetation_lod = []
+unstable_road_system = ["amp_math/unstable_road_system"]
 tracy = ["tracy-client"]
 perf_trace = ["tracing", "tracing-chrome"]
 profile = ["tracy-client", "tracing", "tracing-chrome"]
@@ -32,12 +34,15 @@ anyhow = { workspace = true }
 thiserror = { workspace = true }
 bytemuck = { workspace = true }
 smallvec = { workspace = true }
+futures-lite = { workspace = true }
 ron = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
+fastrand = { workspace = true }
 
 # Internal crates
 amp_core = { path = "../amp_core" }
 amp_math = { path = "../amp_math" }
+# amp_engine dependency removed - using amp_core for system ordering
 
 # Tracy profiling (optional)
 tracy-client = { workspace = true, optional = true }
@@ -52,8 +57,13 @@ serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 pollster = { workspace = true }
 criterion = { workspace = true, features = ["html_reports"] }
+fastrand = { workspace = true }
 
 [[bench]]
 name = "gpu_vs_cpu_culling"
 harness = false
 required-features = ["gpu_culling"]
+
+[[bench]]
+name = "optimized_culling_benchmark"
+harness = false

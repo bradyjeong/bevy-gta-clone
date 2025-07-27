@@ -1,0 +1,28 @@
+[package]
+name = "amp_system"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "README.md"
+resolver = "2"
+
+[dependencies]
+# Re-export engine system crates (optional)
+amp_physics = { path = "../amp_physics", optional = true }
+amp_render = { path = "../amp_render", optional = true }
+
+# Bevy dependency for the system facade
+bevy.workspace = true
+
+[features]
+default = ["physics", "render"]
+physics = ["dep:amp_physics"]
+render = ["dep:amp_render"]
+gpu_culling = ["render", "amp_render/gpu_culling"]
+profile = ["render", "amp_render/profile"]
+unstable_road_system = ["render", "amp_render/unstable_road_system"]
+unstable_vegetation_lod = ["render", "amp_render/unstable_vegetation_lod"]
+tracy = ["render", "amp_render/tracy"]
+perf_trace = ["render", "amp_render/perf_trace"]

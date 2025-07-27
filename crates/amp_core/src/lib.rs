@@ -5,6 +5,14 @@
 
 pub mod allocation_tracking;
 
+#[cfg(feature = "unstable_advanced_input")]
+pub mod input;
+
+#[cfg(feature = "bevy")]
+pub mod system_ordering;
+#[cfg(all(test, feature = "bevy"))]
+mod system_ordering_tests;
+
 /// A specialized `Result` type for operations that may fail within the AMP engine.
 ///
 /// This type is used as the return type for functions that may encounter errors
@@ -179,6 +187,12 @@ impl ConfigError {
             message: message.into(),
         }
     }
+}
+
+// DEPRECATED: Use amp_foundation::prelude instead
+#[deprecated(note = "Use amp_foundation::prelude instead")]
+pub mod prelude {
+    pub use crate::{ConfigError, Error, Result};
 }
 
 #[cfg(test)]

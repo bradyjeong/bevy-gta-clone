@@ -49,7 +49,9 @@ impl InteractionPrompt {
 }
 
 /// Player state component
-#[derive(Component, Default, Debug, Reflect, Clone, Copy, PartialEq)]
+#[derive(
+    Component, Default, Debug, Reflect, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize,
+)]
 #[reflect(Component)]
 pub enum PlayerState {
     #[default]

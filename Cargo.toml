@@ -1,13 +1,7 @@
 [workspace]
 members = [
     "crates/*",
-    "tools/xtask",
-]
-exclude = [
-    "examples",  # Will re-enable during migration per Oracle's plan
-    "crates/amp_spatial",  # Deprecated: moved to amp_engine::spatial
-    "crates/amp_gpu",      # Deprecated: moved to amp_engine::gpu
-    "crates/amp_world",    # Deprecated: moved to amp_engine::world
+    "xtask",
 ]
 resolver = "2"
 
@@ -49,6 +43,8 @@ bitset-fixed = "^0.1"
 pollster = "^0.3"
 bytemuck = { version = "^1.14", features = ["derive"] }
 smallvec = "^1.13"
+fastrand = "^2.2"
+futures-lite = "^2.3"
 jemallocator = "^0.5"                       # Memory allocator optimization
 
 # Configuration
@@ -83,7 +79,7 @@ notify = "^6.1"
 once_cell = "^1.19"
 dashmap = "^6.0"
 glob = "^0.3"
-log = "^0.4"
+log = { version = "^0.4", features = ["release_max_level_debug"] }
 shellexpand = "^3.1"
 async-trait = "^0.1"
 env_logger = "^0.11"
@@ -104,14 +100,12 @@ version = "0.1.0"
 authors = ["Brady Jeong <bradyjeong@Mac.attlocal.net>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bradyjeong/bevy-gta-clone"
+default-run = "gta_game"
 
-# Disable automatic example discovery
-autoexamples = false
-
-# Examples temporarily disabled - will be re-enabled during migration per Oracle's plan
+# No examples - main binary only
 
 [features]
-default = ["bevy16", "gpu_culling", "gpu"]
+default = ["bevy16", "gpu_culling", "gpu", "rapier3d_030", "perf_monitoring", "unstable_road_system"]
 ron = ["gameplay_factory/ron"]
 rapier3d_030 = ["gameplay_factory/rapier3d_030", "amp_physics", "bevy_rapier3d"]
 gpu_culling = []
@@ -120,17 +114,27 @@ bevy16 = []
 gpu = []
 audio = ["bevy_kira_audio"]
 debug = []
+perf_monitoring = []
+perf_debug_logging = []
 tracy = ["tracy-client", "tracing-tracy", "amp_gameplay/tracy", "gameplay_factory/tracy"]
 profile = ["tracy", "amp_render/profile"]
 perf_trace = ["tracing", "tracing-chrome", "amp_gameplay/perf_trace", "gameplay_factory/perf_trace"]
+unstable_hierarchical_world = ["amp_engine/unstable_hierarchical_world", "amp_gameplay/unstable_hierarchical_world"]
+unstable_advanced_input = ["amp_core/unstable_advanced_input", "amp_gameplay/unstable_advanced_input", "amp_engine/unstable_advanced_input", "config_core/unstable_advanced_input"]
+unstable_road_system = ["amp_math/unstable_road_system", "amp_render/unstable_road_system", "amp_gameplay/unstable_road_system"]
+unstable_vegetation_lod = ["amp_render/unstable_vegetation_lod"]
+unstable_spawn_budget = ["amp_engine/unstable_spawn_budget"]
 
 [dependencies]
 gameplay_factory = { path = "crates/gameplay_factory" }
 config_core = { path = "crates/config_core" }
+amp_core = { path = "crates/amp_core" }
+amp_math = { path = "crates/amp_math" }
 amp_engine = { path = "crates/amp_engine", features = ["bevy16"] }
 amp_physics = { path = "crates/amp_physics", optional = true }
-amp_gameplay = { path = "crates/amp_gameplay" }
-amp_render = { path = "crates/amp_render" }
+amp_gameplay = { path = "crates/amp_gameplay", features = ["unstable_road_system"] }
+amp_render = { path = "crates/amp_render", features = ["unstable_road_system"] }
+amp_foundation = { path = "crates/amp_foundation" }
 bevy.workspace = true
 bevy_rapier3d = { workspace = true, optional = true }
 bevy_kira_audio = { workspace = true, optional = true }
@@ -141,6 +145,7 @@ tracy-client = { workspace = true, optional = true }
 tracing-tracy = { workspace = true, optional = true }
 tracing = { workspace = true, optional = true }
 tracing-chrome = { workspace = true, optional = true }
+serde_json = { workspace = true }
 
 [[bin]]
 name = "prefab-ls"
@@ -152,4 +157,4 @@ path = "src/main.rs"
 
 
 
-# All examples temporarily disabled - will be re-enabled during migration per Oracle's plan
+# Examples disabled - using comprehensive test suite instead

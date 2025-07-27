@@ -3,7 +3,6 @@
 use crate::city::components::*;
 use crate::city::resources::*;
 use bevy::prelude::*;
-use std::collections::HashMap;
 
 /// City layout generator for procedural city creation
 pub struct CityLayoutGenerator {

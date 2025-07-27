@@ -1,58 +1,54 @@
 [package]
 name = "amp_engine"
-edition.workspace = true
 version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "Core engine systems for the AMP Game Engine"
+categories = ["game-development", "game-engines"]
+keywords = ["bevy", "engine", "spatial", "gpu", "world"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+amp_core = { path = "../amp_core", version = "0.4.0-alpha.0" }
+amp_math = { path = "../amp_math", version = "0.4.0-alpha.0" }
+amp_gameplay = { path = "../amp_gameplay", version = "0.4.0-alpha.0" }
+config_core = { path = "../config_core", version = "0.4.0-alpha.0", features = ["bevy-assets"] }
+bevy = { workspace = true }
+serde = { workspace = true }
+anyhow = { workspace = true }
+tracy-client = { workspace = true, optional = true }
+tracing = { workspace = true, optional = true }
+wgpu = { workspace = true }
+winit = { workspace = true }
+thiserror = { workspace = true }
+glam = { workspace = true }
+criterion = { workspace = true, optional = true }
+slotmap = { workspace = true }
+futures-lite = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true, features = ["fs"] }
+fastrand = { workspace = true }
+
+[dev-dependencies]
+rstest = { workspace = true }
 
 [features]
-default = []
-bevy16 = ["bevy", "wgpu", "winit", "pollster", "thiserror", "anyhow", "ron", "serde", "amp_gameplay", "bevy_rapier3d", "bevy_kira_audio", "jemallocator"]
+default = ["bevy16"]
+bevy16 = []
+tracy = ["dep:tracy-client"]
+entity_debug = []
 config = []
 physics = []
 audio = []
 render = []
-perf_trace = ["tracing", "tracing-chrome", "tracing-subscriber"]
-entity_debug = ["tracing"]
-
-[dependencies]
-bevy = { workspace = true, optional = true }
-# bevy_ecs removed: use bevy::prelude::* instead
-amp_core = { path = "../amp_core" }
-amp_math = { path = "../amp_math" }
-amp_gameplay = { path = "../amp_gameplay", optional = true }
-config_core = { path = "../config_core", features = ["bevy-assets"] }
-bevy_rapier3d = { workspace = true, optional = true }
-bevy_kira_audio = { workspace = true, optional = true }
-async-trait = { workspace = true }
-glam = { workspace = true }
-tokio = { workspace = true, features = ["full"] }
-
-# GPU dependencies (behind bevy16 feature flag)
-wgpu = { workspace = true, optional = true }
-winit = { workspace = true, optional = true }
-pollster = { workspace = true, optional = true }
-thiserror = { workspace = true, optional = true }
-anyhow = { workspace = true, optional = true }
-
-# Asset pipeline dependencies (behind bevy16 feature flag)
-ron = { workspace = true, optional = true }
-serde = { workspace = true, features = ["derive"], optional = true }
-
-# Memory optimization (Oracle's Day 4-5)
-jemallocator = { workspace = true, optional = true }
-
-# Performance tracing
-tracing = { workspace = true, optional = true }
-tracing-chrome = { workspace = true, optional = true }
-tracing-subscriber = { workspace = true, optional = true }
-
-# Performance optimization dependencies
-slotmap = { workspace = true }
-rayon = { workspace = true }
-criterion = { workspace = true }
-
-[dev-dependencies]
-tokio-test = { workspace = true }
-tempfile = { workspace = true }
+perf_trace = ["tracing"]
+unstable_gpu_culling = []
+unstable_hierarchical_world = []
+unstable_advanced_input = []
+unstable_spawn_budget = []
+benchmarks = ["dep:criterion"]

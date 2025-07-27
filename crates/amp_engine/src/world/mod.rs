@@ -7,7 +7,18 @@
 
 // Re-export commonly used ECS types
 #[cfg(feature = "bevy16")]
-pub use bevy::prelude::*;
+// Essential Bevy re-exports for world management
+pub use bevy::{
+    app::{App, Plugin},
+    ecs::{
+        component::Component,
+        entity::Entity,
+        system::{Commands, Query, Res, ResMut},
+    },
+    math::Vec3,
+    prelude::{Resource, World},
+    transform::components::Transform,
+};
 
 /// Future world management implementation
 #[cfg(feature = "bevy16")]

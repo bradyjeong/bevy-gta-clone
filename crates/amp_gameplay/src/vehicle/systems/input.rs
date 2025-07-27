@@ -8,7 +8,12 @@ use bevy::prelude::*;
 pub fn handle_vehicle_input(
     mut query: Query<(&mut VehicleInput, &mut PhysicsVehicleInput), With<Vehicle>>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
+    player_query: Query<&crate::interaction::components::InVehicle, With<crate::prelude::Player>>,
 ) {
+    // Only process vehicle input if player is in a vehicle
+    if player_query.is_empty() {
+        return;
+    }
     for (mut gameplay_input, mut physics_input) in query.iter_mut() {
         // Check if there's keyboard input
         let has_keyboard_input = keyboard_input.pressed(KeyCode::ArrowUp)

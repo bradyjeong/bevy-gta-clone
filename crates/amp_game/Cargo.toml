@@ -1,0 +1,28 @@
+[package]
+name = "amp_game"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "README.md"
+resolver = "2"
+
+[dependencies]
+# Re-export gameplay crates
+amp_gameplay = { path = "../amp_gameplay" }
+gameplay_factory = { path = "../gameplay_factory" }
+
+# Bevy dependency for the game facade
+bevy.workspace = true
+
+[features]
+default = []
+ron = ["gameplay_factory/ron"]
+tracy = ["amp_gameplay/tracy", "gameplay_factory/tracy"]
+perf_trace = ["amp_gameplay/perf_trace", "gameplay_factory/perf_trace"]
+unstable_hierarchical_world = ["amp_gameplay/unstable_hierarchical_world"]
+unstable_advanced_input = ["amp_gameplay/unstable_advanced_input"]
+unstable_road_system = ["amp_gameplay/unstable_road_system"]
+rapier3d_030 = ["gameplay_factory/rapier3d_030"]
+

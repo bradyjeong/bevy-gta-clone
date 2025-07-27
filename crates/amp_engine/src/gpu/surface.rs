@@ -15,6 +15,24 @@ pub struct SurfaceManager<'window> {
 }
 
 impl<'window> SurfaceManager<'window> {
+    /// Select adaptive present mode to eliminate VSync stalls
+    ///
+    /// Prioritizes mailbox mode for low-latency rendering, falls back to immediate mode
+    /// to prevent hard VSync locks that cause frame drops and stuttering.
+    fn select_adaptive_present_mode(surface_caps: &SurfaceCapabilities) -> PresentMode {
+        // Priority order for smooth, low-latency rendering:
+        // 1. Mailbox - Triple buffering, no tearing, minimal latency
+        // 2. Immediate - No VSync, prevents hard locks but may tear
+        // 3. Fifo - VSync fallback (causes stalls but compatible)
+        if surface_caps.present_modes.contains(&PresentMode::Mailbox) {
+            PresentMode::Mailbox
+        } else if surface_caps.present_modes.contains(&PresentMode::Immediate) {
+            PresentMode::Immediate
+        } else {
+            PresentMode::Fifo // VSync fallback
+        }
+    }
+
     /// Create a new surface manager
     pub fn new(
         context: &GpuContext,
@@ -36,7 +54,7 @@ impl<'window> SurfaceManager<'window> {
             format: surface_format,
             width: size.width,
             height: size.height,
-            present_mode: PresentMode::Fifo,
+            present_mode: Self::select_adaptive_present_mode(&surface_caps),
             alpha_mode: surface_caps.alpha_modes[0],
             view_formats: vec![],
             desired_maximum_frame_latency: 2,

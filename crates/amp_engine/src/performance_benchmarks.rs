@@ -30,7 +30,11 @@ use std::time::Instant;
 use crate::performance_strike::*;
 
 // Import external benchmarking support
+#[cfg(feature = "benchmarks")]
 use criterion::black_box;
+
+#[cfg(not(feature = "benchmarks"))]
+use std::hint::black_box;
 
 // Math types
 use glam::Vec3;

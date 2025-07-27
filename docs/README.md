@@ -1,20 +1,36 @@
 # Documentation
 
-## Current Documentation
-- [`BENCHMARKS.md`](current/BENCHMARKS.md) - Performance benchmarks and metrics
-- [`CHANGELOG.md`](current/CHANGELOG.md) - Project changelog
-- [`RELEASE_NOTES_v0.3.0-alpha.md`](current/RELEASE_NOTES_v0.3.0-alpha.md) - Release notes
+## Directory Structure
 
-## Reference Documentation
-- [`GAP_REPORT.md`](reference/GAP_REPORT.md) - Gap analysis between current state and f430bc6
-- [`F430BC6_ARCHITECTURE_ANALYSIS.md`](reference/F430BC6_ARCHITECTURE_ANALYSIS.md) - Architecture analysis of f430bc6
-- [`STRATEGIC_SHIFT.md`](reference/STRATEGIC_SHIFT.md) - Strategic shift documentation
+### [`adr/`](adr/) - Architecture Decision Records
+Immutable records of major architectural decisions and their rationale.
 
-## Architecture Decision Records
-- [`adr/`](adr/) - Architecture Decision Records (ADRs)
+### [`architecture/`](architecture/) - System Architecture
+Current system architecture documentation and design patterns.
 
-## Oracle Consultations
+### [`assets/`](assets/) - Asset Documentation  
+Documentation for asset management, Mixamo integration, and asset pipelines.
+
+### [`implementation/`](implementation/) - Implementation Details
+Detailed implementation reports and technical summaries for major features.
+
+### [`legacy/`](legacy/) - Historical Documentation
+Historical completion reports and legacy implementation documentation.
+
+### [`oracle/`](oracle/) - Oracle Consultations
+Oracle guidance documents and strategic consultation records.
+
+### [`performance/`](performance/) - Performance Documentation
+Performance benchmarks, optimization guides, and performance monitoring.
+
+### [`reference/`](reference/) - Reference Documentation
+Reference materials, gap analyses, and porting guides.
+
+### [`releases/`](releases/) - Release Documentation
+Release notes and version-specific documentation.
+
+## Key Documents
+
 - [`oracle-consultations.md`](oracle-consultations.md) - Oracle guidance and strategic decisions
-
-## Archived Documentation
-- [`archive/`](archive/) - Historical completion reports and implementation summaries
+- [`architecture/MAIN_APPLICATION_ARCHITECTURE.md`](architecture/MAIN_APPLICATION_ARCHITECTURE.md) - Main application architecture
+- [`performance/BENCHMARKS.md`](performance/BENCHMARKS.md) - Performance benchmarks and metrics

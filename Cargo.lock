@@ -174,26 +174,38 @@ dependencies = [
  "anyhow",
  "async-trait",
  "bevy",
- "bevy_kira_audio",
- "bevy_rapier3d",
  "config_core",
  "criterion",
+ "fastrand",
+ "futures-lite",
  "glam",
- "jemallocator",
- "pollster",
- "rayon",
- "ron",
+ "rstest",
  "serde",
  "slotmap",
- "tempfile",
  "thiserror 2.0.12",
  "tokio",
- "tokio-test",
  "tracing",
- "tracing-chrome",
- "tracing-subscriber",
+ "tracy-client 0.17.6",
  "wgpu",
  "winit",
+]
+
+[[package]]
+name = "amp_foundation"
+version = "0.4.0-alpha.0"
+dependencies = [
+ "amp_core",
+ "amp_math",
+ "config_core",
+]
+
+[[package]]
+name = "amp_game"
+version = "0.4.0-alpha.0"
+dependencies = [
+ "amp_gameplay",
+ "bevy",
+ "gameplay_factory",
 ]
 
 [[package]]
@@ -208,9 +220,13 @@ dependencies = [
  "bevy",
  "bevy_kira_audio",
  "bevy_rapier3d",
+ "chrono",
  "config_core",
  "criterion",
+ "fastrand",
  "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "ron",
  "rstest",
  "serde",
  "serde_json",
@@ -257,6 +273,8 @@ dependencies = [
  "bitset-fixed",
  "bytemuck",
  "criterion",
+ "fastrand",
+ "futures-lite",
  "glam",
  "pollster",
  "ron",
@@ -268,6 +286,15 @@ dependencies = [
  "tracing-chrome",
  "tracy-client 0.17.6",
  "wgpu",
+]
+
+[[package]]
+name = "amp_system"
+version = "0.4.0-alpha.0"
+dependencies = [
+ "amp_physics",
+ "amp_render",
+ "bevy",
 ]
 
 [[package]]
@@ -3444,8 +3471,11 @@ checksum = "36119f3a540b086b4e436bb2b588cf98a68863470e0e880f4d0842f112a3183a"
 name = "gta_game"
 version = "0.1.0"
 dependencies = [
+ "amp_core",
  "amp_engine",
+ "amp_foundation",
  "amp_gameplay",
+ "amp_math",
  "amp_physics",
  "amp_render",
  "bevy",
@@ -3456,6 +3486,7 @@ dependencies = [
  "env_logger",
  "gameplay_factory",
  "rand 0.8.5",
+ "serde_json",
  "tracing",
  "tracing-chrome",
  "tracing-tracy",
@@ -3866,26 +3897,6 @@ name = "itoa"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
-
-[[package]]
-name = "jemalloc-sys"
-version = "0.5.4+5.3.0-patched"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac6c1946e1cea1788cbfde01c993b52a10e2da07f4bac608228d1bed20bfebf2"
-dependencies = [
- "cc",
- "libc",
-]
-
-[[package]]
-name = "jemallocator"
-version = "0.5.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0de374a9f8e63150e6f5e8a60cc14c668226d7a347d8aee1a45766e3c4dd3bc"
-dependencies = [
- "jemalloc-sys",
- "libc",
-]
 
 [[package]]
 name = "jiff"
@@ -5991,15 +6002,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
-name = "signal-hook-registry"
-version = "1.4.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9203b8055f63a2a00e2f593bb0510367fe707d7ff1e5c872de2f537b339e5410"
-dependencies = [
- "libc",
-]
-
-[[package]]
 name = "simba"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6091,16 +6093,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd538fb6910ac1099850255cf94a94df6551fbdd602454387d0adb2d1ca6dead"
 dependencies = [
  "serde",
-]
-
-[[package]]
-name = "socket2"
-version = "0.5.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e22376abed350d73dd1cd119b57ffccad95b4e585a7cda43e286245ce23c0678"
-dependencies = [
- "libc",
- "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -6497,17 +6489,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0cc3a2344dafbe23a245241fe8b09735b521110d30fcefbbd5feb1797ca35d17"
 dependencies = [
  "backtrace",
- "bytes",
  "io-uring",
  "libc",
  "mio 1.0.4",
- "parking_lot",
  "pin-project-lite",
- "signal-hook-registry",
  "slab",
- "socket2",
  "tokio-macros",
- "windows-sys 0.52.0",
 ]
 
 [[package]]

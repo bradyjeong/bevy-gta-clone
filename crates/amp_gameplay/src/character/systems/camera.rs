@@ -6,31 +6,32 @@ use bevy::prelude::*;
 
 use crate::character::components::*;
 use crate::character::resources::CharacterInputState;
+use amp_physics::{InterpolatedTransform, PhysicsTime};
 
 /// Camera follow system for third-person view
 pub fn camera_follow(
     time: Res<Time>,
+    physics_time: Res<PhysicsTime>,
     input_state: Res<CharacterInputState>,
     mut camera_query: Query<&mut Transform, (With<Camera3d>, Without<Player>)>,
-    mut character_query: Query<(&Transform, &mut CameraTarget), (With<Player>, Without<Camera3d>)>,
+    mut character_query: Query<
+        (&InterpolatedTransform, &mut CameraTarget),
+        (With<Player>, Without<Camera3d>),
+    >,
 ) {
     let Ok(mut camera_transform) = camera_query.single_mut() else {
         return;
     };
 
-    let Ok((character_transform, mut camera_target)) = character_query.single_mut() else {
+    let Ok((interpolated_transform, mut camera_target)) = character_query.single_mut() else {
         return;
     };
 
-    // Update camera rotation from mouse input
-    camera_target.rotation.x -= input_state.mouse_delta.x * camera_target.mouse_sensitivity;
-    camera_target.rotation.y -= input_state.mouse_delta.y * camera_target.mouse_sensitivity;
+    // No mouse camera rotation - fixed camera angle
+    // Camera will follow character but maintain fixed relative position
 
-    // Clamp pitch to prevent camera flipping
-    camera_target.rotation.y = camera_target.rotation.y.clamp(-1.5, 1.5);
-
-    // Calculate target position (character position + offset)
-    let target_position = character_transform.translation + camera_target.offset;
+    // Calculate target position (interpolated character position + offset)
+    let target_position = interpolated_transform.visual.translation + camera_target.offset;
 
     // Calculate camera position using spherical coordinates
     let yaw = camera_target.rotation.x;
@@ -44,12 +45,17 @@ pub fn camera_follow(
 
     let desired_camera_position = target_position + camera_offset;
 
-    // Smooth camera movement
-    let smoothing = camera_target.smoothness;
-    camera_transform.translation = camera_transform.translation.lerp(
-        desired_camera_position,
-        smoothing * time.delta_secs() * 10.0, // Scale for reasonable follow speed
-    );
+    // Smooth camera movement with exponential damping and physics interpolation
+    let damping_rate = camera_target.smoothness * 10.0; // Convert smoothness to damping rate
+    let base_damping = 1.0 - (-damping_rate * time.delta_secs()).exp();
+
+    // Apply physics interpolation for sub-frame smoothness
+    let interpolated_damping = base_damping * (1.0 + physics_time.interpolation_alpha * 0.5);
+    let damping_factor = interpolated_damping.clamp(0.0, 1.0);
+
+    camera_transform.translation = camera_transform
+        .translation
+        .lerp(desired_camera_position, damping_factor);
 
     // Always look at the target
     camera_transform.look_at(target_position, Vec3::Y);
@@ -81,15 +87,8 @@ pub fn setup_character_camera(
     }
 }
 
-/// Camera distance adjustment system (for zoom in/out with scroll wheel)
-pub fn adjust_camera_distance(
-    mut scroll_events: EventReader<bevy::input::mouse::MouseWheel>,
-    mut character_query: Query<&mut CameraTarget, With<Player>>,
+/// Camera distance adjustment system (disabled - no mouse control)
+pub fn adjust_camera_distance(// Mouse control removed
 ) {
-    for event in scroll_events.read() {
-        for mut camera_target in character_query.iter_mut() {
-            camera_target.distance -= event.y * 0.5;
-            camera_target.distance = camera_target.distance.clamp(2.0, 20.0);
-        }
-    }
+    // No mouse wheel zoom - fixed camera distance
 }

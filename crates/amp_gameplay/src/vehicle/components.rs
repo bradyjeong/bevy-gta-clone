@@ -42,6 +42,9 @@ impl Default for Vehicle {
 #[reflect(Component)]
 pub struct PhysicsVehicle;
 
+/// Marker component for car entities (alias for PhysicsVehicle for road system compatibility)
+pub type Car = PhysicsVehicle;
+
 impl Default for PhysicsVehicle {
     fn default() -> Self {
         Self

@@ -17,3 +17,8 @@ serde = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
 criterion = { workspace = true }
+
+[features]
+default = []
+unstable_road_system = []
+unstable_hierarchical_world = []

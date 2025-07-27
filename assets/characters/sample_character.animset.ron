@@ -1,0 +1,70 @@
+// Sample AnimationSet for Mixamo character demonstrations
+// Replace placeholder paths with actual Mixamo FBX/glTF files
+AnimationSet(
+    animations: {
+        Idle: AnimationClip(
+            path: "characters/animations/idle.glb#Animation0",
+            speed: 1.0,
+            loop_mode: true,
+            blend_in_duration: 0.3,
+            blend_out_duration: 0.3,
+        ),
+        Walk: AnimationClip(
+            path: "characters/animations/walking.glb#Animation0", 
+            speed: 1.0,
+            loop_mode: true,
+            blend_in_duration: 0.2,
+            blend_out_duration: 0.2,
+        ),
+        Run: AnimationClip(
+            path: "characters/animations/running.glb#Animation0",
+            speed: 1.2,
+            loop_mode: true, 
+            blend_in_duration: 0.15,
+            blend_out_duration: 0.15,
+        ),
+        Sprint: AnimationClip(
+            path: "characters/animations/sprinting.glb#Animation0",
+            speed: 1.5,
+            loop_mode: true,
+            blend_in_duration: 0.1,
+            blend_out_duration: 0.1,
+        ),
+        Jump: AnimationClip(
+            path: "characters/animations/jumping.glb#Animation0", 
+            speed: 1.0,
+            loop_mode: false,
+            blend_in_duration: 0.05,
+            blend_out_duration: 0.1,
+        ),
+        Fall: AnimationClip(
+            path: "characters/animations/falling.glb#Animation0",
+            speed: 1.0,
+            loop_mode: true,
+            blend_in_duration: 0.1,
+            blend_out_duration: 0.1,
+        ),
+        Land: AnimationClip(
+            path: "characters/animations/landing.glb#Animation0",
+            speed: 1.0,
+            loop_mode: false,
+            blend_in_duration: 0.05,
+            blend_out_duration: 0.2,
+        ),
+        Turn: AnimationClip(
+            path: "characters/animations/turning.glb#Animation0",
+            speed: 1.0,
+            loop_mode: false,
+            blend_in_duration: 0.1,
+            blend_out_duration: 0.1,
+        ),
+    },
+    // Velocity thresholds for state transitions (m/s)
+    walk_threshold: 0.1,
+    run_threshold: 3.0,
+    sprint_threshold: 6.0,
+    // Hysteresis factors to prevent oscillation
+    velocity_hysteresis: 0.2,
+    // Transition timing
+    state_change_cooldown: 0.1,
+)

@@ -754,6 +754,14 @@ pub mod factory_integration;
 #[cfg(feature = "bevy16")]
 pub use factory_integration::*;
 
+pub mod async_generation;
+#[cfg(feature = "unstable_hierarchical_world")]
+pub mod hierarchical_streaming;
+
+pub use async_generation::*;
+#[cfg(feature = "unstable_hierarchical_world")]
+pub use hierarchical_streaming::*;
+
 /// Plugin for world streaming
 #[cfg(feature = "bevy16")]
 pub struct WorldStreamingPlugin;
@@ -761,22 +769,27 @@ pub struct WorldStreamingPlugin;
 #[cfg(feature = "bevy16")]
 impl Plugin for WorldStreamingPlugin {
     fn build(&self, app: &mut App) {
+        use amp_core::system_ordering::{MasterSystemSet, WorldStreamingSystemSet};
+
         app.add_systems(
             Update,
             (
-                update_chunk_queues,
-                enqueue_chunk_loads,
-                process_loaded_chunks,
-                unload_far_chunks,
-                start_chunk_generation,
-                generate_chunk_content,
-                track_chunk_entities,
-                cleanup_chunk_entities,
-                // Oracle's M4 requirements: Sector streaming systems
-                update_sector_queues,
-                spawn_sectors_async,
-                despawn_sectors_async,
-                update_sector_lods,
+                // Initialization systems
+                update_chunk_queues.in_set(WorldStreamingSystemSet::Init),
+                enqueue_chunk_loads.in_set(WorldStreamingSystemSet::Init),
+                // Core update systems
+                update_sector_queues.in_set(WorldStreamingSystemSet::Update),
+                update_sector_lods.in_set(WorldStreamingSystemSet::Update),
+                // Processing systems
+                process_loaded_chunks.in_set(WorldStreamingSystemSet::Processing),
+                start_chunk_generation.in_set(WorldStreamingSystemSet::Processing),
+                generate_chunk_content.in_set(WorldStreamingSystemSet::Processing),
+                spawn_sectors_async.in_set(WorldStreamingSystemSet::Processing),
+                track_chunk_entities.in_set(WorldStreamingSystemSet::Processing),
+                // Cleanup systems
+                unload_far_chunks.in_set(WorldStreamingSystemSet::Cleanup),
+                despawn_sectors_async.in_set(WorldStreamingSystemSet::Cleanup),
+                cleanup_chunk_entities.in_set(WorldStreamingSystemSet::Cleanup),
             ),
         );
     }
